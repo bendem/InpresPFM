@@ -1,4 +1,3 @@
-#include <iostream>
 #include "net/Socket.hpp"
 
 Socket::Socket(unsigned short port) {
@@ -16,7 +15,7 @@ Socket::Socket(unsigned short port, std::string bindHost) {
     struct sockaddr_in addr;
 
     if((host = gethostbyname(bindHost.c_str())) == 0) {
-        throw std::runtime_error("Failed to get host for '" + bindHost + "': " + std::to_string(errno));
+        this->error("Failed to get host for '" + bindHost + "': " + std::to_string(errno));
     }
     memcpy(&ip, host->h_addr, host->h_length);
 
@@ -31,50 +30,93 @@ Socket::Socket(unsigned short port, std::string bindHost) {
 void Socket::setupSocket(const sockaddr_in addr) {
     this->addr = *(struct sockaddr*) &addr;
     this->addrLen = sizeof(struct sockaddr_in);
+    this->closed = false;
 
     this->handle = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if(this->handle < 0) {
-        throw std::runtime_error("Failed to create socket: " + std::to_string(errno));
+        this->error("Failed to create socket: " + std::to_string(errno));
     }
 
     if(bind(this->handle, &this->addr, this->addrLen) == -1) {
-        throw std::runtime_error("Could not bind socket: " + std::to_string(errno));
+        this->error("Could not bind socket: " + std::to_string(errno));
     }
 }
 
 Socket::~Socket() {
-    if(this->handle > 0) {
-        close(this->handle);
+    if(!this->closed) {
+        ::close(this->handle);
     }
 }
 
 Socket& Socket::listen(int max_connections) {
+    this->checkOpen();
+
     if((::listen(this->handle, max_connections)) < 0) {
-        throw std::runtime_error("Could not start listening: " + std::to_string(errno));
+        this->error("Could not start listening: " + std::to_string(errno));
     }
     return *this;
 }
 
+void Socket::close() {
+    ::close(this->handle);
+    this->closed = true;
+}
+
 Socket Socket::accept() {
+    this->checkOpen();
+
     Socket s;
     if((s.handle = ::accept(this->handle, &s.addr, &s.addrLen)) < 0) {
-        throw std::runtime_error("Could not accept: " + std::to_string(errno));
+        this->error("Could not accept: " + std::to_string(errno));
     }
+    s.closed = false;
+
     return s;
 }
 
 long Socket::write(const std::vector<char>& vector) {
-    return send(this->handle, vector.data(), vector.size() * sizeof(char), 0);
+    this->checkOpen();
+
+    long len = send(this->handle, vector.data(), vector.size() * sizeof(char), 0);
+
+    if(len == 0) {
+        this->closed = true;
+    } else if(len == -1) {
+        this->error("Failed to write " + std::to_string(vector.size()) + " bytes");
+    }
+
+    return len;
 }
 
-std::vector<char> Socket::read() {
-    std::vector<char> result;
-    char c;
+std::vector<char> Socket::read(unsigned int max) {
+    this->checkOpen();
 
-    while(recv(this->handle, &c, 1, 0) == 1) {
-        std::cout << c;
-        result.push_back(c);
+    std::vector<char> result;
+    char c[max];
+    long len = recv(this->handle, &c, max, 0);
+
+    if(len == 0) {
+        this->closed = true;
+    } else if(len == -1) {
+        this->error("Failed to read " + std::to_string(max) + " bytes");
+    }
+
+    result.reserve(len);
+    for(long i = 0; i < len; ++i) {
+        result.push_back(c[i]);
     }
 
     return result;
+}
+
+void Socket::error(const std::string& string) {
+    this->closed = true;
+    ::close(this->handle);
+    throw IOError(string);
+}
+
+void Socket::checkOpen() const {
+    if(this->closed) {
+        throw IOError("Socket already closed");
+    }
 }

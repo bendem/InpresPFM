@@ -1,15 +1,16 @@
 #ifndef CONTAINER_SERVER_SOCKET_HPP
 #define CONTAINER_SERVER_SOCKET_HPP
 
-#include <stdexcept>
+#include <cstring>
 #include <string>
 #include <vector>
 
-#include <cstring>
 #include <netdb.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+
+#include "net/IOError.hpp"
 
 class Socket {
 
@@ -22,17 +23,22 @@ public:
 
     Socket accept();
 
-    long write(const std::vector<char>&vector);
+    void close();
 
-    std::vector<char> read();
+    long write(const std::vector<char>&);
+
+    std::vector<char> read(unsigned int);
 
 private:
     int handle;
     struct sockaddr addr;
     unsigned int addrLen;
+    bool closed;
 
     Socket() {}
     void setupSocket(const struct sockaddr_in);
+    void error(const std::string&);
+    void checkOpen() const;
 
 };
 

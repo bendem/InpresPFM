@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
     std::vector<char> arr = {'h', 'e', 'y'};
     connection.write(arr);
 
-    arr = std::move(connection.read());
+    arr = std::move(connection.read(50));
     arr.push_back(0);
     std::cout << arr.data() << std::endl;
 

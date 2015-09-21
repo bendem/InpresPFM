@@ -8,6 +8,7 @@ include_directories(headers)
 set(SOURCE_FILES
     main.cpp
     headers/net/Socket.hpp
-    src/net/Socket.cpp)
+    src/net/Socket.cpp
+    headers/net/IOError.hpp)
 
 add_executable(container_server ${SOURCE_FILES})
