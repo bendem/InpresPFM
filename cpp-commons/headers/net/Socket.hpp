@@ -28,6 +28,7 @@ public:
     long write(const std::vector<char>&);
 
     std::vector<char> read(unsigned int);
+    void accumulate(unsigned int, std::vector<char>&);
 
 private:
     int handle;

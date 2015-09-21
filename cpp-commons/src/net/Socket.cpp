@@ -83,6 +83,10 @@ long Socket::write(const std::vector<char>& vector) {
         this->closed = true;
     } else if(len == -1) {
         this->error("Failed to write " + std::to_string(vector.size()) + " bytes");
+    } else if(len != vector.size()) {
+        this->error("Didn't write enough bytes, "
+            "expected: " + std::to_string(vector.size())
+            + ", wrote " + std::to_string(len));
     }
 
     return len;
@@ -107,6 +111,13 @@ std::vector<char> Socket::read(unsigned int max) {
     }
 
     return result;
+}
+
+void Socket::accumulate(unsigned int len, std::vector<char>& result) {
+    while(result.size() < len) {
+        const std::vector<char>& x = this->read(len - result.size());
+        result.insert(result.end(), x.begin(), x.end());
+    }
 }
 
 void Socket::error(const std::string& string) {

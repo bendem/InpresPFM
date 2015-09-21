@@ -8,6 +8,9 @@ include_directories(headers)
 set(SOURCE_FILES
     headers/net/Socket.hpp
     src/net/Socket.cpp
-    headers/net/IOError.hpp)
+    headers/net/IOError.hpp
+    headers/protocol/ProtocolHandler.hpp
+    src/protocol/Translator.cpp
+    headers/protocol/Translator.hpp)
 
 add_library(cpp_commons ${SOURCE_FILES})
