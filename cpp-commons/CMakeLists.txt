@@ -10,7 +10,6 @@ set(SOURCE_FILES
     src/net/Socket.cpp
     headers/net/IOError.hpp
     headers/protocol/ProtocolHandler.hpp
-    src/protocol/Translator.cpp
     headers/protocol/Translator.hpp)
 
 add_library(cpp_commons ${SOURCE_FILES})
