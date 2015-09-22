@@ -1,11 +1,14 @@
 #include <iostream>
 
-#include "net/Socket.hpp"
 #include "protocol/ProtocolHandler.hpp"
-#include "protocol/Translator.hpp"
+#include "cmmp/CMMPTranslator.hpp"
 
 int main(int argc, char** argv) {
+    ProtocolHandler<CMMPTranslator> proto(CMMPTranslator());
 
+    proto.read()
+
+    /*
     std::vector<char> v;
     char i = 42;
     Translator::writePrimitive(v, i);
@@ -17,6 +20,7 @@ int main(int argc, char** argv) {
 
     std::vector<char>::const_iterator it = v.begin();
     std::cout << Translator::readPrimitive<char>(it) << std::endl;
+    */
 
     /*
     std::cerr << "creating socket" << std::endl;

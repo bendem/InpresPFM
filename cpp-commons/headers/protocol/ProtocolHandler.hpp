@@ -12,7 +12,7 @@ template<class Translator>
 class ProtocolHandler {
 
 public:
-    ProtocolHandler(Translator translator) : translator(translator) {}
+    ProtocolHandler(const Translator& translator) : translator(translator) {}
 
     template<class T>
     T read(Socket&);
@@ -63,7 +63,7 @@ ProtocolHandler<Translator>& ProtocolHandler<Translator>::write(Socket& socket, 
     v.push_back(item.getId());
     // TODO Write len as uint32_t
 
-    std::vector<char>& x = this->translator.encode(item);
+    const std::vector<char>& x = this->translator.encode(item);
     v.insert(v.end(), x.begin(), x.end());
     v.push_back(FRAME_END);
     socket.write(v);
