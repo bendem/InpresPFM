@@ -12,17 +12,18 @@
 
 #include "net/IOError.hpp"
 
-
 // TODO Move bind to method (not used for clients)
 // TODO connect method for clients
 class Socket {
 
 public:
-    Socket(unsigned short port);
-    Socket(unsigned short port, std::string bindHost);
+    Socket() : handle(-1), closed(false) {}
     ~Socket();
 
-    Socket& listen(int = SOMAXCONN);
+    Socket& connect(unsigned short, std::string);
+
+    Socket& bind(unsigned short);
+    Socket& bind(unsigned short, std::string);
 
     Socket accept();
 
@@ -39,8 +40,9 @@ private:
     unsigned int addrLen;
     bool closed;
 
-    Socket() {}
-    void setupSocket(const struct sockaddr_in);
+    struct sockaddr_in setupPort(unsigned short);
+    struct sockaddr_in setupHostAndPort(unsigned short, std::string);
+    Socket& setupSocket(const struct sockaddr_in, bool bind);
     void error(const std::string&);
     void checkOpen() const;
 

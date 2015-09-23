@@ -1,33 +1,49 @@
 #include "net/Socket.hpp"
 
-Socket::Socket(unsigned short port) {
+Socket::~Socket() {
+    if(!this->closed) {
+        ::close(this->handle);
+    }
+}
+
+Socket& Socket::connect(unsigned short port, std::string host) {
+    return this->setupSocket(this->setupHostAndPort(port, host), false);
+}
+
+Socket& Socket::bind(unsigned short port) {
+    return this->setupSocket(this->setupPort(port), true);
+}
+
+Socket& Socket::bind(unsigned short port, std::string bindHost) {
+    return this->setupSocket(this->setupHostAndPort(port, bindHost), true);
+}
+
+struct sockaddr_in Socket::setupPort(unsigned short port) {
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = INADDR_ANY;
-
-    this->setupSocket(addr);
+    return addr;
 }
 
-Socket::Socket(unsigned short port, std::string bindHost) {
-    struct hostent *host;
+struct sockaddr_in Socket::setupHostAndPort(unsigned short port, std::string host) {
+    struct hostent *host_info;
     struct in_addr ip;
     struct sockaddr_in addr;
 
-    if((host = gethostbyname(bindHost.c_str())) == 0) {
-        this->error("Failed to get host for '" + bindHost + "': " + std::to_string(errno));
+    if((host_info = gethostbyname(host.c_str())) == 0) {
+        this->error("Failed to get host for '" + host + "': " + std::to_string(errno));
     }
-    memcpy(&ip, host->h_addr, host->h_length);
+    memcpy(&ip, host_info->h_addr, host_info->h_length);
 
     memset(&addr, 0, sizeof(struct sockaddr_in));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr = ip;
-
-    this->setupSocket(addr);
+    return addr;
 }
 
-void Socket::setupSocket(const sockaddr_in addr) {
+Socket& Socket::setupSocket(const sockaddr_in addr, bool bind) {
     this->addr = *(struct sockaddr*) &addr;
     this->addrLen = sizeof(struct sockaddr_in);
     this->closed = false;
@@ -37,34 +53,33 @@ void Socket::setupSocket(const sockaddr_in addr) {
         this->error("Failed to create socket: " + std::to_string(errno));
     }
 
-    if(bind(this->handle, &this->addr, this->addrLen) == -1) {
-        this->error("Could not bind socket: " + std::to_string(errno));
+    if(bind) {
+        if(::bind(this->handle, &this->addr, this->addrLen) == -1) {
+            this->error("Could not bind socket: " + std::to_string(errno));
+        }
+    } else {
+        if(::connect(this->handle, &this->addr, this->addrLen) == -1) {
+            this->error("Could not connect socket: " + std::to_string(errno));
+        }
     }
-}
 
-Socket::~Socket() {
-    if(!this->closed) {
-        ::close(this->handle);
-    }
-}
-
-Socket& Socket::listen(int max_connections) {
-    // TODO Move to accept?
-    this->checkOpen();
-
-    if((::listen(this->handle, max_connections)) < 0) {
-        this->error("Could not start listening: " + std::to_string(errno));
-    }
     return *this;
 }
 
 void Socket::close() {
+    if(this->closed) {
+        return;
+    }
     ::close(this->handle);
     this->closed = true;
 }
 
 Socket Socket::accept() {
     this->checkOpen();
+
+    if((::listen(this->handle, SOMAXCONN)) < 0) {
+        this->error("Could not start listening: " + std::to_string(errno));
+    }
 
     Socket s;
     if((s.handle = ::accept(this->handle, &s.addr, &s.addrLen)) < 0) {
@@ -74,7 +89,6 @@ Socket Socket::accept() {
         }
         this->error("Could not accept: " + std::to_string(errno));
     }
-    s.closed = false;
 
     return s;
 }
@@ -132,7 +146,7 @@ void Socket::error(const std::string& string) {
 }
 
 void Socket::checkOpen() const {
-    if(this->closed) {
+    if(this->handle < 0 || this->closed) {
         throw IOError("Socket already closed");
     }
 }
