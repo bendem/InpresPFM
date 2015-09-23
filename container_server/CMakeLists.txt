@@ -8,14 +8,14 @@ include_directories(../cpp-commons/headers)
 
 set(SOURCE_FILES
     main.cpp
-        headers/cmmp/CMMPTranslator.hpp
-        headers/cmmp/LoginPacket.hpp
-        headers/cmmp/InputTruckPacket.hpp
-        headers/cmmp/InputDonePacket.hpp
-        headers/cmmp/OutputReaderPacket.hpp
-        headers/cmmp/OutputOnePacket.hpp
-        headers/cmmp/OutputDonePacket.hpp
-        headers/cmmp/LogoutPacket.hpp)
+    headers/cmmp/CMMPTranslator.hpp
+    headers/cmmp/LoginPacket.hpp
+    headers/cmmp/InputTruckPacket.hpp
+    headers/cmmp/InputDonePacket.hpp
+    headers/cmmp/OutputReaderPacket.hpp
+    headers/cmmp/OutputOnePacket.hpp
+    headers/cmmp/OutputDonePacket.hpp
+    headers/cmmp/LogoutPacket.hpp)
 
 add_subdirectory(../cpp-commons build)
 

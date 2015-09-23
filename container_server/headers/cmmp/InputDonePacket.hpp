@@ -4,14 +4,14 @@
 class InputDonePacket {
 
 public:
-    InputDonePacket(bool _iDontRemember, float weight)
-            : _iDontRemember(_iDontRemember), weight(weight) {}
+    InputDonePacket(bool ok, float weight)
+            : ok(ok), weight(weight) {}
 
-    bool is_iDontRemember() const { return _iDontRemember; }
+    bool isOk() const { return ok; }
     float getWeight() const { return weight; }
 
 private:
-    bool _iDontRemember;
+    bool ok;
     float weight;
 
 };
