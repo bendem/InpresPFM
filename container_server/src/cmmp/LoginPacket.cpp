@@ -8,7 +8,7 @@ LoginPacket LoginPacket::decode(const std::vector<char>& v) {
     return LoginPacket(username, password);
 }
 
-void LoginPacket::encode(std::vector<char>& vector) {
+void LoginPacket::encode(std::vector<char>& vector) const {
     writeString(vector, this->username);
     writeString(vector, this->password);
 }

@@ -8,7 +8,7 @@ LogoutPacket LogoutPacket::decode(const std::vector<char>& v) {
     return LogoutPacket(username, password);
 }
 
-void LogoutPacket::encode(std::vector<char>& vector) {
+void LogoutPacket::encode(std::vector<char>& vector) const {
     writeString(vector, this->username);
     writeString(vector, this->password);
 }

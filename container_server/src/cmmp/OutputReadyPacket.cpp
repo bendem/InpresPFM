@@ -9,7 +9,7 @@ OutputReadyPacket OutputReadyPacket::decode(const std::vector<char>& v) {
     return OutputReadyPacket(license, destination, capacity);
 }
 
-void OutputReadyPacket::encode(std::vector<char>& v) {
+void OutputReadyPacket::encode(std::vector<char>& v) const {
     writeString(v, license);
     writeString(v, destination);
     writePrimitive(v, capacity);

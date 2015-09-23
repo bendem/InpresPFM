@@ -8,6 +8,6 @@ OutputOnePacket OutputOnePacket::decode(const std::vector<char>& v) {
     return OutputOnePacket(container_id);
 }
 
-void OutputOnePacket::encode(std::vector<char>& v) {
+void OutputOnePacket::encode(std::vector<char>& v) const {
     writeString(v, containerId);
 }

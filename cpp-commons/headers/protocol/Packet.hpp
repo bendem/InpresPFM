@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <vector>
+#include <iostream>
 
 template<class P>
 using PacketHandler = std::function<void(P)>;
@@ -13,6 +14,7 @@ class Packet {
 // Actual packet stuff
 public:
     Packet(char id) : id(id) {}
+    char getId() const { return id; }
 
 private:
     char id;

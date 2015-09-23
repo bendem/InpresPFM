@@ -7,7 +7,6 @@ include_directories(headers)
 include_directories(../cpp-commons/headers)
 
 set(SOURCE_FILES
-    main.cpp
     headers/cmmp/PacketId.hpp
     headers/cmmp/CMMPTranslator.hpp
     headers/cmmp/LoginPacket.hpp
@@ -27,5 +26,8 @@ set(SOURCE_FILES
 
 add_subdirectory(../cpp-commons build)
 
-add_executable(container_server ${SOURCE_FILES})
+add_executable(container_server main.cpp ${SOURCE_FILES})
 target_link_libraries(container_server cpp_commons)
+
+add_executable(container_server_test_application client_test.cpp ${SOURCE_FILES})
+target_link_libraries(container_server_test_application cpp_commons)

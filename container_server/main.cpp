@@ -1,13 +1,10 @@
 #include <iostream>
-#include <cmmp/LogoutPacket.hpp>
-#include <cmmp/InputDonePacket.hpp>
 
-#include "protocol/ProtocolHandler.hpp"
 #include "cmmp/CMMPTranslator.hpp"
+#include "protocol/ProtocolHandler.hpp"
 
 int main(int argc, char** argv) {
     unsigned short port = 3069;
-    std::cout << "hey" << std::endl;
     if(argc >= 2) {
         port = atoi(argv[1]);
     }
@@ -15,14 +12,21 @@ int main(int argc, char** argv) {
     CMMPTranslator translator;
     ProtocolHandler<CMMPTranslator, PacketId> proto(translator);
     LoginPacket::registerHandler([](LoginPacket p) {
-        std::cout << p.getUsername() << " logged in" << std::endl;
+        std::cout << p.getUsername() << " logged in with " << p.getPassword() << std::endl;
+    });
+    LogoutPacket::registerHandler([](LogoutPacket p) {
+        std::cout << p.getUsername() << " logged in with " << p.getPassword() << std::endl;
     });
 
     Socket s;
+    std::cout << "socket" << std::endl;
     s.bind(port);
+    std::cout << "bound" << std::endl;
     Socket socket = s.accept();
+    std::cout << "accepted" << std::endl;
 
     proto.read(socket);
+    std::cout << "read" << std::endl;
 
     /*
     ProtocolHandler<CMMPTranslator> proto(CMMPTranslator());

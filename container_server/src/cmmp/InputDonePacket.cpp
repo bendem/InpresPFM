@@ -8,7 +8,7 @@ InputDonePacket InputDonePacket::decode(const std::vector<char>& vector) {
     return InputDonePacket(ok, weight);
 }
 
-void InputDonePacket::encode(std::vector<char>& v) {
+void InputDonePacket::encode(std::vector<char>& v) const {
     writePrimitive(v, ok);
     writePrimitive(v, weight);
 }

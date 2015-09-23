@@ -18,7 +18,7 @@ public:
     const std::string& getContainerId() const {  return containerId;  }
 
     static InputTruckPacket decode(const std::vector<char>&);
-    void encode(std::vector<char>&);
+    void encode(std::vector<char>&) const;
 
 private:
     std::string license;

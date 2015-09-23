@@ -8,7 +8,7 @@ InputTruckPacket InputTruckPacket::decode(const std::vector<char>& v) {
     return InputTruckPacket(license, container_id);
 }
 
-void InputTruckPacket::encode(std::vector<char>& v) {
+void InputTruckPacket::encode(std::vector<char>& v) const {
     writeString(v, license);
     writeString(v, containerId);
 }

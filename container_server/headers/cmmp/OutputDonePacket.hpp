@@ -17,7 +17,7 @@ public:
     uint32_t getContainerCount() const { return containerCount; }
 
     static OutputDonePacket decode(const std::vector<char>&);
-    void encode(std::vector<char>&);
+    void encode(std::vector<char>&) const;
 
 private:
     std::string license;

@@ -1,6 +1,8 @@
 #ifndef CPP_COMMONS_PROTOCOLHANDLER_HPP
 #define CPP_COMMONS_PROTOCOLHANDLER_HPP
 
+#include <iostream>
+
 #include <functional>
 #include <map>
 #include <queue>
@@ -37,11 +39,17 @@ template<class Translator, class Id>
 void ProtocolHandler<Translator, Id>::read(Socket& socket) {
     Id id;
     uint32_t len;
-    std::vector<char> v(4);
+    std::vector<char> v(5);
 
-    socket.accumulate(4, v);
+    socket.accumulate(5, v);
     id = (Id) v[0];
     len = this->parseLength(++v.begin()) + 1; // + 1 => end frame marquer
+
+    std::cerr << id << ':' << len << ':' << v.size() << " { ";
+    for(char c : v) {
+        std::cerr << "0x" << std::hex << (int) c << ' ';
+    }
+    std::cerr << '}' << std::endl;
 
     v.clear();
     v.reserve(len);
@@ -65,13 +73,21 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
 
     // Store packet length
     uint32_t len = v.size() - 5;
-    char* bytes = reinterpret_cast<char*>(len);
+    const char* bytes = reinterpret_cast<const char*>(&len);
     v[1] = bytes[0];
     v[2] = bytes[1];
     v[3] = bytes[2];
     v[4] = bytes[3];
 
     v.push_back(FRAME_END);
+    std::cout << "1" << std::endl;
+
+    std::cerr << (int) v[0] << ':' << len << ':' << v.size() << " { ";
+    for(char c : v) {
+        std::cerr << "0x" << std::hex << (int) c << ' ';
+    }
+    std::cerr << '}' << std::endl;
+
     socket.write(v);
 
     return *this;
@@ -79,7 +95,7 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
 
 template<class Translator, class Id>
 uint32_t ProtocolHandler<Translator, Id>::parseLength(std::vector<char>::const_iterator iterator) {
-    return *reinterpret_cast<uint32_t*>(&iterator);
+    return *reinterpret_cast<const uint32_t*>(&*iterator);
 }
 
 #endif //CPP_COMMONS_PROTOCOLHANDLER_HPP

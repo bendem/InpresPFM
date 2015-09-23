@@ -9,7 +9,7 @@ OutputDonePacket OutputDonePacket::decode(const std::vector<char>& v) {
     return OutputDonePacket(license, container_count);
 }
 
-void OutputDonePacket::encode(std::vector<char>& v) {
+void OutputDonePacket::encode(std::vector<char>& v) const {
     writeString(v, license);
     writePrimitive(v, containerCount);
 }

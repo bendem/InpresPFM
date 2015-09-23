@@ -20,7 +20,7 @@ public:
     uint32_t getCapacity() const { return capacity; }
 
     static OutputReadyPacket decode(const std::vector<char>&);
-    void encode(std::vector<char>&);
+    void encode(std::vector<char>&) const;
 
 private:
     std::string license;
