@@ -6,16 +6,20 @@
 #include "cmmp/CMMPTranslator.hpp"
 
 int main(int argc, char** argv) {
+    unsigned short port = 3069;
+    if(argc < 2) {
+        port = stou(argv[1]);
+    }
 
-    LogoutPacket::registerHandler([](LogoutPacket p) {
-        std::cout << p.getUsername() << " logged out" << std::endl;
+    ProtocolHandler<CMMPTranslator> proto(CMMPTranslator());
+    LoginPacket::registerHandler([](LoginPacket p) {
+        std::cout << p.getUsername() << " logged in" << std::endl;
     });
 
-    InputDonePacket::registerHandler([](InputDonePacket) {
-        std::cout << "oh" << std::endl;
-    });
+    Socket s;
+    s.bind(port);
 
-    InputDonePacket(true, 1).handle();
+    proto.read
 
     /*
     ProtocolHandler<CMMPTranslator> proto(CMMPTranslator());

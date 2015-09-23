@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function run_gradle() {
     local path=${1:0:(-1)}
     cd $path
