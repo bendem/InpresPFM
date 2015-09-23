@@ -58,13 +58,19 @@ T ProtocolHandler<Translator>::read(Socket& socket) {
 template<class Translator>
 template<class T>
 ProtocolHandler<Translator>& ProtocolHandler<Translator>::write(Socket& socket, T& item) {
-    std::vector<char> v;
+    std::vector<char> v(5, 0); // Reserve 5 places for the id and the length
 
-    v.push_back(item.getId());
-    // TODO Write len as uint32_t
+    v[0] = item.getId();
+    this->translator.encode(item, v);
 
-    const std::vector<char>& x = this->translator.encode(item);
-    v.insert(v.end(), x.begin(), x.end());
+    // Store packet length
+    uint32_t len = v.size() - 5;
+    char* bytes = reinterpret_cast<char*>(len);
+    v[1] = bytes[0];
+    v[2] = bytes[1];
+    v[3] = bytes[2];
+    v[4] = bytes[3];
+
     v.push_back(FRAME_END);
     socket.write(v);
 

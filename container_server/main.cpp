@@ -1,9 +1,23 @@
 #include <iostream>
+#include <cmmp/LogoutPacket.hpp>
+#include <cmmp/InputDonePacket.hpp>
 
 #include "protocol/ProtocolHandler.hpp"
 #include "cmmp/CMMPTranslator.hpp"
 
 int main(int argc, char** argv) {
+
+    LogoutPacket::registerHandler([](LogoutPacket p) {
+        std::cout << p.getUsername() << " logged out" << std::endl;
+    });
+
+    InputDonePacket::registerHandler([](InputDonePacket) {
+        std::cout << "oh" << std::endl;
+    });
+
+    InputDonePacket(true, 1).handle();
+
+    /*
     ProtocolHandler<CMMPTranslator> proto(CMMPTranslator());
 
     proto.read()

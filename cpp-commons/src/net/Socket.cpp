@@ -49,6 +49,7 @@ Socket::~Socket() {
 }
 
 Socket& Socket::listen(int max_connections) {
+    // TODO Move to accept?
     this->checkOpen();
 
     if((::listen(this->handle, max_connections)) < 0) {
@@ -67,6 +68,10 @@ Socket Socket::accept() {
 
     Socket s;
     if((s.handle = ::accept(this->handle, &s.addr, &s.addrLen)) < 0) {
+        if(errno == EINTR) {
+            // Got interrupted
+            return this->accept();
+        }
         this->error("Could not accept: " + std::to_string(errno));
     }
     s.closed = false;

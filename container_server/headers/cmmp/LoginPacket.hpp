@@ -3,14 +3,22 @@
 
 #include <string>
 
-class LoginPacket {
+#include "cmmp/PacketId.hpp"
+#include "protocol/Packet.hpp"
+
+class LoginPacket : public Packet<LoginPacket> {
 
 public:
     LoginPacket(const std::string& username, const std::string& password)
-            : username(username), password(password) {}
+        : Packet(PacketId::Login),
+          username(username),
+          password(password) {}
 
     const std::string& getUsername() const { return username; }
     const std::string& getPassword() const { return password; }
+
+    static LoginPacket decode(const std::vector<char>&);
+    void encode(std::vector<char>&);
 
 private:
     std::string username;

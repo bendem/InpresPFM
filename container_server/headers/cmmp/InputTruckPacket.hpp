@@ -3,14 +3,22 @@
 
 #include <string>
 
-class InputTruckPacket {
+#include "cmmp/PacketId.hpp"
+#include "protocol/Packet.hpp"
+
+class InputTruckPacket : public Packet<InputTruckPacket> {
 
 public:
     InputTruckPacket(const std::string& license, const std::string& container_id)
-            : license(license), containerId(container_id) {}
+        : Packet(PacketId::InputTruck),
+          license(license),
+          containerId(container_id) {}
 
     const std::string& getLicense() const { return license; }
     const std::string& getContainerId() const {  return containerId;  }
+
+    static InputTruckPacket decode(const std::vector<char>&);
+    void encode(std::vector<char>&);
 
 private:
     std::string license;

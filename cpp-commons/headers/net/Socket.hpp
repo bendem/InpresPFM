@@ -12,6 +12,9 @@
 
 #include "net/IOError.hpp"
 
+
+// TODO Move bind to method (not used for clients)
+// TODO connect method for clients
 class Socket {
 
 public:
@@ -19,7 +22,7 @@ public:
     Socket(unsigned short port, std::string bindHost);
     ~Socket();
 
-    Socket& listen(int);
+    Socket& listen(int = SOMAXCONN);
 
     Socket accept();
 
