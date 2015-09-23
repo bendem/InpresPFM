@@ -115,12 +115,13 @@ std::vector<char> Socket::read(unsigned int max) {
     this->checkOpen();
 
     std::vector<char> result;
-    char c[max];
-    long len = recv(this->handle, &c, max, 0);
+    char* c = new char[max];
+    long len = recv(this->handle, c, max, 0);
 
     if(len == 0) {
         this->closed = true;
     } else if(len == -1) {
+        delete c;
         this->error("Failed to read " + std::to_string(max) + " bytes");
     }
 
@@ -128,6 +129,8 @@ std::vector<char> Socket::read(unsigned int max) {
     for(long i = 0; i < len; ++i) {
         result.push_back(c[i]);
     }
+
+    delete c;
 
     return result;
 }

@@ -7,19 +7,22 @@
 
 int main(int argc, char** argv) {
     unsigned short port = 3069;
-    if(argc < 2) {
-        port = stou(argv[1]);
+    std::cout << "hey" << std::endl;
+    if(argc >= 2) {
+        port = atoi(argv[1]);
     }
 
-    ProtocolHandler<CMMPTranslator> proto(CMMPTranslator());
+    CMMPTranslator translator;
+    ProtocolHandler<CMMPTranslator, PacketId> proto(translator);
     LoginPacket::registerHandler([](LoginPacket p) {
         std::cout << p.getUsername() << " logged in" << std::endl;
     });
 
     Socket s;
     s.bind(port);
+    Socket socket = s.accept();
 
-    proto.read
+    proto.read(socket);
 
     /*
     ProtocolHandler<CMMPTranslator> proto(CMMPTranslator());

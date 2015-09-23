@@ -1,6 +1,7 @@
 #ifndef CONTAINER_SERVER_SOCKET_HPP
 #define CONTAINER_SERVER_SOCKET_HPP
 
+#include <array>
 #include <cstring>
 #include <string>
 #include <vector>

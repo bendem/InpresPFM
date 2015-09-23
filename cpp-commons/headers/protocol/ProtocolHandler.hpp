@@ -8,17 +8,18 @@
 
 #include "net/Socket.hpp"
 
-template<class Translator>
+template<class Translator, class Id>
 class ProtocolHandler {
 
 public:
-    ProtocolHandler(const Translator& translator) : translator(translator) {}
+    ProtocolHandler(const Translator& translator) : translator(translator) {
+        static_assert(sizeof(Id) == 1, "Can only use ProtocolHandler with 1 byte ids");
+    }
+
+    void read(Socket&);
 
     template<class T>
-    T read(Socket&);
-
-    template<class T>
-    ProtocolHandler<Translator>& write(Socket&, T&);
+    ProtocolHandler<Translator, Id>& write(Socket&, T&);
 
 private:
     Translator translator;
@@ -29,18 +30,17 @@ private:
 
 };
 
-template<class Translator>
-const char ProtocolHandler<Translator>::FRAME_END = 0x42;
+template<class Translator, class Id>
+const char ProtocolHandler<Translator, Id>::FRAME_END = 0x42;
 
-template<class Translator>
-template<class T>
-T ProtocolHandler<Translator>::read(Socket& socket) {
-    char id;
+template<class Translator, class Id>
+void ProtocolHandler<Translator, Id>::read(Socket& socket) {
+    Id id;
     uint32_t len;
     std::vector<char> v(4);
 
     socket.accumulate(4, v);
-    id = v[0];
+    id = (Id) v[0];
     len = this->parseLength(++v.begin()) + 1; // + 1 => end frame marquer
 
     v.clear();
@@ -52,12 +52,12 @@ T ProtocolHandler<Translator>::read(Socket& socket) {
     }
     v.pop_back();
 
-    return this->translator.decode(id, v);
+    this->translator.decode(id, v);
 }
 
-template<class Translator>
+template<class Translator, class Id>
 template<class T>
-ProtocolHandler<Translator>& ProtocolHandler<Translator>::write(Socket& socket, T& item) {
+ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& socket, T& item) {
     std::vector<char> v(5, 0); // Reserve 5 places for the id and the length
 
     v[0] = item.getId();
@@ -77,8 +77,8 @@ ProtocolHandler<Translator>& ProtocolHandler<Translator>::write(Socket& socket, 
     return *this;
 }
 
-template<class Translator>
-uint32_t ProtocolHandler<Translator>::parseLength(std::vector<char>::const_iterator iterator) {
+template<class Translator, class Id>
+uint32_t ProtocolHandler<Translator, Id>::parseLength(std::vector<char>::const_iterator iterator) {
     return *reinterpret_cast<uint32_t*>(&iterator);
 }
 

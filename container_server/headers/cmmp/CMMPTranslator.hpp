@@ -15,31 +15,36 @@ class CMMPTranslator {
 public:
     CMMPTranslator() {}
 
-    template<class T>
-    T decode(PacketId id, const std::vector<char>&);
+    void decode(PacketId id, const std::vector<char>&);
 
     template<class T>
     void encode(const T& item, std::vector<char>&);
 
 };
 
-template<class T>
-T CMMPTranslator::decode(PacketId id, const std::vector<char>& v) {
+void CMMPTranslator::decode(PacketId id, const std::vector<char>& v) {
     switch(id) {
         case PacketId::Login:
-            return LoginPacket::decode(v);
+            LoginPacket::decode(v).handle();
+            break;
         case PacketId::InputTruck:
-            return InputTruckPacket::decode(v);
+            InputTruckPacket::decode(v).handle();
+            break;
         case PacketId::InputDone:
-            return InputDonePacket::decode(v);
+            InputDonePacket::decode(v).handle();
+            break;
         case PacketId::OutputReady:
-            return OutputReadyPacket::decode(v);
+            OutputReadyPacket::decode(v).handle();
+            break;
         case PacketId::OutputOne:
-            return OutputOnePacket::decode(v);
+            OutputOnePacket::decode(v).handle();
+            break;
         case PacketId::OutputDone:
-            return OutputDonePacket::decode(v);
+            OutputDonePacket::decode(v).handle();
+            break;
         case PacketId::Logout:
-            return LogoutPacket::decode(v);
+            LogoutPacket::decode(v).handle();
+            break;
     }
 
     throw std::runtime_error("Invalid packet id"); // TODO Custom exception
