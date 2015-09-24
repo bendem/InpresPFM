@@ -11,6 +11,8 @@
 
 #include "net/Socket.hpp"
 
+#include "protocol/ProtocolError.hpp"
+
 template<class Translator, class Id>
 class ProtocolHandler {
 
@@ -32,7 +34,7 @@ private:
 
     static const char FRAME_END;
 
-    static uint32_t parseLength(std::vector<char>::const_iterator);
+    static uint32_t parseLength(char*);
 
 };
 
@@ -45,34 +47,30 @@ void ProtocolHandler<Translator, Id>::read(Socket& socket) {
     uint32_t len;
     std::vector<char> v;
 
-    while(!closed) {
-        socket.accumulate(5, v);
-        id = (Id) v[0];
-        len = this->parseLength(++v.begin()) + 1; // + 1 => end frame marquer
+    socket.accumulate(5, v);
+    id = (Id) v[0];
+    len = this->parseLength(&v[1]) + 1; // + 1 => end frame marquer
 
-        std::cerr << "id:" << id << ":len:" << len << ":read:" << v.size() << " { ";
-        for (char c : v) {
-            std::cerr << "0x" << std::hex << (int) c << ' ';
-        }
-        std::cerr << '}' << std::endl;
-
-        if(len < 1) {
-            std::cerr << "Invalid length" << std::endl;
-            continue;
-        }
-
-        v.clear();
-        v.reserve(len);
-        socket.accumulate(len, v);
-
-        if (v.back() != FRAME_END) {
-            throw std::runtime_error("Invalid frame"); // TODO Custom exception
-        }
-        v.pop_back();
-
-        this->translator.decode(id, v);
-        v.clear();
+    std::cerr << "id:" << id << ":len:" << len << ":read:" << v.size() << " { ";
+    for (char c : v) {
+        std::cerr << "0x" << std::hex << (int) c << ' ';
     }
+    std::cerr << '}' << std::endl;
+
+    if(len < 1) {
+        throw ProtocolError("Invalid length: " + std::to_string(len));
+    }
+
+    v.clear();
+    v.reserve(len);
+    socket.accumulate(len, v);
+
+    if (v.back() != FRAME_END) {
+        throw ProtocolError("Invalid frame end");
+    }
+    v.pop_back();
+
+    this->translator.decode(id, v);
 }
 
 template<class Translator, class Id>
@@ -92,7 +90,6 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
     v[4] = bytes[3];
 
     v.push_back(FRAME_END);
-    std::cout << "1" << std::endl;
 
     std::cerr << "id:" << (int) v[0] << ":len:" << len << ":written:" << v.size() << " { ";
     for(char c : v) {
@@ -106,8 +103,8 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
 }
 
 template<class Translator, class Id>
-uint32_t ProtocolHandler<Translator, Id>::parseLength(std::vector<char>::const_iterator iterator) {
-    return *reinterpret_cast<const uint32_t*>(&*iterator);
+uint32_t ProtocolHandler<Translator, Id>::parseLength(char* c) {
+    return *reinterpret_cast<const uint32_t*>(c);
 }
 
 #endif //CPP_COMMONS_PROTOCOLHANDLER_HPP
