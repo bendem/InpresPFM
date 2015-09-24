@@ -18,8 +18,35 @@ int main(int argc, char** argv) {
     CMMPTranslator translator;
     ProtocolHandler<CMMPTranslator, PacketId> proto(translator);
 
-    LogoutPacket p("bendem", "supersecurepassword");
-    proto.write(s, p);
+    LoginResponsePacket::registerHandler([](LoginResponsePacket p) {
+        std::cout << "received: " << (int) p.getId() << std::endl;
+    });
+    InputTruckResponsePacket::registerHandler([](InputTruckResponsePacket p) {
+        std::cout << "received: " << (int) p.getId() << std::endl;
+    });
+    InputDoneResponsePacket::registerHandler([](InputDoneResponsePacket p) {
+        std::cout << "received: " << (int) p.getId() << std::endl;
+    });
+    OutputReadyResponsePacket::registerHandler([](OutputReadyResponsePacket p) {
+        std::cout << "received: " << (int) p.getId() << std::endl;
+    });
+    OutputOneResponsePacket::registerHandler([](OutputOneResponsePacket p) {
+        std::cout << "received: " << (int) p.getId() << std::endl;
+    });
+    OutputDoneResponsePacket::registerHandler([](OutputDoneResponsePacket p) {
+        std::cout << "received: " << (int) p.getId() << std::endl;
+    });
+    LogoutResponsePacket::registerHandler([](LogoutResponsePacket p) {
+        std::cout << "received: " << (int) p.getId() << std::endl;
+    });
+
+    proto.write(s, LoginPacket("bendem", "supersecurepassword"));
+    proto.write(s, InputTruckPacket("license", "container-id"));
+    proto.write(s, InputDonePacket(true, 1.2));
+    proto.write(s, OutputReadyPacket("license", "destination", 3));
+    proto.write(s, OutputOnePacket("cont-id"));
+    proto.write(s, OutputDonePacket("contain-id", 3));
+    proto.write(s, LogoutPacket("bendem", "supersecurepassword"));
 
     using namespace std::chrono;
     std::this_thread::sleep_for(std::chrono::seconds(2));

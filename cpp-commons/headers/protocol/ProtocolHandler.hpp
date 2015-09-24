@@ -24,7 +24,7 @@ public:
     void read(Socket&);
 
     template<class T>
-    ProtocolHandler<Translator, Id>& write(Socket&, T&);
+    ProtocolHandler<Translator, Id>& write(Socket&, const T&);
 
     void close() { closed = true; }
 
@@ -55,7 +55,7 @@ void ProtocolHandler<Translator, Id>::read(Socket& socket) {
     for (char c : v) {
         std::cerr << "0x" << std::hex << (int) c << ' ';
     }
-    std::cerr << '}' << std::endl;
+    std::cerr << std::dec << '}' << std::endl;
 
     if(len < 1) {
         throw ProtocolError("Invalid length: " + std::to_string(len));
@@ -75,7 +75,7 @@ void ProtocolHandler<Translator, Id>::read(Socket& socket) {
 
 template<class Translator, class Id>
 template<class T>
-ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& socket, T& item) {
+ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& socket, const T& item) {
     std::vector<char> v(5, 0); // Reserve 5 places for the id and the length
 
     v[0] = item.getId();
@@ -95,7 +95,7 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
     for(char c : v) {
         std::cerr << "0x" << std::hex << (int) c << ' ';
     }
-    std::cerr << '}' << std::endl;
+    std::cerr << std::dec << '}' << std::endl;
 
     socket.write(v);
 
