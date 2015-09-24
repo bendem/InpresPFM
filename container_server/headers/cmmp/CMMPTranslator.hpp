@@ -45,9 +45,10 @@ void CMMPTranslator::decode(PacketId id, const std::vector<char>& v) {
         case PacketId::Logout:
             LogoutPacket::decode(v).handle();
             break;
+        default:
+            throw std::runtime_error("Invalid packet id"); // TODO Custom exception
     }
 
-    throw std::runtime_error("Invalid packet id"); // TODO Custom exception
 }
 
 template<class T>

@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include <atomic>
 #include <functional>
 #include <map>
 #include <queue>
@@ -14,7 +15,7 @@ template<class Translator, class Id>
 class ProtocolHandler {
 
 public:
-    ProtocolHandler(const Translator& translator) : translator(translator) {
+    ProtocolHandler(const Translator& translator) : translator(translator), closed(false) {
         static_assert(sizeof(Id) == 1, "Can only use ProtocolHandler with 1 byte ids");
     }
 
@@ -23,8 +24,11 @@ public:
     template<class T>
     ProtocolHandler<Translator, Id>& write(Socket&, T&);
 
+    void close() { closed = true; }
+
 private:
     Translator translator;
+    std::atomic<bool> closed;
 
     static const char FRAME_END;
 
@@ -39,28 +43,36 @@ template<class Translator, class Id>
 void ProtocolHandler<Translator, Id>::read(Socket& socket) {
     Id id;
     uint32_t len;
-    std::vector<char> v(5);
+    std::vector<char> v;
 
-    socket.accumulate(5, v);
-    id = (Id) v[0];
-    len = this->parseLength(++v.begin()) + 1; // + 1 => end frame marquer
+    while(!closed) {
+        socket.accumulate(5, v);
+        id = (Id) v[0];
+        len = this->parseLength(++v.begin()) + 1; // + 1 => end frame marquer
 
-    std::cerr << id << ':' << len << ':' << v.size() << " { ";
-    for(char c : v) {
-        std::cerr << "0x" << std::hex << (int) c << ' ';
+        std::cerr << "id:" << id << ":len:" << len << ":read:" << v.size() << " { ";
+        for (char c : v) {
+            std::cerr << "0x" << std::hex << (int) c << ' ';
+        }
+        std::cerr << '}' << std::endl;
+
+        if(len < 1) {
+            std::cerr << "Invalid length" << std::endl;
+            continue;
+        }
+
+        v.clear();
+        v.reserve(len);
+        socket.accumulate(len, v);
+
+        if (v.back() != FRAME_END) {
+            throw std::runtime_error("Invalid frame"); // TODO Custom exception
+        }
+        v.pop_back();
+
+        this->translator.decode(id, v);
+        v.clear();
     }
-    std::cerr << '}' << std::endl;
-
-    v.clear();
-    v.reserve(len);
-    socket.accumulate(len, v);
-
-    if(v.back() != FRAME_END) {
-        throw std::runtime_error("Invalid frame"); // TODO Custom exception
-    }
-    v.pop_back();
-
-    this->translator.decode(id, v);
 }
 
 template<class Translator, class Id>
@@ -82,7 +94,7 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
     v.push_back(FRAME_END);
     std::cout << "1" << std::endl;
 
-    std::cerr << (int) v[0] << ':' << len << ':' << v.size() << " { ";
+    std::cerr << "id:" << (int) v[0] << ":len:" << len << ":written:" << v.size() << " { ";
     for(char c : v) {
         std::cerr << "0x" << std::hex << (int) c << ' ';
     }

@@ -11,19 +11,22 @@ int main(int argc, char** argv) {
 
     CMMPTranslator translator;
     ProtocolHandler<CMMPTranslator, PacketId> proto(translator);
+
     LoginPacket::registerHandler([](LoginPacket p) {
         std::cout << p.getUsername() << " logged in with " << p.getPassword() << std::endl;
     });
-    LogoutPacket::registerHandler([](LogoutPacket p) {
-        std::cout << p.getUsername() << " logged in with " << p.getPassword() << std::endl;
+
+    LogoutPacket::registerHandler([&proto](LogoutPacket p) {
+        std::cout << p.getUsername() << " logged out with " << p.getPassword() << std::endl;
+        proto.close();
     });
 
     Socket s;
     std::cout << "socket" << std::endl;
     s.bind(port);
-    std::cout << "bound" << std::endl;
+    std::cout << "bound: " << s.getHandle() << std::endl;
     Socket socket = s.accept();
-    std::cout << "accepted" << std::endl;
+    std::cout << "accepted: " << socket.getHandle() << std::endl;
 
     proto.read(socket);
     std::cout << "read" << std::endl;
