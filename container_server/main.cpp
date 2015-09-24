@@ -1,9 +1,26 @@
 #include <iostream>
+#include <threading/ThreadPool.hpp>
 
 #include "cmmp/CMMPTranslator.hpp"
 #include "protocol/ProtocolHandler.hpp"
 
 int main(int argc, char** argv) {
+    ThreadPool threadPool(2);
+    std::cout << "hi" << std::endl;
+
+    threadPool.submit([]() {
+        for(unsigned i = 0; i < 10; ++i) {
+            std::cout << "hey" << std::endl;
+        }
+    });
+
+    threadPool.submit([]() {
+        for(unsigned i = 0; i < 10; ++i) {
+            std::cout << "oh" << std::endl;
+        }
+    });
+
+    /*
     unsigned short port = 3069;
     if(argc >= 2) {
         port = atoi(argv[1]);
