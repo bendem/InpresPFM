@@ -2,7 +2,7 @@
 
 ThreadPool::ThreadPool(unsigned int count) : closed(false) {
     for(unsigned int i = 0; i < count; ++i) {
-        this->threads.push_back(std::thread([this]() {
+        this->threads.push_back(std::thread([this] {
             while(!this->closed) {
                 std::unique_lock<std::mutex> lock(this->tasksMutex);
                 this->tasksCondVar.wait(lock, [this] { return !this->tasks.empty(); });

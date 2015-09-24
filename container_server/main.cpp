@@ -8,13 +8,13 @@ int main(int argc, char** argv) {
     ThreadPool threadPool(2);
     std::cout << "hi" << std::endl;
 
-    threadPool.submit([]() {
+    threadPool.submit([] {
         for(unsigned i = 0; i < 10; ++i) {
             std::cout << "hey" << std::endl;
         }
     });
 
-    threadPool.submit([]() {
+    threadPool.submit([] {
         for(unsigned i = 0; i < 10; ++i) {
             std::cout << "oh" << std::endl;
         }
