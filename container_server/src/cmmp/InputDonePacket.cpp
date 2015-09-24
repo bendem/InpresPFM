@@ -10,5 +10,7 @@ InputDonePacket InputDonePacket::decode(const std::vector<char>& vector) {
 
 void InputDonePacket::encode(std::vector<char>& v) const {
     writePrimitive(v, ok);
-    writePrimitive(v, weight);
+    if(ok) {
+        writePrimitive(v, weight);
+    }
 }
