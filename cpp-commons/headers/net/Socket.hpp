@@ -16,8 +16,6 @@
 
 #include "net/IOError.hpp"
 
-// TODO Move bind to method (not used for clients)
-// TODO connect method for clients
 class Socket {
 
 public:

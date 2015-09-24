@@ -16,6 +16,7 @@
 #include "cmmp/InputDoneResponsePacket.hpp"
 #include "cmmp/LoginResponsePacket.hpp"
 #include "cmmp/InputTruckResponsePacket.hpp"
+#include "protocol/ProtocolError.hpp"
 
 class CMMPTranslator {
 
@@ -75,7 +76,7 @@ void CMMPTranslator::decode(PacketId id, const std::vector<char>& v) {
             return;
     }
 
-    throw std::runtime_error("Invalid packet id"); // TODO Custom exception
+    throw ProtocolError("Invalid packet id");
 }
 
 template<class T>
