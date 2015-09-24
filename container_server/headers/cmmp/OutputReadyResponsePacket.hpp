@@ -9,16 +9,15 @@
 class OutputReadyResponsePacket : public Packet<OutputReadyResponsePacket> {
 
 public:
-    OutputReadyResponsePacket(bool ok, uint32_t size, const std::vector<uint32_t>& containerIds, const std::string& reason)
+    OutputReadyResponsePacket(bool ok, const std::vector<std::string>& containerIds, const std::string& reason)
             : Packet(PacketId::OutputReadyResponse),
               ok(ok),
-              size(size),
               containerIds(containerIds),
               reason(reason) {}
 
     bool isOk() const { return ok; }
-    uint32_t getSize() const { return size; }
-    const std::vector<uint32_t>& getContainerIds() const { return containerIds; }
+    uint32_t getSize() const { return containerIds.size(); }
+    const std::vector<std::string>& getContainerIds() const { return containerIds; }
     const std::string& getReason() const { return reason; }
 
     static OutputReadyResponsePacket decode(const std::vector<char>&);
@@ -26,8 +25,7 @@ public:
 
 private:
     bool ok;
-    uint32_t size;
-    std::vector<uint32_t> containerIds;
+    std::vector<std::string> containerIds;
     std::string reason;
 
 };

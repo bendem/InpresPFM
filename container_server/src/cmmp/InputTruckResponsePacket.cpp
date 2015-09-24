@@ -3,9 +3,18 @@
 InputTruckResponsePacket InputTruckResponsePacket::decode(const std::vector<char>& v) {
     std::vector<char>::const_iterator it = v.begin();
     bool ok = readPrimitive<bool>(it);
-    std::string reason = ok ? "" : readString(it);
-    uint32_t x = ok ? readPrimitive<uint32_t>(it) : 0;
-    uint32_t y = ok ? readPrimitive<uint32_t>(it) : 0;
+    std::string reason;
+    uint32_t x;
+    uint32_t y;
+    if (ok) {
+        reason = "";
+        x = readPrimitive<uint32_t>(it);
+        y = readPrimitive<uint32_t>(it);
+    } else {
+        reason = readString(it);
+        x = 0;
+        y = 0;
+    }
 
     return InputTruckResponsePacket(ok, x, y, reason);
 }

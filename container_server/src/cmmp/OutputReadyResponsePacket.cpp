@@ -5,13 +5,13 @@ OutputReadyResponsePacket OutputReadyResponsePacket::decode(const std::vector<ch
     bool ok = readPrimitive<bool>(it);
     std::string reason = ok ? "" : readString(it);
     uint32_t size = ok ? readPrimitive<uint32_t>(it) : 0;
-    std::vector<uint32_t> containerIds;
+    std::vector<std::string> containerIds;
     if (size) {
         for(uint32_t i = 0; i < size; i++)
-            containerIds.push_back(readPrimitive<uint32_t>(it));
+            containerIds.push_back(readString(it));
     }
 
-    return OutputReadyResponsePacket(ok, size, containerIds, reason);
+    return OutputReadyResponsePacket(ok, containerIds, reason);
 }
 
 void OutputReadyResponsePacket::encode(std::vector<char>& v) const {
@@ -19,7 +19,7 @@ void OutputReadyResponsePacket::encode(std::vector<char>& v) const {
     if(!ok) {
         writeString(v, reason);
     } else {
-        writePrimitive(v, size);
+        writePrimitive<uint32_t>(v, containerIds.size());
         for(auto value : containerIds) writePrimitive(v, value);
     }
 }
