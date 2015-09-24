@@ -27,7 +27,21 @@ set(SOURCE_FILES
     src/cmmp/OutputDonePacket.cpp
     src/cmmp/OutputOnePacket.cpp
     src/cmmp/OutputReadyPacket.cpp
-    src/cmmp/LogoutPacket.cpp)
+    src/cmmp/LogoutPacket.cpp
+    headers/cmmp/LoginResponsePacket.hpp
+    headers/cmmp/InputTruckResponsePacket.hpp
+    headers/cmmp/InputDoneResponsePacket.hpp
+    headers/cmmp/OutputReadyResponsePacket.hpp
+    headers/cmmp/OutputOneResponsePacket.hpp
+    headers/cmmp/OutputDoneResponsePacket.hpp
+    headers/cmmp/LogoutResponsePacket.hpp
+    src/cmmp/LoginResponsePacket.cpp
+    src/cmmp/InputDoneResponsePacket.cpp
+    src/cmmp/InputTruckResponsePacket.cpp
+    src/cmmp/OutputDoneResponsePacket.cpp
+    src/cmmp/OutputOneResponsePacket.cpp
+    src/cmmp/OutputReadyResponsePacket.cpp
+    src/cmmp/LogoutResponsePacket.cpp)
 
 add_subdirectory(../cpp-commons build)
 

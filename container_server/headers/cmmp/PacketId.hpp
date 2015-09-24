@@ -9,6 +9,13 @@ enum PacketId : char {
     OutputOne,
     OutputDone,
     Logout,
+    LoginResponse,
+    InputTruckResponse,
+    InputDoneResponse,
+    OutputReadyResponse,
+    OutputOneResponse,
+    OutputDoneResponse,
+    LogoutResponse,
 };
 
 #endif //CONTAINER_SERVER_PACKETID_HPP
