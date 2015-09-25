@@ -35,37 +35,37 @@ int main(int argc, char** argv) {
     CMMPTranslator translator;
     ProtocolHandler<CMMPTranslator, PacketId> proto(translator);
 
-    LoginPacket::registerHandler([&s, &proto](LoginPacket packet) {
-        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
-        proto.write(s, LoginResponsePacket(false, "bleh"));
-    });
-    InputTruckPacket::registerHandler([&s, &proto](InputTruckPacket packet) {
-        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
-        proto.write(s, InputTruckResponsePacket(false, 0, 0, "heh"));
-    });
-    InputDonePacket::registerHandler([&s, &proto](InputDonePacket packet) {
-        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
-        proto.write(s, InputDoneResponsePacket(true, ""));
-    });
-    OutputReadyPacket::registerHandler([&s, &proto](OutputReadyPacket packet) {
-        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
-        proto.write(s, OutputReadyResponsePacket(true, {"conainer-id", "another-id"}, ""));
-    });
-    OutputOnePacket::registerHandler([&s, &proto](OutputOnePacket packet) {
-        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
-        proto.write(s, OutputOneResponsePacket(true, ""));
-    });
-    OutputDonePacket::registerHandler([&s, &proto](OutputDonePacket packet) {
-        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
-        proto.write(s, OutputDoneResponsePacket(false, "WRONG!"));
-    });
-    LogoutPacket::registerHandler([&s, &proto](LogoutPacket packet) {
-        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
-        proto.write(s, LogoutResponsePacket(true, ""));
-    });
-
     Socket socket = s.accept();
     std::cout << "accepted: " << socket.getHandle() << std::endl;
+
+    LoginPacket::registerHandler([&socket, &proto](LoginPacket packet) {
+        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
+        proto.write(socket, LoginResponsePacket(false, "bleh"));
+    });
+    InputTruckPacket::registerHandler([&socket, &proto](InputTruckPacket packet) {
+        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
+        proto.write(socket, InputTruckResponsePacket(false, 0, 0, "heh"));
+    });
+    InputDonePacket::registerHandler([&socket, &proto](InputDonePacket packet) {
+        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
+        proto.write(socket, InputDoneResponsePacket(true, ""));
+    });
+    OutputReadyPacket::registerHandler([&socket, &proto](OutputReadyPacket packet) {
+        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
+        proto.write(socket, OutputReadyResponsePacket(true, {"conainer-id", "another-id"}, ""));
+    });
+    OutputOnePacket::registerHandler([&socket, &proto](OutputOnePacket packet) {
+        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
+        proto.write(socket, OutputOneResponsePacket(true, ""));
+    });
+    OutputDonePacket::registerHandler([&socket, &proto](OutputDonePacket packet) {
+        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
+        proto.write(socket, OutputDoneResponsePacket(false, "WRONG!"));
+    });
+    LogoutPacket::registerHandler([&socket, &proto](LogoutPacket packet) {
+        std::cout << "Received packet: " << (int) packet.getId() << std::endl;
+        proto.write(socket, LogoutResponsePacket(true, ""));
+    });
 
     for(int i = 0; i < 7; ++i) {
         proto.read(socket);
