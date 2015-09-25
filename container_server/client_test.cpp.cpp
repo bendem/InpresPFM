@@ -48,6 +48,10 @@ int main(int argc, char** argv) {
     proto.write(s, OutputDonePacket("contain-id", 3));
     proto.write(s, LogoutPacket("bendem", "supersecurepassword"));
 
+    for(int i = 0; i < 7; ++i) {
+        proto.read(s);
+    }
+
     using namespace std::chrono;
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
