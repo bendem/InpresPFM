@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     });
     InputTruckPacket::registerHandler([&socket, &proto](InputTruckPacket packet) {
         std::cout << "Received packet: " << (int) packet.getId() << std::endl;
-        proto.write(socket, InputTruckResponsePacket(false, 0, 0, "heh"));
+        proto.write(socket, InputTruckResponsePacket(false, std::vector<Container>(), "heh")); // I touched this it probably doesn't work anymore
     });
     InputDonePacket::registerHandler([&socket, &proto](InputDonePacket packet) {
         std::cout << "Received packet: " << (int) packet.getId() << std::endl;

@@ -2,20 +2,26 @@
 
 InputTruckResponsePacket InputTruckResponsePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
+    uint32_t size;
     std::string reason;
-    uint32_t x;
-    uint32_t y;
+    std::vector<Container> containers;
+
     if (ok) {
+        size = readPrimitive<uint32_t>(it);
+        if (size) {
+            for(uint32_t i = 0; i < size; i++)
+                containers.push_back(Container(readString(it),
+                                               readString(it),
+                                               std::make_pair(readPrimitive<uint32_t>(it),
+                                                              readPrimitive<uint32_t>(it)))); // No way this works right ?
+        }
         reason = "";
-        x = readPrimitive<uint32_t>(it);
-        y = readPrimitive<uint32_t>(it);
     } else {
         reason = readString(it);
-        x = 0;
-        y = 0;
+        containers.clear();
     }
 
-    return InputTruckResponsePacket(ok, x, y, reason);
+    return InputTruckResponsePacket(ok, containers, reason);
 }
 
 void InputTruckResponsePacket::encode(std::vector<char>& v) const {
@@ -23,7 +29,12 @@ void InputTruckResponsePacket::encode(std::vector<char>& v) const {
     if(!ok) {
         writeString(v, reason);
     } else {
-        writePrimitive(v, x);
-        writePrimitive(v, y);
+        writePrimitive<uint32_t>(v, containers.size());
+        for(auto cont : containers) {
+            writeString(v, cont.getId());
+            writeString(v, cont.getDestination());
+            writePrimitive(v, cont.getX());
+            writePrimitive(v, cont.getY());
+        }
     }
 }

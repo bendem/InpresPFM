@@ -5,28 +5,26 @@
 
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
+#include "Container.hpp"
 
 class InputTruckResponsePacket : public Packet<InputTruckResponsePacket> {
 
 public:
-    InputTruckResponsePacket(bool ok, uint32_t x, uint32_t y, std::string reason)
+    InputTruckResponsePacket(bool ok, std::vector<Container> containers, std::string reason)
         : Packet(PacketId::InputTruckResponse),
           ok(ok),
-          x(x),
-          y(y),
+          containers(containers),
           reason(reason) {}
 
     bool isOk() const { return ok; }
-    uint32_t getX() const { return x; }
-    uint32_t getY() const { return y; }
+    std::vector<Container> getContainers() const { return containers; }
 
     static InputTruckResponsePacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:
     bool ok;
-    uint32_t x;
-    uint32_t y;
+    std::vector<Container> containers;
     std::string reason;
 
 };
