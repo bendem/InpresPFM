@@ -31,48 +31,49 @@ public:
 };
 
 void CMMPTranslator::decode(PacketId id, const std::vector<char>& v) {
+    std::vector<char>::const_iterator it = v.begin();
     switch(id) {
         case PacketId::Login:
-            LoginPacket::decode(v).handle();
+            LoginPacket::decode(it).handle();
             return;
         case PacketId::InputTruck:
-            InputTruckPacket::decode(v).handle();
+            InputTruckPacket::decode(it).handle();
             return;
         case PacketId::InputDone:
-            InputDonePacket::decode(v).handle();
+            InputDonePacket::decode(it).handle();
             return;
         case PacketId::OutputReady:
-            OutputReadyPacket::decode(v).handle();
+            OutputReadyPacket::decode(it).handle();
             return;
         case PacketId::OutputOne:
-            OutputOnePacket::decode(v).handle();
+            OutputOnePacket::decode(it).handle();
             return;
         case PacketId::OutputDone:
-            OutputDonePacket::decode(v).handle();
+            OutputDonePacket::decode(it).handle();
             return;
         case PacketId::Logout:
-            LogoutPacket::decode(v).handle();
+            LogoutPacket::decode(it).handle();
             return;
         case PacketId::LoginResponse:
-            LoginResponsePacket::decode(v).handle();
+            LoginResponsePacket::decode(it).handle();
             return;
         case PacketId::InputTruckResponse:
-            InputTruckResponsePacket::decode(v).handle();
+            InputTruckResponsePacket::decode(it).handle();
             return;
         case PacketId::InputDoneResponse:
-            InputDoneResponsePacket::decode(v).handle();
+            InputDoneResponsePacket::decode(it).handle();
             return;
         case PacketId::OutputReadyResponse:
-            OutputReadyResponsePacket::decode(v).handle();
+            OutputReadyResponsePacket::decode(it).handle();
             return;
         case PacketId::OutputOneResponse:
-            OutputOneResponsePacket::decode(v).handle();
+            OutputOneResponsePacket::decode(it).handle();
             return;
         case PacketId::OutputDoneResponse:
-            OutputDoneResponsePacket::decode(v).handle();
+            OutputDoneResponsePacket::decode(it).handle();
             return;
         case PacketId::LogoutResponse:
-            LogoutResponsePacket::decode(v).handle();
+            LogoutResponsePacket::decode(it).handle();
             return;
     }
 

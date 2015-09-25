@@ -1,7 +1,6 @@
 #include "cmmp/InputTruckPacket.hpp"
 
-InputTruckPacket InputTruckPacket::decode(const std::vector<char>& v) {
-    std::vector<char>::const_iterator it = v.begin();
+InputTruckPacket InputTruckPacket::decode(std::vector<char>::const_iterator& it) {
     std::string license = readString(it);
     std::string container_id = readString(it);
 

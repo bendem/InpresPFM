@@ -15,7 +15,7 @@ public:
     bool isOk() const { return ok; }
     float getWeight() const { return weight; }
 
-    static InputDonePacket decode(const std::vector<char>&);
+    static InputDonePacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:

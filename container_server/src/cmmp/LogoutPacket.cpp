@@ -1,7 +1,6 @@
 #include "cmmp/LogoutPacket.hpp"
 
-LogoutPacket LogoutPacket::decode(const std::vector<char>& v) {
-    std::vector<char>::const_iterator it = v.begin();
+LogoutPacket LogoutPacket::decode(std::vector<char>::const_iterator& it) {
     std::string username = readString(it);
     std::string password = readString(it);
 

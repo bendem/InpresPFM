@@ -1,7 +1,6 @@
 #include "cmmp/InputDonePacket.hpp"
 
-InputDonePacket InputDonePacket::decode(const std::vector<char>& vector) {
-    std::vector<char>::const_iterator it = vector.begin();
+InputDonePacket InputDonePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
     float weight = ok ? readPrimitive<float>(it) : 0;
 

@@ -1,7 +1,6 @@
 #include "cmmp/LoginResponsePacket.hpp"
 
-LoginResponsePacket LoginResponsePacket::decode(const std::vector<char>& v) {
-    std::vector<char>::const_iterator it = v.begin();
+LoginResponsePacket LoginResponsePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
     std::string reason = ok ? "" : readString(it);
 

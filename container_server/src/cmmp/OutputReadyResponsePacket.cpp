@@ -1,7 +1,6 @@
 #include "cmmp/OutputReadyResponsePacket.hpp"
 
-OutputReadyResponsePacket OutputReadyResponsePacket::decode(const std::vector<char>& v) {
-    std::vector<char>::const_iterator it = v.begin();
+OutputReadyResponsePacket OutputReadyResponsePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
     std::string reason = ok ? "" : readString(it);
     uint32_t size = ok ? readPrimitive<uint32_t>(it) : 0;

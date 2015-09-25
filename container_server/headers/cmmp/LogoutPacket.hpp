@@ -17,7 +17,7 @@ public:
     const std::string& getUsername() const { return username; }
     const std::string& getPassword() const { return password; }
 
-    static LogoutPacket decode(const std::vector<char>&);
+    static LogoutPacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:

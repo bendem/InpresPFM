@@ -19,7 +19,7 @@ public:
     const std::string& getDestination() const { return destination; }
     uint32_t getCapacity() const { return capacity; }
 
-    static OutputReadyPacket decode(const std::vector<char>&);
+    static OutputReadyPacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:

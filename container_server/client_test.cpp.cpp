@@ -1,5 +1,4 @@
 #include <iostream>
-#include <chrono>
 #include <thread>
 
 #include "cmmp/CMMPTranslator.hpp"
@@ -51,9 +50,6 @@ int main(int argc, char** argv) {
     for(int i = 0; i < 7; ++i) {
         proto.read(s);
     }
-
-    using namespace std::chrono;
-    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     return 0;
 }

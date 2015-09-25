@@ -1,7 +1,6 @@
 #include "cmmp/InputTruckResponsePacket.hpp"
 
-InputTruckResponsePacket InputTruckResponsePacket::decode(const std::vector<char>& v) {
-    std::vector<char>::const_iterator it = v.begin();
+InputTruckResponsePacket InputTruckResponsePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
     std::string reason;
     uint32_t x;

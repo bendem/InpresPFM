@@ -20,7 +20,7 @@ public:
     uint32_t getX() const { return x; }
     uint32_t getY() const { return y; }
 
-    static InputTruckResponsePacket decode(const std::vector<char>&);
+    static InputTruckResponsePacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:

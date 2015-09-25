@@ -15,7 +15,7 @@ public:
 
     const std::string& getContainerId() const { return containerId; }
 
-    static OutputOnePacket decode(const std::vector<char>&);
+    static OutputOnePacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:

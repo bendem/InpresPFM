@@ -1,7 +1,6 @@
 #include "cmmp/InputDoneResponsePacket.hpp"
 
-InputDoneResponsePacket InputDoneResponsePacket::decode(const std::vector<char>& vector) {
-    std::vector<char>::const_iterator it = vector.begin();
+InputDoneResponsePacket InputDoneResponsePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
     std::string reason = ok ? "" : readString(it);
 

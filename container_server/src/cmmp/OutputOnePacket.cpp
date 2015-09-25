@@ -1,8 +1,6 @@
 #include "cmmp/OutputOnePacket.hpp"
 
-
-OutputOnePacket OutputOnePacket::decode(const std::vector<char>& v) {
-    std::vector<char>::const_iterator it = v.begin();
+OutputOnePacket OutputOnePacket::decode(std::vector<char>::const_iterator& it) {
     std::string container_id = readString(it);
 
     return OutputOnePacket(container_id);

@@ -17,7 +17,7 @@ public:
     bool isOk() const { return ok; }
     const std::string& getReason() const { return reason; }
 
-    static LogoutResponsePacket decode(const std::vector<char>&);
+    static LogoutResponsePacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:
