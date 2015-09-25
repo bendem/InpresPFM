@@ -11,10 +11,14 @@ class ThreadPool {
 
 public:
     ThreadPool(unsigned int count);
+    ThreadPool(const ThreadPool&) = delete;
+    ThreadPool(ThreadPool&&) = delete;
     ~ThreadPool() { this->close(); }
 
     ThreadPool& submit(std::function<void()>);
     void close();
+
+    ThreadPool& operator=(const ThreadPool&) = delete;
 
 private:
     std::vector<std::thread> threads;
