@@ -21,8 +21,8 @@ class Socket {
 public:
     Socket()
         : handle(new int, [](int* handle) {
-            std::cout << "closing " << *handle << std::endl;
-            if(*handle >= 0) ::close(*handle);
+            std::cout << "closing " << *handle << std::endl; // @Logger
+        if(*handle >= 0) ::close(*handle);
             delete handle;
         }) {}
 

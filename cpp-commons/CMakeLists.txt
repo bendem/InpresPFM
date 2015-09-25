@@ -17,7 +17,11 @@ set(SOURCE_FILES
     headers/net/IOError.hpp
     headers/protocol/ProtocolHandler.hpp
     headers/protocol/Packet.hpp
-    headers/protocol/ProtocolError.hpp headers/threading/ThreadPool.hpp src/threading/ThreadPool.cpp)
+    headers/protocol/ProtocolError.hpp
+    headers/threading/ThreadPool.hpp
+    src/threading/ThreadPool.cpp
+    headers/net/Selector.hpp
+    src/net/Selector.cpp)
 
 add_library(cpp_commons ${SOURCE_FILES})
 target_link_libraries(cpp_commons ${CMAKE_THREAD_LIBS_INIT})

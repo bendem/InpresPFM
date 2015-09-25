@@ -46,6 +46,11 @@ Socket& Socket::setupSocket(const sockaddr_in addr, bool bind) {
         this->error("Failed to create socket", errno);
     }
 
+    int yes = 1;
+    if(setsockopt(*this->handle, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        this->error("Failed to set socket option", errno);
+    }
+
     if(bind) {
         if(::bind(*this->handle, &this->addr, this->addrLen) == -1) {
             this->error("Could not bind socket", errno);

@@ -51,6 +51,7 @@ void ProtocolHandler<Translator, Id>::read(Socket& socket) {
     id = (Id) v[0];
     len = this->parseLength(&v[1]) + 1; // + 1 => end frame marquer
 
+    // @Logger
     std::cerr << "id:" << id << ":len:" << len << ":read:" << v.size() << " { ";
     for (char c : v) {
         std::cerr << "0x" << std::hex << (int) c << ' ';
@@ -91,6 +92,7 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
 
     v.push_back(FRAME_END);
 
+    // @Logger
     std::cerr << "id:" << (int) v[0] << ":len:" << len << ":written:" << v.size() << " { ";
     for(char c : v) {
         std::cerr << "0x" << std::hex << (int) c << ' ';
