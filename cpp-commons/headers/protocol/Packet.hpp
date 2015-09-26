@@ -3,7 +3,6 @@
 
 #include <functional>
 #include <vector>
-#include <iostream>
 
 template<class P>
 using PacketHandler = std::function<void(P)>;

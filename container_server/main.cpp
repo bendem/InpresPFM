@@ -1,7 +1,4 @@
-#include <iostream>
-
 #include "ContainerServer.hpp"
-#include "utils/Logger.hpp"
 
 int main(int argc, char** argv) {
     unsigned short port = 3069;

@@ -22,8 +22,7 @@ ContainerServer::~ContainerServer() {
 
 ContainerServer& ContainerServer::init() {
     //auto debugHandler = [](const Packet<T>& p) {
-    //    // @Logger
-    //    std::cout << "Received packet: " << std::hex << (int) p.getId() << std::dec << std::endl;
+    //    LOG << Logger::Debug << "Received packet: " << (int) p.getId();
     //};
 
     //LoginPacket::registerHandler(debugHandler);
@@ -43,7 +42,7 @@ ContainerServer& ContainerServer::listen() {
             std::lock_guard<std::mutex>(this->connectionsMutex);
             connections.push_back(socket.accept());
         } catch(IOError e) {
-            std::cerr << e.what() << std::endl; // @Logger
+            LOG << Logger::Error << "IOError: " << e.what();
             continue;
         }
 

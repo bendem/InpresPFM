@@ -1,8 +1,6 @@
 #ifndef CPP_COMMONS_PROTOCOLHANDLER_HPP
 #define CPP_COMMONS_PROTOCOLHANDLER_HPP
 
-#include <iostream>
-
 #include <atomic>
 #include <functional>
 #include <map>
@@ -10,6 +8,7 @@
 #include <vector>
 
 #include "net/Socket.hpp"
+#include "utils/Logger.hpp"
 
 #include "protocol/ProtocolError.hpp"
 
@@ -51,12 +50,7 @@ void ProtocolHandler<Translator, Id>::read(Socket& socket) {
     id = (Id) v[0];
     len = this->parseLength(&v[1]) + 1; // + 1 => end frame marquer
 
-    // @Logger
-    std::cerr << "id:" << id << ":len:" << len << ":read:" << v.size() << " { ";
-    for (char c : v) {
-        std::cerr << "0x" << std::hex << (int) c << ' ';
-    }
-    std::cerr << std::dec << '}' << std::endl;
+    LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len << ":read:" << v.size();
 
     if(len < 1) {
         throw ProtocolError("Invalid length: " + std::to_string(len));
@@ -92,12 +86,7 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
 
     v.push_back(FRAME_END);
 
-    // @Logger
-    std::cerr << "id:" << (int) v[0] << ":len:" << len << ":written:" << v.size() << " { ";
-    for(char c : v) {
-        std::cerr << "0x" << std::hex << (int) c << ' ';
-    }
-    std::cerr << std::dec << '}' << std::endl;
+    LOG << Logger::Debug << "id:" << (int) v[0] << ":len:" << len << ":written:" << v.size();
 
     socket.write(v);
 

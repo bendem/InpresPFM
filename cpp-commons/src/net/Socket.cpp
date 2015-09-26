@@ -75,7 +75,7 @@ Socket Socket::accept() {
     if((*s.handle = ::accept(*this->handle, &s.addr, &s.addrLen)) < 0) {
         if(errno == EINTR) {
             // Got interrupted
-            std::cerr << "Got interrupted on accept" << std::endl; // @Logger
+            LOG << Logger::Debug << "Got interrupted on accept";
             return this->accept();
         }
         this->error("Could not accept", errno);

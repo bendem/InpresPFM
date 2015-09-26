@@ -1,8 +1,6 @@
 #ifndef CONTAINER_SERVER_SOCKET_HPP
 #define CONTAINER_SERVER_SOCKET_HPP
 
-#include <iostream>
-
 #include <array>
 #include <cstring>
 #include <memory>
@@ -15,13 +13,14 @@
 #include <sys/socket.h>
 
 #include "net/IOError.hpp"
+#include "utils/Logger.hpp"
 
 class Socket {
 
 public:
     Socket()
         : handle(new int, [](int* handle) {
-              std::cout << "closing " << *handle << std::endl; // @Logger
+              LOG << "closing socket " << *handle;
               if(*handle >= 0) ::close(*handle);
               delete handle;
           }) {}
