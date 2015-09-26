@@ -42,11 +42,12 @@ set(SOURCE_FILES
     src/cmmp/OutputOneResponsePacket.cpp
     src/cmmp/OutputReadyResponsePacket.cpp
     src/cmmp/LogoutResponsePacket.cpp
-    headers/Container.hpp)
+    headers/Container.hpp
+    src/cmmp/CMMPTranslator.cpp)
 
 add_subdirectory(../cpp-commons build)
 
-add_executable(container_server main.cpp ${SOURCE_FILES} headers/utils/Logger.hpp src/utils/Logger.cpp)
+add_executable(container_server main.cpp ${SOURCE_FILES})
 target_link_libraries(container_server cpp_commons)
 
 add_executable(container_server_test_application client_test.cpp ${SOURCE_FILES})
