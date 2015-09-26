@@ -13,10 +13,10 @@ public:
     Selector& addSocket(Socket&);
     Selector& removeSocket(Socket&);
 
-    std::vector<std::weak_ptr<Socket>> select();
+    std::vector<Socket*> select();
 
 private:
-    std::map<int, std::weak_ptr<Socket>> sockets;
+    std::map<int, Socket*> sockets; // weak pointers
 
 };
 

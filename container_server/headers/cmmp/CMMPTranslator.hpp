@@ -21,8 +21,6 @@
 class CMMPTranslator {
 
 public:
-    CMMPTranslator() {}
-
     void decode(PacketId id, const std::vector<char>&);
 
     template<class T>
