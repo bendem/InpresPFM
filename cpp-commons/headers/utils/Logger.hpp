@@ -6,12 +6,12 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#define LOG_INSTANCE _log
-#define LOG LoggerStream(LOG_INSTANCE, Logger::Info, __FILE__, __LINE__)
+#define LOG LoggerStream(Logger::instance, Logger::Info, __FILE__, __LINE__)
 
 class LoggerStream;
 
@@ -28,6 +28,8 @@ public:
 
     void addHandler(Handler);
     Logger& clearHandlers();
+
+    static Logger instance;
 
     static std::string levelToName(Level);
     static void consoleHandler(Level, const std::string&, const std::string&, int, std::tm*);
@@ -57,8 +59,6 @@ private:
     static std::string fileToName(std::string);
 
 };
-
-static Logger _log;
 
 template<class T>
 LoggerStream& LoggerStream::operator<<(const T& string) {

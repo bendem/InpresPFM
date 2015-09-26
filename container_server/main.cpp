@@ -6,13 +6,24 @@ int main(int argc, char** argv) {
         port = atoi(argv[1]);
     }
 
-    LOG_INSTANCE.addHandler(Logger::consoleHandler);
+    Logger::instance.addHandler(Logger::consoleHandler);
 
-    LOG << Logger::Warning << "test" << 1 << "bleh";
+    LOG << "Creating thread pool";
+    ThreadPool pool(5);
 
-    //ThreadPool pool(2);
+    for(int i = 0; i < 15; ++i) {
+        pool.submit([] {
+            LOG << "test";
+        });
+    }
+
+    LOG << "Creating server";
     //ContainerServer server(port, pool);
+
+    LOG << "Starting up";
     //server.init().listen();
+
+    LOG << "Application end";
 
     return 0;
 }

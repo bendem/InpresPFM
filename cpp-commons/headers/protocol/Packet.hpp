@@ -5,7 +5,7 @@
 #include <vector>
 
 template<class P>
-using PacketHandler = std::function<void(P)>;
+using PacketHandler = std::function<void(const P&)>;
 
 template<class P>
 class Packet {

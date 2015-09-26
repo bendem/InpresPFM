@@ -6,6 +6,7 @@
 #include "net/Socket.hpp"
 #include "protocol/ProtocolHandler.hpp"
 #include "threading/ThreadPool.hpp"
+#include "utils/Logger.hpp"
 
 class ContainerServer {
 

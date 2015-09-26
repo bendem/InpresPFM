@@ -7,6 +7,8 @@
 #include <thread>
 #include <vector>
 
+#include "utils/Logger.hpp"
+
 class ThreadPool {
 
 public:

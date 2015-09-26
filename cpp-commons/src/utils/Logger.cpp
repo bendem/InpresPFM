@@ -1,5 +1,7 @@
 #include "utils/Logger.hpp"
 
+Logger Logger::instance;
+
 void Logger::log(Logger::Level level, const std::string& msg, const std::string& file, int line) const {
     std::time_t time = std::time(nullptr);
     std::tm* now = std::localtime(&time);
@@ -33,6 +35,9 @@ std::string Logger::levelToName(Level level) {
 }
 
 void Logger::consoleHandler(Level level, const std::string& msg, const std::string& file, int line, std::tm* time) {
+    // TODO Maybe that's a thing?
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lk(mutex);
     (level > Logger::Info ? std::cerr : std::cout)
         << '[' << std::put_time(time, "%H:%M:%S") << "] ["
         << file << ':' << line << "] ["
@@ -44,10 +49,11 @@ LoggerStream::LoggerStream(const Logger& logger, Logger::Level lvl, const std::s
     : logger(logger),
       level(lvl),
       file(fileToName(file)),
-      line(line) {}
+      line(line) {
+}
 
 LoggerStream::~LoggerStream() {
-    logger.log(this->level, this->input.str(), this->file, this->line);
+    this->logger.log(this->level, this->input.str(), this->file, this->line);
 }
 
 LoggerStream& LoggerStream::operator<<(const Logger::Level& lvl) {

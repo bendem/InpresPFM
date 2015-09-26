@@ -43,7 +43,9 @@ set(SOURCE_FILES
     src/cmmp/OutputReadyResponsePacket.cpp
     src/cmmp/LogoutResponsePacket.cpp
     headers/Container.hpp
-    src/cmmp/CMMPTranslator.cpp)
+    src/cmmp/CMMPTranslator.cpp
+    headers/ContainerServer.hpp
+    src/ContainerServer.cpp)
 
 add_subdirectory(../cpp-commons build)
 
