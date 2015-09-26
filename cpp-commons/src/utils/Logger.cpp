@@ -41,13 +41,14 @@ void Logger::consoleHandler(Level level, const std::string& msg, const std::stri
 }
 
 LoggerStream::LoggerStream(const Logger& logger, Logger::Level lvl, const std::string& file, int line)
-    : level(lvl),
+    : logger(logger),
+      level(lvl),
       file(fileToName(file)),
-      line(line),
-      input(new std::ostringstream, [this, &logger](std::ostringstream* os) {
-          logger.log(this->level, os->str(), this->file, this->line);
-          delete os;
-      }) {}
+      line(line) {}
+
+LoggerStream::~LoggerStream() {
+    logger.log(this->level, this->input.str(), this->file, this->line);
+}
 
 LoggerStream& LoggerStream::operator<<(const Logger::Level& lvl) {
     this->level = lvl;

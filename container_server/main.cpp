@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
 
     LOG_INSTANCE.addHandler(Logger::consoleHandler);
 
-    LOG << Logger::Warning << "test";
+    LOG << Logger::Warning << "test" << 1 << "bleh";
 
     //ThreadPool pool(2);
     //ContainerServer server(port, pool);

@@ -41,16 +41,18 @@ class LoggerStream {
 
 public:
     LoggerStream(const Logger& logger, Logger::Level, const std::string&, int);
+    ~LoggerStream();
 
     template<class T>
     LoggerStream& operator<<(const T&);
     LoggerStream& operator<<(const Logger::Level&);
 
 private:
+    const Logger& logger;
     Logger::Level level;
     std::string file;
     int line;
-    std::shared_ptr<std::ostringstream> input;
+    std::ostringstream input;
 
     static std::string fileToName(std::string);
 
@@ -60,7 +62,7 @@ static Logger _log;
 
 template<class T>
 LoggerStream& LoggerStream::operator<<(const T& string) {
-    *input << string;
+    input << string;
     return *this;
 }
 
