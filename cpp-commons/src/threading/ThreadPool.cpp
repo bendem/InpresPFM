@@ -1,14 +1,18 @@
 #include "threading/ThreadPool.hpp"
 
-ThreadPool::ThreadPool(unsigned int count) : closed(false) {
+ThreadPool::ThreadPool(unsigned int count, std::function<void()> startup) : closed(false) {
     LOG << "Starting thread pool of " << count << " threads";
     for(unsigned int i = 0; i < count; ++i) {
-        this->threads.emplace_back(std::thread([this] {
+        this->threads.emplace_back(std::thread([this, &startup] {
+            startup();
             while(!this->closed) {
                 std::unique_lock<std::mutex> lock(this->tasksMutex);
-                this->tasksCondVar.wait(lock);
+                if(this->tasks.empty()) {
+                    this->tasksCondVar.wait(lock);
+                }
 
                 if(this->tasks.empty()) {
+                    // Closing the pool
                     continue;
                 }
 

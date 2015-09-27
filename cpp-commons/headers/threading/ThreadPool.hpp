@@ -12,7 +12,7 @@
 class ThreadPool {
 
 public:
-    ThreadPool(unsigned int count);
+    ThreadPool(unsigned int count, std::function<void()> startup = []{});
     ThreadPool(const ThreadPool&) = delete;
     ThreadPool(ThreadPool&&) = delete;
     ~ThreadPool() { this->close(); }
