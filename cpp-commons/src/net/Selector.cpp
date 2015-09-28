@@ -1,40 +1,83 @@
 #include "net/Selector.hpp"
 
-Selector::Selector() {}
+Selector::Selector() {
+    pipe(this->pipes.data());
 
-Selector& Selector::addSocket(Socket& socket) {
-    this->sockets.emplace(socket.getHandle(), &socket);
+    LOG << Logger::Debug << "Setup selector control pipe on " << this->pipes[0] << ":" << this->pipes[1];
+}
+
+Selector::~Selector() {
+    close(this->pipes[0]);
+    close(this->pipes[1]);
+}
+
+Selector& Selector::addSocket(Socket socket) {
+    std::lock_guard<std::mutex> lock(this->socketsMutex);
+    this->sockets.emplace(socket.getHandle(), socket);
+    this->interrupt();
     return *this;
 }
 
-Selector& Selector::removeSocket(Socket& socket) {
+Selector& Selector::removeSocket(const Socket& socket) {
+    std::lock_guard<std::mutex> lock(this->socketsMutex);
     this->sockets.erase(socket.getHandle());
+    this->interrupt();
     return *this;
 }
 
-std::vector<Socket*> Selector::select() {
+std::vector<Socket> Selector::select() {
     fd_set set;
     FD_ZERO(&set);
-    for(auto item : this->sockets) {
-        FD_SET(item.first, &set);
+
+    int max = this->pipes[0];
+    FD_SET(this->pipes[0], &set);
+
+    {
+        std::lock_guard<std::mutex> lock(this->socketsMutex);
+        for(auto item : this->sockets) {
+            if(item.first > max) {
+                max = item.first;
+            }
+            FD_SET(item.first, &set);
+        }
     }
-    int retval = ::select(this->sockets.size(), &set, nullptr, nullptr, nullptr);
+
+    int retval = ::select(max + 1, &set, nullptr, nullptr, nullptr);
 
     if(retval == 0) {
-        // Retrying
-        return this->select();
+        LOG << Logger::Warning << "select returned 0 somehow";
+        return {};
     }
 
     if(retval < 0) {
+        if(errno == EINTR) {
+            return {};
+        }
         throw IOError(std::string("Failed on select: ") + strerror(errno));
     }
 
-    std::vector<Socket*> sockets;
-    for(auto item : this->sockets) {
-        if(FD_ISSET(item.first, &set)) {
-            sockets.push_back(item.second);
+    if(FD_ISSET(this->pipes[0], &set)) {
+        char c[2];
+        read(this->pipes[0], &c, 1);
+    }
+
+    std::vector<Socket> sockets;
+    {
+        std::lock_guard<std::mutex> lock(this->socketsMutex);
+        for(auto item : this->sockets) {
+            if(FD_ISSET(item.first, &set)) {
+                sockets.push_back(item.second);
+                this->sockets.erase(item.first);
+            }
         }
     }
 
     return sockets;
+}
+
+void Selector::interrupt() const {
+    LOG << Logger::Debug << "Interrupting selector";
+    if(write(this->pipes[1], "", 1) < 1) {
+        LOG << Logger::Error << "Failed to interrupt selector " << strerror(errno);
+    }
 }

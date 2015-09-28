@@ -1,6 +1,9 @@
 #ifndef CONTAINER_SERVER_SERVER_HPP
 #define CONTAINER_SERVER_SERVER_HPP
 
+#include <unordered_set>
+
+#include "SelectorThread.hpp"
 #include "cmmp/CMMPTranslator.hpp"
 #include "net/Selector.hpp"
 #include "net/Socket.hpp"
@@ -34,10 +37,9 @@ private:
     ProtocolHandler<CMMPTranslator, PacketId> proto;
     Socket socket;
     std::mutex connectionsMutex;
-    std::vector<Socket> connections;
     Selector selector;
-    std::thread pollingThread;
-    std::atomic<bool> closed;
+    SelectorThread<CMMPTranslator, PacketId> selectorThread;
+    std::atomic_bool closed;
 
 };
 

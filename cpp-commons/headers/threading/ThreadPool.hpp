@@ -25,7 +25,7 @@ public:
 private:
     std::vector<std::thread> threads;
     std::queue<std::function<void()>> tasks;
-    std::atomic<bool> closed;
+    std::atomic_bool closed;
     std::condition_variable tasksCondVar;
     std::mutex tasksMutex;
 

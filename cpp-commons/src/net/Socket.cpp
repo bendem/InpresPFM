@@ -1,5 +1,11 @@
 #include "net/Socket.hpp"
 
+Socket::~Socket() {
+    if(*this->handle > 0 && this->handle.unique()) {
+        this->close();
+    }
+}
+
 Socket& Socket::connect(unsigned short port, std::string host) {
     return this->setupSocket(this->setupHostAndPort(port, host), false);
 }
@@ -42,7 +48,7 @@ Socket& Socket::setupSocket(const sockaddr_in addr, bool bind) {
     this->addrLen = sizeof(struct sockaddr_in);
 
     *this->handle = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-    if(this->handle < 0) {
+    if(*this->handle < 0) {
         this->error("Failed to create socket", errno);
     }
 
@@ -73,11 +79,11 @@ Socket Socket::accept() {
 
     Socket s;
     if((*s.handle = ::accept(*this->handle, &s.addr, &s.addrLen)) < 0) {
-        if(errno == EINTR) {
-            // Got interrupted
-            LOG << Logger::Debug << "Got interrupted on accept";
-            return this->accept();
-        }
+        //if(errno == EINTR) {
+        //    // Got interrupted
+        //    LOG << Logger::Debug << "Got interrupted on accept";
+        //    return this->accept();
+        //}
         this->error("Could not accept", errno);
     }
 
@@ -123,6 +129,8 @@ std::vector<char> Socket::read(unsigned int max) {
 }
 
 void Socket::accumulate(unsigned int len, std::vector<char>& result) {
+    this->checkOpen();
+
     while(result.size() < len) {
         const std::vector<char>& x = this->read(len - result.size());
         result.insert(result.end(), x.begin(), x.end());
@@ -134,7 +142,15 @@ void Socket::error(const std::string& string, int err) {
 }
 
 void Socket::checkOpen() const {
-    if(this->handle < 0) {
+    if(this->isClosed()) {
         throw IOError("Socket already closed");
     }
+}
+
+void Socket::close() {
+    this->checkOpen();
+
+    LOG << "closing socket " << *this->handle;
+    ::close(*this->handle);
+    *this->handle = -1;
 }

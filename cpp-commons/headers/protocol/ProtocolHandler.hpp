@@ -29,7 +29,7 @@ public:
 
 private:
     Translator translator;
-    std::atomic<bool> closed;
+    std::atomic_bool closed;
 
     static const char FRAME_END;
 
@@ -65,7 +65,7 @@ void ProtocolHandler<Translator, Id>::read(Socket& socket) {
     }
     v.pop_back();
 
-    this->translator.decode(id, v);
+    this->translator.decode(id, v, socket);
 }
 
 template<class Translator, class Id>

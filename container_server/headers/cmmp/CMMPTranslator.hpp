@@ -16,12 +16,13 @@
 #include "cmmp/InputDoneResponsePacket.hpp"
 #include "cmmp/LoginResponsePacket.hpp"
 #include "cmmp/InputTruckResponsePacket.hpp"
+#include "net/Socket.hpp"
 #include "protocol/ProtocolError.hpp"
 
 class CMMPTranslator {
 
 public:
-    void decode(PacketId id, const std::vector<char>&);
+    void decode(PacketId id, const std::vector<char>&, Socket&);
 
     template<class T>
     void encode(const T& item, std::vector<char>&);

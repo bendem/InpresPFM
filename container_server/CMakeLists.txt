@@ -45,7 +45,9 @@ set(SOURCE_FILES
     headers/Container.hpp
     src/cmmp/CMMPTranslator.cpp
     headers/ContainerServer.hpp
-    src/ContainerServer.cpp)
+    src/ContainerServer.cpp
+    headers/SelectorThread.hpp
+)
 
 add_subdirectory(../cpp-commons build)
 

@@ -4,16 +4,8 @@ ContainerServer::ContainerServer(unsigned short port, ThreadPool& pool)
         : pool(pool),
           proto(CMMPTranslator()),
           socket(),
-          pollingThread([this] {
-              LOG << "Starting polling thread";
-              while(!this->closed) {
-                  for(auto socket : this->selector.select()) {
-                      this->pool.submit([this, socket] {
-                          this->proto.read(*socket);
-                      });
-                  }
-              }
-          }),
+          selector(),
+          selectorThread(selector, pool, proto),
           closed(false) {
     LOG << "Binding server socket to " << port;
     socket.bind(port);
@@ -24,8 +16,8 @@ ContainerServer::~ContainerServer() {
 }
 
 template<class T>
-void debugHandler(const T& p) {
-    LOG << Logger::Debug << "Received packet: " << (int) p.getId();
+void debugHandler(const T& p, Socket& s) {
+    LOG << Logger::Debug << "Received packet: " << (int) p.getId() << " from " << s.getHandle();
 }
 ContainerServer& ContainerServer::init() {
     LoginPacket::registerHandler(debugHandler<LoginPacket>);
@@ -36,6 +28,10 @@ ContainerServer& ContainerServer::init() {
     OutputDonePacket::registerHandler(debugHandler<OutputDonePacket>);
     LogoutPacket::registerHandler(debugHandler<LogoutPacket>);
 
+    LogoutPacket::registerHandler([this](LogoutPacket, Socket& s) {
+        s.close();
+    });
+
     return *this;
 }
 
@@ -43,7 +39,9 @@ ContainerServer& ContainerServer::listen() {
     while(!closed) {
         try {
             std::lock_guard<std::mutex>(this->connectionsMutex);
-            connections.push_back(socket.accept());
+            Socket connection = socket.accept();
+            LOG << Logger::Debug << "Connection accepted " << connection.getHandle();
+            this->selector.addSocket(connection);
         } catch(IOError e) {
             LOG << Logger::Error << "IOError: " << e.what();
             continue;

@@ -2,8 +2,8 @@
 #define CONTAINER_SERVER_SOCKET_HPP
 
 #include <array>
+#include <atomic>
 #include <cstring>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -18,12 +18,8 @@
 class Socket {
 
 public:
-    Socket()
-        : handle(new int, [](int* handle) {
-              LOG << "closing socket " << *handle;
-              if(*handle >= 0) ::close(*handle);
-              delete handle;
-          }) {}
+    Socket() : handle(std::make_shared<int>(-1)) {}
+    ~Socket();
 
     Socket& connect(unsigned short, std::string);
 
@@ -37,7 +33,12 @@ public:
     std::vector<char> read(unsigned int);
     void accumulate(unsigned int, std::vector<char>&);
 
-    int getHandle() const { return *handle; }
+    int getHandle() const { return *this->handle; }
+
+    void close();
+    bool isClosed() const { return *this->handle < 0; }
+
+    bool operator==(const Socket& o) const { return *this->handle == *o.handle; }
 
 private:
     std::shared_ptr<int> handle;
@@ -51,5 +52,14 @@ private:
     void checkOpen() const;
 
 };
+
+namespace std {
+    template<>
+    struct hash<Socket> {
+        size_t operator()(const Socket& s) const {
+            return s.getHandle();
+        }
+    };
+}
 
 #endif //CONTAINER_SERVER_SOCKET_HPP

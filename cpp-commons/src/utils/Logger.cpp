@@ -25,9 +25,9 @@ std::string Logger::levelToName(Level level) {
         case Debug:
             return "debug";
         case Info:
-            return "info";
+            return "info ";
         case Warning:
-            return "warning";
+            return "warn ";
         case Error:
             return "error";
     }
@@ -40,8 +40,8 @@ void Logger::consoleHandler(Level level, const std::string& msg, const std::stri
     std::lock_guard<std::mutex> lk(mutex);
     (level > Logger::Info ? std::cerr : std::cout)
         << '[' << std::put_time(time, "%H:%M:%S") << "] ["
-        << file << ':' << line << "] ["
-        << Logger::levelToName(level) << "] "
+        << Logger::levelToName(level) << "] ["
+        << file << ':' << line << "] "
         << msg << std::endl;
 }
 

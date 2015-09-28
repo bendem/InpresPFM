@@ -1,7 +1,7 @@
 #ifndef CONTAINER_SERVER_SELECTOR_HPP
 #define CONTAINER_SERVER_SELECTOR_HPP
 
-#include <map>
+#include <unordered_map>
 
 #include "net/Socket.hpp"
 
@@ -9,14 +9,19 @@ class Selector {
 
 public:
     Selector();
+    ~Selector();
 
-    Selector& addSocket(Socket&);
-    Selector& removeSocket(Socket&);
+    Selector& addSocket(Socket);
+    Selector& removeSocket(const Socket&);
 
-    std::vector<Socket*> select();
+    std::vector<Socket> select();
+
+    void interrupt() const;
 
 private:
-    std::map<int, Socket*> sockets; // weak pointers
+    std::array<int, 2> pipes;
+    std::unordered_map<int, Socket> sockets;
+    std::mutex socketsMutex;
 
 };
 

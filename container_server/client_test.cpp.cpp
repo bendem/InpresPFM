@@ -17,27 +17,29 @@ int main(int argc, char** argv) {
     CMMPTranslator translator;
     ProtocolHandler<CMMPTranslator, PacketId> proto(translator);
 
-    LoginResponsePacket::registerHandler([](LoginResponsePacket p) {
+    LoginResponsePacket::registerHandler([](LoginResponsePacket p, Socket&) {
         std::cout << "received: " << (int) p.getId() << std::endl;
     });
-    InputTruckResponsePacket::registerHandler([](InputTruckResponsePacket p) {
+    InputTruckResponsePacket::registerHandler([](InputTruckResponsePacket p, Socket&) {
         std::cout << "received: " << (int) p.getId() << std::endl;
     });
-    InputDoneResponsePacket::registerHandler([](InputDoneResponsePacket p) {
+    InputDoneResponsePacket::registerHandler([](InputDoneResponsePacket p, Socket&) {
         std::cout << "received: " << (int) p.getId() << std::endl;
     });
-    OutputReadyResponsePacket::registerHandler([](OutputReadyResponsePacket p) {
+    OutputReadyResponsePacket::registerHandler([](OutputReadyResponsePacket p, Socket&) {
         std::cout << "received: " << (int) p.getId() << std::endl;
     });
-    OutputOneResponsePacket::registerHandler([](OutputOneResponsePacket p) {
+    OutputOneResponsePacket::registerHandler([](OutputOneResponsePacket p, Socket&) {
         std::cout << "received: " << (int) p.getId() << std::endl;
     });
-    OutputDoneResponsePacket::registerHandler([](OutputDoneResponsePacket p) {
+    OutputDoneResponsePacket::registerHandler([](OutputDoneResponsePacket p, Socket&) {
         std::cout << "received: " << (int) p.getId() << std::endl;
     });
-    LogoutResponsePacket::registerHandler([](LogoutResponsePacket p) {
+    LogoutResponsePacket::registerHandler([](LogoutResponsePacket p, Socket&) {
         std::cout << "received: " << (int) p.getId() << std::endl;
     });
+
+    LOG << "Sending all packets";
 
     proto.write(s, LoginPacket("bendem", "supersecurepassword"));
     proto.write(s, InputTruckPacket("license", "container-id"));
@@ -47,9 +49,13 @@ int main(int argc, char** argv) {
     proto.write(s, OutputDonePacket("contain-id", 3));
     proto.write(s, LogoutPacket("bendem", "supersecurepassword"));
 
+    LOG << "Reading 7 packets";
+
     for(int i = 0; i < 7; ++i) {
         proto.read(s);
     }
+
+    LOG << "done";
 
     return 0;
 }
