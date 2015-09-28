@@ -64,7 +64,8 @@ std::vector<Socket> Selector::select() {
     std::vector<Socket> sockets;
     {
         std::lock_guard<std::mutex> lock(this->socketsMutex);
-        for(auto item : this->sockets) {
+        std::unordered_map<int, Socket> copy(this->sockets);
+        for(auto item : copy) {
             if(FD_ISSET(item.first, &set)) {
                 sockets.emplace_back(item.second);
                 this->sockets.erase(item.first);
