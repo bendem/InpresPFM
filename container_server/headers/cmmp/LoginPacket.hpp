@@ -9,13 +9,15 @@
 class LoginPacket : public Packet<LoginPacket> {
 
 public:
-    LoginPacket(const std::string& username, const std::string& password)
+    LoginPacket(const std::string& username, const std::string& password, bool newUser)
         : Packet(PacketId::Login),
           username(username),
-          password(password) {}
+          password(password),
+          newUser(newUser) {}
 
     const std::string& getUsername() const { return username; }
     const std::string& getPassword() const { return password; }
+    bool isNew() const { return newUser; }
 
     static LoginPacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
@@ -23,7 +25,7 @@ public:
 private:
     std::string username;
     std::string password;
-
+    bool newUser;
 };
 
 #endif //CONTAINER_SERVER_LOGINPACKET_HPP
