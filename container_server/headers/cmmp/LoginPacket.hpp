@@ -28,4 +28,4 @@ private:
     bool newUser;
 };
 
-#endif //CONTAINER_SERVER_LOGINPACKET_HPP
+#endif

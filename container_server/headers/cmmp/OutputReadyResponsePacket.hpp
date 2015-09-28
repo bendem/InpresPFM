@@ -30,4 +30,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_OUTPUTREADYRESPONSEPACKET_HPP
+#endif

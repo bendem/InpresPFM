@@ -23,4 +23,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_OUTPUTONEPACKET_HPP
+#endif

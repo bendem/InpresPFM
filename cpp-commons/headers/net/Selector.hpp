@@ -1,5 +1,5 @@
-#ifndef CONTAINER_SERVER_SELECTOR_HPP
-#define CONTAINER_SERVER_SELECTOR_HPP
+#ifndef CPP_COMMONS_SELECTOR_HPP
+#define CPP_COMMONS_SELECTOR_HPP
 
 #include <unordered_map>
 
@@ -25,4 +25,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_SELECTOR_HPP
+#endif

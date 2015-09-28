@@ -27,4 +27,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_CONTAINER_HPP
+#endif

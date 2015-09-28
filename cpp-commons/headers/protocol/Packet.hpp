@@ -92,4 +92,4 @@ void Packet<P>::writeString(std::vector<char>& v, const std::string& str) {
     }
 }
 
-#endif //CPP_COMMONS_PACKET_HPP
+#endif

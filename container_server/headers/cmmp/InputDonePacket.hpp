@@ -24,4 +24,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_INPUTDONEPACKET_HPP
+#endif

@@ -1,5 +1,5 @@
-#ifndef CONTAINER_SERVER_SOCKET_HPP
-#define CONTAINER_SERVER_SOCKET_HPP
+#ifndef CPP_COMMONS_SOCKET_HPP
+#define CPP_COMMONS_SOCKET_HPP
 
 #include <array>
 #include <atomic>
@@ -62,4 +62,4 @@ namespace std {
     };
 }
 
-#endif //CONTAINER_SERVER_SOCKET_HPP
+#endif

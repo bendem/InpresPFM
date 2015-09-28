@@ -60,4 +60,4 @@ void SelectorThread<Translator, Id>::close() {
     this->thread.join();
 }
 
-#endif //CONTAINER_SERVER_SELECTORTHREAD_HPP
+#endif

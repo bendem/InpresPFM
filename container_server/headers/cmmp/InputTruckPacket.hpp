@@ -26,4 +26,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_INPUTTRUCKPACKET_HPP
+#endif

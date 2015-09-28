@@ -1,5 +1,5 @@
-#ifndef CONTAINER_SERVER_LOGGER_HPP
-#define CONTAINER_SERVER_LOGGER_HPP
+#ifndef CPP_COMMONS_LOGGER_HPP
+#define CPP_COMMONS_LOGGER_HPP
 
 #include <ctime>
 #include <functional>
@@ -67,4 +67,4 @@ LoggerStream& LoggerStream::operator<<(const T& string) {
     return *this;
 }
 
-#endif //CONTAINER_SERVER_LOGGER_HPP
+#endif

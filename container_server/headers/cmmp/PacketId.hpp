@@ -18,4 +18,4 @@ enum PacketId : char {
     LogoutResponse,
 };
 
-#endif //CONTAINER_SERVER_PACKETID_HPP
+#endif

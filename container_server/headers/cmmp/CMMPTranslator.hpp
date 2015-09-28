@@ -34,4 +34,4 @@ void CMMPTranslator::encode(const T& item, std::vector<char>& v) {
     item.encode(v);
 }
 
-#endif //CONTAINER_SERVER_CMMPTRANSLATOR_HPP
+#endif

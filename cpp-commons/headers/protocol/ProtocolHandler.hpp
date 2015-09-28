@@ -98,4 +98,4 @@ uint32_t ProtocolHandler<Translator, Id>::parseLength(char* c) {
     return *reinterpret_cast<const uint32_t*>(c);
 }
 
-#endif //CPP_COMMONS_PROTOCOLHANDLER_HPP
+#endif

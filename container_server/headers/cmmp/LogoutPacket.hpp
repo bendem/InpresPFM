@@ -26,4 +26,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_LOGOUTPACKET_HPP
+#endif

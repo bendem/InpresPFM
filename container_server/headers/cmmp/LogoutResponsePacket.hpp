@@ -26,4 +26,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_LOGINRESPONSEPACKET_HPP
+#endif

@@ -1,5 +1,5 @@
-#ifndef CONTAINER_SERVER_THREADPOOL_HPP
-#define CONTAINER_SERVER_THREADPOOL_HPP
+#ifndef CPP_COMMONS_THREADPOOL_HPP
+#define CPP_COMMONS_THREADPOOL_HPP
 
 #include <atomic>
 #include <condition_variable>
@@ -31,4 +31,4 @@ private:
 
 };
 
-#endif //CONTAINER_SERVER_THREADPOOL_HPP
+#endif

@@ -1,5 +1,5 @@
-#ifndef CONTAINER_SERVER_IOERROR_HPP
-#define CONTAINER_SERVER_IOERROR_HPP
+#ifndef CPP_COMMONS_IOERROR_HPP
+#define CPP_COMMONS_IOERROR_HPP
 
 #include <stdexcept>
 
@@ -10,4 +10,4 @@ public:
 
 };
 
-#endif //CONTAINER_SERVER_IOERROR_HPP
+#endif
