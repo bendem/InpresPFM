@@ -1,7 +1,7 @@
 #include "net/Socket.hpp"
 
 Socket::~Socket() {
-    if(*this->handle > 0 && this->handle.unique()) {
+    if(this->handle && *this->handle > 0 && this->handle.unique()) {
         this->close();
     }
 }

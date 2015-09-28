@@ -41,6 +41,7 @@ void Logger::consoleHandler(Level level, const std::string& msg, const std::stri
     (level > Logger::Info ? std::cerr : std::cout)
         << '[' << std::put_time(time, "%H:%M:%S") << "] ["
         << Logger::levelToName(level) << "] ["
+        << std::hex << std::this_thread::get_id() << std::dec << "] ["
         << file << ':' << line << "] "
         << msg << std::endl;
 }

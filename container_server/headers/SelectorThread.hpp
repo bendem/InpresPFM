@@ -37,8 +37,8 @@ template<class Translator, class Id>
 void SelectorThread<Translator, Id>::operator()() {
     LOG << "Starting polling thread";
     while(!this->closed) {
-        for(auto& socket : this->selector.select()) {
-            this->pool.submit([this, &socket] {
+        for(Socket& socket : this->selector.select()) {
+            this->pool.submit([this, socket] () mutable {
                 LOG << Logger::Debug << "reading on socket " << socket.getHandle();
                 this->proto.read(socket);
                 if(!socket.isClosed()) {

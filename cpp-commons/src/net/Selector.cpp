@@ -66,7 +66,7 @@ std::vector<Socket> Selector::select() {
         std::lock_guard<std::mutex> lock(this->socketsMutex);
         for(auto item : this->sockets) {
             if(FD_ISSET(item.first, &set)) {
-                sockets.push_back(item.second);
+                sockets.emplace_back(item.second);
                 this->sockets.erase(item.first);
             }
         }

@@ -9,6 +9,7 @@
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #define LOG LoggerStream(Logger::instance, Logger::Info, __FILE__, __LINE__)
