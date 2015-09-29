@@ -7,14 +7,19 @@ Socket::~Socket() {
 }
 
 Socket& Socket::connect(unsigned short port, std::string host) {
+    if(this->server) {
+        throw std::logic_error("Trying to connect from a server socket");
+    }
     return this->setupSocket(this->setupHostAndPort(port, host), false);
 }
 
 Socket& Socket::bind(unsigned short port) {
+    this->server = true;
     return this->setupSocket(this->setupPort(port), true);
 }
 
 Socket& Socket::bind(unsigned short port, std::string bindHost) {
+    this->server = true;
     return this->setupSocket(this->setupHostAndPort(port, bindHost), true);
 }
 
@@ -72,6 +77,9 @@ Socket& Socket::setupSocket(const sockaddr_in addr, bool bind) {
 
 std::shared_ptr<Socket> Socket::accept() {
     this->checkOpen();
+    if(!this->server) {
+        throw std::logic_error("Trying to accept from a non server socket");
+    }
 
     std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
 
@@ -95,6 +103,9 @@ std::shared_ptr<Socket> Socket::accept() {
 
 long Socket::write(const std::vector<char>& vector) {
     this->checkOpen();
+    if(this->server) {
+        throw std::logic_error("Trying to write on a server socket");
+    }
 
     long len = send(this->handle, vector.data(), vector.size() * sizeof(char), 0);
 
@@ -111,6 +122,9 @@ long Socket::write(const std::vector<char>& vector) {
 
 std::vector<char> Socket::read(unsigned int max) {
     this->checkOpen();
+    if(this->server) {
+        throw std::logic_error("Trying to read on a server socket");
+    }
 
     std::vector<char> result;
     char* c = new char[max]; // TODO Don't do that
