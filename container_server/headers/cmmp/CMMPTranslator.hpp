@@ -22,7 +22,7 @@
 class CMMPTranslator {
 
 public:
-    void decode(PacketId id, const std::vector<char>&, Socket&);
+    void decode(PacketId id, const std::vector<char>&, std::shared_ptr<Socket>);
 
     template<class T>
     void encode(const T& item, std::vector<char>&);

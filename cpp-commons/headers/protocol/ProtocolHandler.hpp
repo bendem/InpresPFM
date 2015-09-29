@@ -20,10 +20,10 @@ public:
         static_assert(sizeof(Id) == 1, "Can only use ProtocolHandler with 1 byte ids");
     }
 
-    void read(Socket&);
+    void read(std::shared_ptr<Socket>);
 
     template<class T>
-    ProtocolHandler<Translator, Id>& write(Socket&, const T&);
+    ProtocolHandler<Translator, Id>& write(std::shared_ptr<Socket>, const T&);
 
     void close() { closed = true; }
 
@@ -41,12 +41,12 @@ template<class Translator, class Id>
 const char ProtocolHandler<Translator, Id>::FRAME_END = 0x42;
 
 template<class Translator, class Id>
-void ProtocolHandler<Translator, Id>::read(Socket& socket) {
+void ProtocolHandler<Translator, Id>::read(std::shared_ptr<Socket> socket) {
     Id id;
     uint32_t len;
     std::vector<char> v;
 
-    socket.accumulate(5, v);
+    socket->accumulate(5, v);
     id = (Id) v[0];
     len = this->parseLength(&v[1]) + 1; // + 1 => end frame marquer
 
@@ -58,7 +58,7 @@ void ProtocolHandler<Translator, Id>::read(Socket& socket) {
 
     v.clear();
     v.reserve(len);
-    socket.accumulate(len, v);
+    socket->accumulate(len, v);
 
     if (v.back() != FRAME_END) {
         throw ProtocolError("Invalid frame end");
@@ -70,7 +70,7 @@ void ProtocolHandler<Translator, Id>::read(Socket& socket) {
 
 template<class Translator, class Id>
 template<class T>
-ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& socket, const T& item) {
+ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(std::shared_ptr<Socket> socket, const T& item) {
     std::vector<char> v(5, 0); // Reserve 5 places for the id and the length
 
     v[0] = item.getId();
@@ -88,7 +88,7 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(Socket& 
 
     LOG << Logger::Debug << "id:" << (int) v[0] << ":len:" << len << ":written:" << v.size();
 
-    socket.write(v);
+    socket->write(v);
 
     return *this;
 }

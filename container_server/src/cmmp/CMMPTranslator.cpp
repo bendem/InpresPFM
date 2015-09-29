@@ -1,6 +1,6 @@
 #include "cmmp/CMMPTranslator.hpp"
 
-void CMMPTranslator::decode(PacketId id, const std::vector<char>& v, Socket& socket) {
+void CMMPTranslator::decode(PacketId id, const std::vector<char>& v, std::shared_ptr<Socket> socket) {
     std::vector<char>::const_iterator it = v.begin();
     switch(id) {
         case PacketId::Login:

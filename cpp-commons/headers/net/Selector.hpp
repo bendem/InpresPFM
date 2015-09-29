@@ -11,16 +11,16 @@ public:
     Selector();
     ~Selector();
 
-    Selector& addSocket(Socket);
-    Selector& removeSocket(const Socket&);
+    Selector& addSocket(std::shared_ptr<Socket>);
+    Selector& removeSocket(std::shared_ptr<Socket>);
 
-    std::vector<Socket> select();
+    std::vector<std::shared_ptr<Socket>> select();
 
     void interrupt() const;
 
 private:
     std::array<int, 2> pipes;
-    std::unordered_map<int, Socket> sockets;
+    std::unordered_map<int, std::shared_ptr<Socket>> sockets;
     std::mutex socketsMutex;
 
 };

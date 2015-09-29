@@ -12,7 +12,8 @@ class SelectorThread {
 public:
     SelectorThread(Selector&, ThreadPool&, ProtocolHandler<Translator, Id>&);
 
-    void operator()();
+    void select();
+    void handle(std::shared_ptr<Socket>);
 
     void close();
 
@@ -31,24 +32,36 @@ SelectorThread<Translator, Id>::SelectorThread(Selector& selector, ThreadPool& p
           pool(pool),
           proto(proto),
           closed(false),
-          thread(&SelectorThread::operator(), this) {}
+          thread(&SelectorThread::select, this) {}
 
 template<class Translator, class Id>
-void SelectorThread<Translator, Id>::operator()() {
+void SelectorThread<Translator, Id>::select() {
     LOG << "Starting polling thread";
     while(!this->closed) {
-        for(Socket& socket : this->selector.select()) {
-            this->pool.submit([this, socket] () mutable {
-                LOG << Logger::Debug << "reading on socket " << socket.getHandle();
-                this->proto.read(socket);
-                if(!socket.isClosed()) {
-                    LOG << Logger::Debug << "socket not closed, readding to selector";
-                    this->selector.addSocket(socket);
-                }
-            });
+        for(std::shared_ptr<Socket> socket : this->selector.select()) {
+            this->handle(socket);
         }
     }
+}
 
+template<class Translator, class Id>
+void SelectorThread<Translator, Id>::handle(std::shared_ptr<Socket> socket) {
+    this->pool.submit([this, socket] () mutable {
+        LOG << Logger::Debug << "reading on socket " << socket->getHandle();
+        try {
+            this->proto.read(socket);
+        } catch(IOError e) {
+            LOG << Logger::Error << "Error reading from socket " << socket->getHandle() << ": " << e.what();
+            return;
+        } catch(ProtocolError e) {
+            LOG << Logger::Error << "Protocol error while reading from " << socket->getHandle() << ": " << e.what();
+        }
+
+        if(!socket->isClosed()) {
+            LOG << Logger::Debug << "socket not closed, readding to selector";
+            this->selector.addSocket(socket);
+        }
+    });
 }
 
 template<class Translator, class Id>

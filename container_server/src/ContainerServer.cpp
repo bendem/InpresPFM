@@ -16,8 +16,8 @@ ContainerServer::~ContainerServer() {
 }
 
 template<class T>
-void debugHandler(const T& p, Socket& s) {
-    LOG << Logger::Debug << "Received packet: " << (int) p.getId() << " from " << s.getHandle();
+void debugHandler(const T& p, std::shared_ptr<Socket> s) {
+    LOG << Logger::Debug << "Received packet: " << (int) p.getId() << " from " << s->getHandle();
 }
 ContainerServer& ContainerServer::init() {
     LoginPacket::registerHandler(debugHandler<LoginPacket>);
@@ -28,8 +28,8 @@ ContainerServer& ContainerServer::init() {
     OutputDonePacket::registerHandler(debugHandler<OutputDonePacket>);
     LogoutPacket::registerHandler(debugHandler<LogoutPacket>);
 
-    LogoutPacket::registerHandler([this](LogoutPacket, Socket& s) {
-        s.close();
+    LogoutPacket::registerHandler([this](LogoutPacket, std::shared_ptr<Socket> s) {
+        s->close();
     });
 
     return *this;
@@ -39,8 +39,8 @@ ContainerServer& ContainerServer::listen() {
     while(!closed) {
         try {
             std::lock_guard<std::mutex>(this->connectionsMutex);
-            Socket connection = socket.accept();
-            LOG << Logger::Debug << "Connection accepted " << connection.getHandle();
+            std::shared_ptr<Socket> connection = socket.accept();
+            LOG << Logger::Debug << "Connection accepted " << connection->getHandle();
             this->selector.addSocket(connection);
         } catch(IOError e) {
             LOG << Logger::Error << "IOError: " << e.what();

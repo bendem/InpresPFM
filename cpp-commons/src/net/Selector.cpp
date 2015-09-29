@@ -11,21 +11,21 @@ Selector::~Selector() {
     close(this->pipes[1]);
 }
 
-Selector& Selector::addSocket(Socket socket) {
+Selector& Selector::addSocket(std::shared_ptr<Socket> socket) {
     std::lock_guard<std::mutex> lock(this->socketsMutex);
-    this->sockets.emplace(socket.getHandle(), socket);
+    this->sockets.emplace(socket->getHandle(), socket);
     this->interrupt();
     return *this;
 }
 
-Selector& Selector::removeSocket(const Socket& socket) {
+Selector& Selector::removeSocket(std::shared_ptr<Socket> socket) {
     std::lock_guard<std::mutex> lock(this->socketsMutex);
-    this->sockets.erase(socket.getHandle());
+    this->sockets.erase(socket->getHandle());
     this->interrupt();
     return *this;
 }
 
-std::vector<Socket> Selector::select() {
+std::vector<std::shared_ptr<Socket>> Selector::select() {
     fd_set set;
     FD_ZERO(&set);
 
@@ -61,10 +61,10 @@ std::vector<Socket> Selector::select() {
         read(this->pipes[0], &c, 1);
     }
 
-    std::vector<Socket> sockets;
+    std::vector<std::shared_ptr<Socket>> sockets;
     {
         std::lock_guard<std::mutex> lock(this->socketsMutex);
-        std::unordered_map<int, Socket> copy(this->sockets);
+        std::unordered_map<int, std::shared_ptr<Socket>> copy(this->sockets);
         for(auto item : copy) {
             if(FD_ISSET(item.first, &set)) {
                 sockets.emplace_back(item.second);

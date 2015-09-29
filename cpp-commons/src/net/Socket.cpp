@@ -1,7 +1,7 @@
 #include "net/Socket.hpp"
 
 Socket::~Socket() {
-    if(this->handle && *this->handle > 0 && this->handle.unique()) {
+    if(this->handle > 0) {
         this->close();
     }
 }
@@ -47,22 +47,22 @@ Socket& Socket::setupSocket(const sockaddr_in addr, bool bind) {
     this->addr = *(struct sockaddr*) &addr;
     this->addrLen = sizeof(struct sockaddr_in);
 
-    *this->handle = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-    if(*this->handle < 0) {
+    this->handle = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    if(this->handle < 0) {
         this->error("Failed to create socket", errno);
     }
 
     int yes = 1;
-    if(setsockopt(*this->handle, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+    if(setsockopt(this->handle, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
         this->error("Failed to set socket option", errno);
     }
 
     if(bind) {
-        if(::bind(*this->handle, &this->addr, this->addrLen) == -1) {
+        if(::bind(this->handle, &this->addr, this->addrLen) == -1) {
             this->error("Could not bind socket", errno);
         }
     } else {
-        if(::connect(*this->handle, &this->addr, this->addrLen) == -1) {
+        if(::connect(this->handle, &this->addr, this->addrLen) == -1) {
             this->error("Could not connect socket", errno);
         }
     }
@@ -70,15 +70,18 @@ Socket& Socket::setupSocket(const sockaddr_in addr, bool bind) {
     return *this;
 }
 
-Socket Socket::accept() {
+std::shared_ptr<Socket> Socket::accept() {
     this->checkOpen();
 
-    if((::listen(*this->handle, SOMAXCONN)) < 0) {
+    std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
+
+    if((::listen(this->handle, SOMAXCONN)) < 0) {
         this->error("Could not start listening", errno);
     }
 
-    Socket s;
-    if((*s.handle = ::accept(*this->handle, &s.addr, &s.addrLen)) < 0) {
+    std::shared_ptr<Socket> s(new Socket);
+
+    if((s->handle = ::accept(this->handle, &s->addr, &s->addrLen)) < 0) {
         //if(errno == EINTR) {
         //    // Got interrupted
         //    LOG << Logger::Debug << "Got interrupted on accept";
@@ -93,7 +96,7 @@ Socket Socket::accept() {
 long Socket::write(const std::vector<char>& vector) {
     this->checkOpen();
 
-    long len = send(*this->handle, vector.data(), vector.size() * sizeof(char), 0);
+    long len = send(this->handle, vector.data(), vector.size() * sizeof(char), 0);
 
     if(len == -1) {
         this->error("Failed to write " + std::to_string(vector.size()) + " bytes", errno);
@@ -111,11 +114,21 @@ std::vector<char> Socket::read(unsigned int max) {
 
     std::vector<char> result;
     char* c = new char[max]; // TODO Don't do that
-    ssize_t len = recv(*this->handle, c, max, 0);
+
+    LOG << Logger::Debug << "=== LOCK";
+    this->handleMutex.lock();
+    ssize_t len = recv(this->handle, c, max, 0);
+    this->handleMutex.unlock();
+    LOG << Logger::Debug << "=== UNLOCK";
 
     if(len < 0) {
         delete c;
         this->error("Failed to read " + std::to_string(max) + " bytes", errno);
+    }
+
+    if(len == 0) {
+        // TODO!!
+        LOG << "Client closed the connection";
     }
 
     result.reserve(len);
@@ -130,6 +143,8 @@ std::vector<char> Socket::read(unsigned int max) {
 
 void Socket::accumulate(unsigned int len, std::vector<char>& result) {
     this->checkOpen();
+
+    std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
 
     while(result.size() < len) {
         const std::vector<char>& x = this->read(len - result.size());
@@ -150,7 +165,8 @@ void Socket::checkOpen() const {
 void Socket::close() {
     this->checkOpen();
 
-    LOG << "closing socket " << *this->handle;
-    ::close(*this->handle);
-    *this->handle = -1;
+    LOG << "closing socket " << this->handle;
+    std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
+    ::close(this->handle);
+    this->handle = -1;
 }

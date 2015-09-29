@@ -18,7 +18,9 @@
 class Socket {
 
 public:
-    Socket() : handle(std::make_shared<int>(-1)) {}
+    Socket() : handle(-1) {}
+    Socket(const Socket&) = delete;
+    Socket(Socket&&) = delete;
     ~Socket();
 
     Socket& connect(unsigned short, std::string);
@@ -26,22 +28,23 @@ public:
     Socket& bind(unsigned short);
     Socket& bind(unsigned short, std::string);
 
-    Socket accept();
+    std::shared_ptr<Socket> accept();
 
     long write(const std::vector<char>&);
 
     std::vector<char> read(unsigned int);
     void accumulate(unsigned int, std::vector<char>&);
 
-    int getHandle() const { return *this->handle; }
+    int getHandle() const { return this->handle; }
 
     void close();
-    bool isClosed() const { return *this->handle < 0; }
+    bool isClosed() const { return this->handle < 0; }
 
-    bool operator==(const Socket& o) const { return *this->handle == *o.handle; }
+    bool operator==(const Socket& o) const { return this->handle == o.handle; }
 
 private:
-    std::shared_ptr<int> handle;
+    int handle;
+    std::recursive_mutex handleMutex;
     struct sockaddr addr;
     unsigned int addrLen;
 

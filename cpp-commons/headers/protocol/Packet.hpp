@@ -7,7 +7,7 @@
 #include "net/Socket.hpp"
 
 template<class P>
-using PacketHandler = std::function<void(const P&, Socket&)>;
+using PacketHandler = std::function<void(const P&, std::shared_ptr<Socket>)>;
 
 template<class P>
 class Packet {
@@ -23,7 +23,7 @@ private:
 // Event handling
 public:
     static void registerHandler(PacketHandler<P> handler);
-    void handle(Socket&) const;
+    void handle(std::shared_ptr<Socket>) const;
 
 private:
     static std::vector<PacketHandler<P>> handlers;
@@ -49,7 +49,7 @@ void Packet<P>::registerHandler(PacketHandler<P> handler) {
 }
 
 template<class P>
-void Packet<P>::handle(Socket& socket) const {
+void Packet<P>::handle(std::shared_ptr<Socket> socket) const {
     for(auto handler : handlers) {
         handler(static_cast<const P&>(*this), socket);
     }
