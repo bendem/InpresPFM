@@ -23,6 +23,13 @@
 class Socket {
 
 public:
+
+    enum CloseReason {
+        Gone, Error, Closed
+    };
+
+    typedef std::function<void(Socket&, CloseReason)> CloseHandler;
+
     Socket() : server(false), handle(-1) {}
     Socket(const Socket&) = delete;
     Socket(Socket&&) = delete;
@@ -100,18 +107,28 @@ public:
      */
     bool isServer() const { return this->server; }
 
+    /**
+     * Registers a function to be executed when the socket gets closed.
+     * @param the call back to execute
+     * @return the instance for chaining
+     */
+    Socket& registerCloseHandler(CloseHandler);
+
 private:
     bool server;
     int handle;
     std::recursive_mutex handleMutex;
     struct sockaddr addr;
     unsigned int addrLen;
+    std::vector<CloseHandler> closeHandlers;
 
     struct sockaddr_in setupPort(unsigned short);
     struct sockaddr_in setupHostAndPort(unsigned short, std::string);
     Socket& setupSocket(const struct sockaddr_in, bool bind);
     void error(const std::string&, int);
     void checkOpen() const;
+
+    void close(CloseReason);
 
 };
 

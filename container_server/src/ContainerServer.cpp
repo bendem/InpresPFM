@@ -41,6 +41,9 @@ ContainerServer& ContainerServer::listen() {
             std::lock_guard<std::mutex>(this->connectionsMutex);
             std::shared_ptr<Socket> connection = socket.accept();
             LOG << Logger::Debug << "Connection accepted " << connection->getHandle();
+            connection->registerCloseHandler([](Socket& s, Socket::CloseReason) {
+                LOG << "Close handler for " << s.getHandle();
+            });
             this->selector.addSocket(connection);
         } catch(IOError e) {
             LOG << Logger::Error << "IOError: " << e.what();

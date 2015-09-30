@@ -111,6 +111,9 @@ long Socket::write(const std::vector<char>& vector) {
 
     if(len == -1) {
         this->error("Failed to write " + std::to_string(vector.size()) + " bytes", errno);
+    } else if(len == 0) {
+        this->close(Gone);
+        throw IOError("Failed to write, client closed the connection");
     } else if(len != vector.size()) {
         this->error("Didn't write enough bytes, "
             "expected: " + std::to_string(vector.size())
@@ -138,11 +141,9 @@ std::vector<char> Socket::read(unsigned int max) {
     if(len < 0) {
         delete c;
         this->error("Failed to read " + std::to_string(max) + " bytes", errno);
-    }
-
-    if(len == 0) {
-        // TODO!!
-        LOG << "Client closed the connection";
+    } else if(len == 0) {
+        this->close(Gone);
+        throw IOError("Failed to read, client closed the connection");
     }
 
     result.reserve(len);
@@ -167,6 +168,7 @@ void Socket::accumulate(unsigned int len, std::vector<char>& result) {
 }
 
 void Socket::error(const std::string& string, int err) {
+    this->close(Error);
     throw IOError(string + ": " + strerror(err));
 }
 
@@ -177,10 +179,23 @@ void Socket::checkOpen() const {
 }
 
 void Socket::close() {
+    this->close(CloseReason::Closed);
+}
+
+void Socket::close(Socket::CloseReason reason) {
     this->checkOpen();
 
     LOG << "closing socket " << this->handle;
     std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
     ::close(this->handle);
+    for(auto handler : this->closeHandlers) {
+        handler(*this, reason);
+    }
     this->handle = -1;
+}
+
+Socket& Socket::registerCloseHandler(Socket::CloseHandler handler) {
+    std::lock_guard<std::recursive_mutex> lock(this->handleMutex);
+    this->closeHandlers.emplace_back(handler);
+    return *this;
 }
