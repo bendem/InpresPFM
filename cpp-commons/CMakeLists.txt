@@ -23,7 +23,10 @@ set(SOURCE_FILES
     headers/net/Selector.hpp
     src/net/Selector.cpp
     headers/utils/Logger.hpp
-    src/utils/Logger.cpp)
+    src/utils/Logger.cpp
+    headers/utils/CSVFile.hpp
+    src/utils/CSVFile.cpp
+)
 
 add_library(cpp_commons ${SOURCE_FILES})
 target_link_libraries(cpp_commons ${CMAKE_THREAD_LIBS_INIT})
