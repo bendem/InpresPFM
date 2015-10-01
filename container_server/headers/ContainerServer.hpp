@@ -47,7 +47,6 @@ private:
     ThreadPool& pool;
     ProtocolHandler<CMMPTranslator, PacketId> proto;
     Socket socket;
-    std::mutex connectionsMutex;
     Selector selector;
     SelectorThread<CMMPTranslator, PacketId> selectorThread;
     std::atomic_bool closed;
