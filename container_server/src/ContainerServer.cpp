@@ -23,17 +23,14 @@ void debugHandler(const T& p, std::shared_ptr<Socket> s) {
 ContainerServer& ContainerServer::init() {
     using std::placeholders::_1;
     using std::placeholders::_2;
-    LoginPacket::registerHandler(std::bind(&ContainerServer::loginHandler, this, _1, _2));
-    InputTruckPacket::registerHandler(debugHandler<InputTruckPacket>);
-    InputDonePacket::registerHandler(debugHandler<InputDonePacket>);
-    OutputReadyPacket::registerHandler(debugHandler<OutputReadyPacket>);
-    OutputOnePacket::registerHandler(debugHandler<OutputOnePacket>);
-    OutputDonePacket::registerHandler(debugHandler<OutputDonePacket>);
-    LogoutPacket::registerHandler(debugHandler<LogoutPacket>);
 
-    LogoutPacket::registerHandler([this](LogoutPacket, std::shared_ptr<Socket> s) {
-        s->close();
-    });
+    LoginPacket::registerHandler(std::bind(&ContainerServer::loginHandler, this, _1, _2));
+    InputTruckPacket::registerHandler(std::bind(&ContainerServer::inputTruckHandler, this, _1, _2));
+    InputDonePacket::registerHandler(std::bind(&ContainerServer::inputDoneHandler, this, _1, _2));
+    OutputReadyPacket::registerHandler(std::bind(&ContainerServer::outputReadyHandler, this, _1, _2));
+    OutputOnePacket::registerHandler(std::bind(&ContainerServer::outputOneHandler, this, _1, _2));
+    OutputDonePacket::registerHandler(std::bind(&ContainerServer::outputDoneHandler, this, _1, _2));
+    LogoutPacket::registerHandler(std::bind(&ContainerServer::logoutHandler, this, _1, _2));
 
     return *this;
 }
@@ -52,8 +49,6 @@ ContainerServer& ContainerServer::listen() {
             LOG << Logger::Error << "IOError: " << e.what();
             continue;
         }
-
-        // TODO Refresh selector
     }
 
     return *this;
@@ -85,4 +80,28 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
 
     LOG << Logger::Warning << "Tried to login from " << p.getUsername() << " with invalid password";
     this->proto.write(s, LoginResponsePacket(false, "Invalid password"));
+}
+
+void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_ptr<Socket> s) {
+    // TODO Implement inputTruckHandler
+}
+
+void ContainerServer::inputDoneHandler(const InputDonePacket& p, std::shared_ptr<Socket> s) {
+    // TODO Implement inputDoneHandler
+}
+
+void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared_ptr<Socket> s) {
+    // TODO Implement outputReadyHandler
+}
+
+void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr<Socket> s) {
+    // TODO Implement outputOneHandler
+}
+
+void ContainerServer::outputDoneHandler(const OutputDonePacket& p, std::shared_ptr<Socket> s) {
+    // TODO Implement outputDoneHandler
+}
+
+void ContainerServer::logoutHandler(const LogoutPacket& p, std::shared_ptr<Socket> s) {
+    // TODO Implement logoutHandler
 }

@@ -35,6 +35,12 @@ public:
 
     // Handlers
     void loginHandler(const LoginPacket&, std::shared_ptr<Socket>);
+    void inputTruckHandler(const InputTruckPacket&, std::shared_ptr<Socket>);
+    void inputDoneHandler(const InputDonePacket&, std::shared_ptr<Socket>);
+    void outputReadyHandler(const OutputReadyPacket&, std::shared_ptr<Socket>);
+    void outputOneHandler(const OutputOnePacket&, std::shared_ptr<Socket>);
+    void outputDoneHandler(const OutputDonePacket&, std::shared_ptr<Socket>);
+    void logoutHandler(const LogoutPacket&, std::shared_ptr<Socket>);
 
 private:
     CSVFile& users;
