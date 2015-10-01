@@ -50,6 +50,8 @@ private:
     Selector selector;
     SelectorThread<CMMPTranslator, PacketId> selectorThread;
     std::atomic_bool closed;
+    std::unordered_map<Socket*, std::string> loggedInUsers;
+    std::mutex loggedInUsersMutex;
 
 };
 
