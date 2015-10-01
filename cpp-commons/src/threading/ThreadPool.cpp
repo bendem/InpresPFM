@@ -1,7 +1,6 @@
 #include "threading/ThreadPool.hpp"
 
 ThreadPool::ThreadPool(unsigned int count, std::function<void()> startup) : closed(false) {
-    LOG << "Starting thread pool of " << count << " threads";
     for(unsigned int i = 0; i < count; ++i) {
         this->threads.emplace_back(std::thread([this, &startup] {
             startup();
@@ -22,6 +21,7 @@ ThreadPool::ThreadPool(unsigned int count, std::function<void()> startup) : clos
 
                 task();
             }
+            LOG << Logger::Debug << "Thread from thread pool closed";
         }));
     }
 }

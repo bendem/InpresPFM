@@ -15,7 +15,7 @@ std::string CSVFile::get(const std::string& column, unsigned line) const {
     return this->data[line][this->getColumn(column)];
 }
 
-std::map<std::string, std::string> CSVFile::search(const std::string& column, const std::string& value) const {
+std::map<std::string, std::string> CSVFile::find(const std::string& column, const std::string& value) const {
     unsigned col = this->getColumn(column);
     for(unsigned i = 0; i < this->data.size(); ++i) {
         if(this->data[i][col] == value) {

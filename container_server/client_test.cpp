@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 
     LOG << "Sending all packets";
 
-    proto.write(s, LoginPacket("bendem", "supersecurepassword", true));
+    proto.write(s, LoginPacket("bendem", "thebest", true));
     s->close();/*
     proto.write(s, InputTruckPacket("license", "container-id"));
     proto.write(s, InputDonePacket(true, 1.2));

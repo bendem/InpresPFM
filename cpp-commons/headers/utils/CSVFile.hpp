@@ -13,7 +13,7 @@ public:
     CSVFile(std::istream&, char);
 
     std::string get(const std::string&, unsigned) const;
-    std::map<std::string, std::string> search(const std::string&, const std::string&) const;
+    std::map<std::string, std::string> find(const std::string&, const std::string&) const;
     unsigned size() const { return data.size(); }
     unsigned columnCount() const { return columns.size(); }
 

@@ -1,7 +1,8 @@
 #include "ContainerServer.hpp"
 
-ContainerServer::ContainerServer(unsigned short port, ThreadPool& pool)
-        : pool(pool),
+ContainerServer::ContainerServer(unsigned short port, CSVFile& users, ThreadPool& pool)
+        : users(users),
+          pool(pool),
           proto(CMMPTranslator()),
           socket(),
           selector(),
@@ -20,7 +21,9 @@ void debugHandler(const T& p, std::shared_ptr<Socket> s) {
     LOG << Logger::Debug << "Received packet: " << (int) p.getId() << " from " << s->getHandle();
 }
 ContainerServer& ContainerServer::init() {
-    LoginPacket::registerHandler(debugHandler<LoginPacket>);
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+    LoginPacket::registerHandler(std::bind(&ContainerServer::loginHandler, this, _1, _2));
     InputTruckPacket::registerHandler(debugHandler<InputTruckPacket>);
     InputDonePacket::registerHandler(debugHandler<InputDonePacket>);
     OutputReadyPacket::registerHandler(debugHandler<OutputReadyPacket>);
@@ -62,4 +65,24 @@ void ContainerServer::close() {
     }
     // TODO Close more?
     // TODO Stop accept
+}
+
+void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket> s) {
+    // TODO Handle p.isNew()
+
+    std::map<std::string, std::string> map = this->users.find("username", p.getUsername());
+    if(map.empty()) {
+        LOG << Logger::Warning << "Tried to login with unknown username: " << p.getUsername();
+        this->proto.write(s, LoginResponsePacket(false, "user not found"));
+        return;
+    }
+
+    if(map.begin()->second == p.getPassword()) {
+        LOG << p.getUsername() << " logged in";
+        this->proto.write(s, LoginResponsePacket(true, ""));
+        return;
+    }
+
+    LOG << Logger::Warning << "Tried to login from " << p.getUsername() << " with invalid password";
+    this->proto.write(s, LoginResponsePacket(false, "Invalid password"));
 }

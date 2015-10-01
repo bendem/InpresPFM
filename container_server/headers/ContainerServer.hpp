@@ -9,12 +9,13 @@
 #include "net/Socket.hpp"
 #include "protocol/ProtocolHandler.hpp"
 #include "threading/ThreadPool.hpp"
+#include "utils/CSVFile.hpp"
 #include "utils/Logger.hpp"
 
 class ContainerServer {
 
 public:
-    ContainerServer(unsigned short, ThreadPool&);
+    ContainerServer(unsigned short, CSVFile&, ThreadPool&);
     ~ContainerServer();
 
     /**
@@ -32,7 +33,11 @@ public:
      */
     void close();
 
+    // Handlers
+    void loginHandler(const LoginPacket&, std::shared_ptr<Socket>);
+
 private:
+    CSVFile& users;
     ThreadPool& pool;
     ProtocolHandler<CMMPTranslator, PacketId> proto;
     Socket socket;

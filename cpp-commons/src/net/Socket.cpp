@@ -132,11 +132,9 @@ std::vector<char> Socket::read(unsigned int max) {
     std::vector<char> result;
     char* c = new char[max]; // TODO Don't do that
 
-    LOG << Logger::Debug << "=== LOCK";
     this->handleMutex.lock();
     ssize_t len = recv(this->handle, c, max, 0);
     this->handleMutex.unlock();
-    LOG << Logger::Debug << "=== UNLOCK";
 
     if(len < 0) {
         delete c;
