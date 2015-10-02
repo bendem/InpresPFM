@@ -9,20 +9,20 @@
 class InputTruckPacket : public Packet<InputTruckPacket> {
 
 public:
-    InputTruckPacket(const std::string& license, const std::string& container_id)
+    InputTruckPacket(const std::string& license, const std::vector<std::string>& containerIds)
         : Packet(PacketId::InputTruck),
           license(license),
-          containerId(container_id) {}
+          containerIds(containerIds) {}
 
     const std::string& getLicense() const { return license; }
-    const std::string& getContainerId() const {  return containerId;  }
+    const std::vector<std::string>& getContainerIds() const { return containerIds; }
 
     static InputTruckPacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:
     std::string license;
-    std::string containerId;
+    std::vector<std::string> containerIds;
 
 };
 
