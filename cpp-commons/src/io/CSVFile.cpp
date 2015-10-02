@@ -1,4 +1,4 @@
-#include "utils/CSVFile.hpp"
+#include "io/CSVFile.hpp"
 
 CSVFile::CSVFile(std::istream& is, char sep) {
     // TODO Check stream

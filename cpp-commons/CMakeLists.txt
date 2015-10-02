@@ -24,8 +24,8 @@ set(SOURCE_FILES
     src/net/Selector.cpp
     headers/utils/Logger.hpp
     src/utils/Logger.cpp
-    headers/utils/CSVFile.hpp
-    src/utils/CSVFile.cpp
+    headers/io/CSVFile.hpp
+    src/io/CSVFile.cpp
 )
 
 add_library(cpp_commons ${SOURCE_FILES})
