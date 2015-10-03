@@ -16,12 +16,12 @@ std::string CSVFile::get(const std::string& column, long line) const {
 }
 
 std::map<std::string, std::string> CSVFile::find(const std::string& column, const std::string& value) const {
-    unsigned col = this->getColumn(column);
+    unsigned column_index = this->getColumn(column);
     for(unsigned i = 0; i < this->data.size(); ++i) {
-        if(this->data[i][col] == value) {
+        if(this->data[i][column_index] == value) {
             std::map<std::string, std::string> result;
-            for(auto& item : this->columns) {
-                result.insert({ item.first, this->data[i][item.second] });
+            for(unsigned col = 0; col < this->columns.size(); ++col) {
+                result.insert({ this->columns[col], this->data[i][col] });
             }
             return result;
         }
@@ -30,15 +30,37 @@ std::map<std::string, std::string> CSVFile::find(const std::string& column, cons
     return {};
 }
 
+CSVFile& CSVFile::insert(const std::vector<std::string>& values) {
+    Sanity::truthness(values.size() == this->columns.size(), "Invalid number of values to insert");
+
+    this->data.emplace_back(std::vector<std::string> { values });
+    return *this;
+}
+
+CSVFile& CSVFile::save(std::ostream& os, char sep) {
+    Sanity::streamness(os, "Invalid stream passed to CSVFile::save");
+
+    if(this->data.empty()) {
+        return *this;
+    }
+
+    os << join(this->columns, sep) << std::endl;
+    for(auto& line : this->data) {
+        os << join(line, sep) << std::endl;
+    }
+
+    return *this;
+}
+
 void CSVFile::parseHeader(std::istream& is, unsigned long count, char sep) {
     std::string part;
     for(unsigned long i = 0; i < count; ++i) {
         getline(is, part, sep);
-        this->columns.insert({part, i});
+        this->columns.push_back(part);
     }
     // Read last one
     is >> part;
-    this->columns.insert({part, count});
+    this->columns.push_back(part);
 }
 
 void CSVFile::parseData(std::istream& is, char sep) {
@@ -56,9 +78,28 @@ void CSVFile::parseData(std::istream& is, char sep) {
 }
 
 unsigned CSVFile::getColumn(const std::string& column) const {
-    auto it = this->columns.find(column);
-    if(it == this->columns.end()) {
-        throw std::runtime_error("File doesn't contain '" + column + "'");
+    for(unsigned i = 0; i < this->columns.size(); ++i) {
+        if(this->columns[i] == column) {
+            return i;
+        }
     }
-    return it->second;
+    throw std::runtime_error("File doesn't contain '" + column + "'");
+}
+
+std::string CSVFile::join(const std::vector<std::string>& vector, char sep) {
+    if(vector.size() == 0) {
+        return "";
+    }
+    if(vector.size() == 1) {
+        return vector[0];
+    }
+
+    return std::accumulate(
+        vector.begin() + 1,
+        vector.end(),
+        vector.front(),
+        [sep](const std::string& a, const std::string b) {
+            return a + sep + b;
+        }
+    );
 }
