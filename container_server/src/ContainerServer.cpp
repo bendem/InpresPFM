@@ -16,10 +16,6 @@ ContainerServer::~ContainerServer() {
     this->close();
 }
 
-template<class T>
-void debugHandler(const T& p, std::shared_ptr<Socket> s) {
-    LOG << Logger::Debug << "Received packet: " << (int) p.getId() << " from " << s->getHandle();
-}
 ContainerServer& ContainerServer::init() {
     using std::placeholders::_1;
     using std::placeholders::_2;
@@ -40,6 +36,7 @@ ContainerServer& ContainerServer::listen() {
         try {
             std::shared_ptr<Socket> connection = socket.accept();
             LOG << Logger::Debug << "Connection accepted " << connection->getHandle();
+
             connection->registerCloseHandler([this](Socket& s, Socket::CloseReason) {
                 std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
                 if(this->loggedInUsers.erase(&s) == 1) {
@@ -65,18 +62,17 @@ void ContainerServer::close() {
 }
 
 void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket> s) {
-    {
-        std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
-        if(this->loggedInUsers.find(s.get()) != this->loggedInUsers.end()) {
-            LOG << Logger::Warning << "Ignoring connect attempt from an authentified socket: " << p.getUsername();
-            this->proto.write(s, LoginResponsePacket(false, "Already logged in"));
-            return;
-        }
+    if(this->isLoggedIn(s)) {
+        LOG << Logger::Warning << "Ignoring connect attempt from an authentified socket: " << p.getUsername();
+
+        this->proto.write(s, LoginResponsePacket(false, "Already logged in"));
+        return;
     }
 
     if(p.isNew()) {
         // TODO Handle p.isNew()
         LOG << Logger::Error << "User creation not implemented";
+
         this->proto.write(s, LoginResponsePacket(false, "User creation not implemented"));
         return;
     }
@@ -84,12 +80,14 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
     std::map<std::string, std::string> map = this->users.find("username", p.getUsername());
     if(map.empty()) {
         LOG << Logger::Warning << "Tried to login with unknown username: " << p.getUsername();
+
         this->proto.write(s, LoginResponsePacket(false, "user not found"));
         return;
     }
 
     if(map.begin()->second == p.getPassword()) {
         LOG << p.getUsername() << " logged in";
+
         std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
         this->loggedInUsers.insert({ s.get(), p.getUsername() });
         this->proto.write(s, LoginResponsePacket(true, ""));
@@ -101,9 +99,15 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
 }
 
 void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_ptr<Socket> s) {
+    if(!this->isLoggedIn(s)) {
+        this->proto.write(s, InputTruckResponsePacket(false, {}, "Not logged in"));
+        return;
+    }
+
     std::vector<Container> containers;
     for(const Container& container : p.getContainers()) {
-        //container_add.save("FICH_PARC"); // Might have to be moved to inputDoneHandler if we need to add a weight to the container
+        // Might have to be moved to inputDoneHandler if we need to add a weight to the container
+        //container_add.save("FICH_PARC");
         containers.emplace_back(Container { container.id, container.destination, 0, 0 });
     }
     LOG << "[InputTruckHandler] Received " << containers.size() << " containers in InputTruckPacket";
@@ -113,11 +117,21 @@ void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_p
 }
 
 void ContainerServer::inputDoneHandler(const InputDonePacket& p, std::shared_ptr<Socket> s) {
+    if(!this->isLoggedIn(s)) {
+        this->proto.write(s, InputDoneResponsePacket(false, "Not logged in"));
+        return;
+    }
+
     // TODO Do something with the weight
     this->proto.write(s, InputDoneResponsePacket(true, ""));
 }
 
 void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared_ptr<Socket> s) {
+    if(!this->isLoggedIn(s)) {
+        this->proto.write(s, OutputReadyResponsePacket(false, {}, "Not logged in"));
+        return;
+    }
+
     std::vector<Container> containers;
     std::vector<std::string> containers_to_send;
     int loaded = 0;
@@ -146,6 +160,11 @@ void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared
 }
 
 void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr<Socket> s) {
+    if(!this->isLoggedIn(s)) {
+        this->proto.write(s, OutputOneResponsePacket(false, "Not logged in"));
+        return;
+    }
+
     int test = 0;
     /* test = UtilsFich.deleteFromFile(p.getContainerId()); */
 
@@ -159,6 +178,11 @@ void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr
 }
 
 void ContainerServer::outputDoneHandler(const OutputDonePacket& p, std::shared_ptr<Socket> s) {
+    if(!this->isLoggedIn(s)) {
+        this->proto.write(s, OutputDoneResponsePacket(false, "Not logged in"));
+        return;
+    }
+
     // TODO Add a way to remember the number of containers sent in OutputReadyHadler
 
     LOG << "[OutputDoneHandler] Loaded " << p.getContainerCount();
@@ -167,8 +191,18 @@ void ContainerServer::outputDoneHandler(const OutputDonePacket& p, std::shared_p
 }
 
 void ContainerServer::logoutHandler(const LogoutPacket&, std::shared_ptr<Socket> s) {
+    if(!this->isLoggedIn(s)) {
+        this->proto.write(s, LogoutResponsePacket(false, "Not logged in"));
+        return;
+    }
+
     // TODO Not sure what the stuff from the packet is useful for...
     std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
     this->loggedInUsers.erase(s.get());
     s->close();
+}
+
+bool ContainerServer::isLoggedIn(std::shared_ptr<Socket> socket) {
+    std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
+    return this->loggedInUsers.find(socket.get()) != this->loggedInUsers.end();
 }

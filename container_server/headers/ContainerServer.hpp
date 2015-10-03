@@ -42,6 +42,11 @@ public:
     void outputDoneHandler(const OutputDonePacket&, std::shared_ptr<Socket>);
     void logoutHandler(const LogoutPacket&, std::shared_ptr<Socket>);
 
+    /**
+     * Checks whether a socket has already authenticated.
+     */
+    bool isLoggedIn(std::shared_ptr<Socket>);
+
 private:
     CSVFile& users;
     ThreadPool& pool;
