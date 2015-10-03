@@ -1,17 +1,17 @@
 #include "io/CSVFile.hpp"
 
 CSVFile::CSVFile(std::istream& is, char sep) {
-    // TODO Check stream
+    Sanity::streamness(is, "Invalid stream provided to CSVFile");
     std::string line;
     getline(is, line);
-    unsigned count = std::count(line.begin(), line.end(), sep);
+    unsigned long count = std::count(line.begin(), line.end(), sep);
 
     std::istringstream header_is(line);
     this->parseHeader(header_is, count, sep);
     this->parseData(is, sep);
 }
 
-std::string CSVFile::get(const std::string& column, unsigned line) const {
+std::string CSVFile::get(const std::string& column, long line) const {
     return this->data[line][this->getColumn(column)];
 }
 
@@ -30,9 +30,9 @@ std::map<std::string, std::string> CSVFile::find(const std::string& column, cons
     return {};
 }
 
-void CSVFile::parseHeader(std::istream& is, unsigned count, char sep) {
+void CSVFile::parseHeader(std::istream& is, unsigned long count, char sep) {
     std::string part;
-    for(unsigned i = 0; i < count; ++i) {
+    for(unsigned long i = 0; i < count; ++i) {
         getline(is, part, sep);
         this->columns.insert({part, i});
     }
@@ -45,7 +45,7 @@ void CSVFile::parseData(std::istream& is, char sep) {
     std::string part;
     while(is.peek() != EOF) {
         std::vector<std::string> parts;
-        for(unsigned i = 0; i < this->columns.size() - 1; ++i) {
+        for(unsigned long i = 0; i < this->columns.size() - 1; ++i) {
             getline(is, part, sep);
             parts.push_back(part);
         }

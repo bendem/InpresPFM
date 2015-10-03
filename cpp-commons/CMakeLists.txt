@@ -26,6 +26,8 @@ set(SOURCE_FILES
     src/utils/Logger.cpp
     headers/io/CSVFile.hpp
     src/io/CSVFile.cpp
+    headers/utils/Sanity.hpp
+    src/utils/Sanity.cpp
 )
 
 add_library(cpp_commons ${SOURCE_FILES})
