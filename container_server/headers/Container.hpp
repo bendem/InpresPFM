@@ -6,25 +6,11 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
-class Container {
-
-public:
-    Container(std::string id, std::string destination, std::pair<uint32_t, uint32_t> position)
-            : id(id),
-              destination(destination),
-              position(position) {}
-
-    std::string getId() const { return id; }
-    std::string getDestination() const { return destination; }
-    std::pair<uint32_t, uint32_t> getPosition() const { return position; }
-    uint32_t getX() const { return std::get<0>(position); }
-    uint32_t getY() const { return std::get<1>(position); }
-
-private:
+struct Container {
     std::string id;
     std::string destination;
-    std::pair<uint32_t, uint32_t> position;
-
+    uint32_t x;
+    uint32_t y;
 };
 
 #endif

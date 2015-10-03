@@ -102,10 +102,9 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
 
 void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_ptr<Socket> s) {
     std::vector<Container> containers;
-    for(auto container : p.getContainers()) {
-        Container container_add = Container(std::get<0>(container), std::get<1>(container), std::make_pair(0, 0));
+    for(const Container& container : p.getContainers()) {
         //container_add.save("FICH_PARC"); // Might have to be moved to inputDoneHandler if we need to add a weight to the container
-        containers.push_back(container_add);
+        containers.emplace_back(Container { container.id, container.destination, 0, 0 });
     }
     LOG << "[InputTruckHandler] Received " << containers.size() << " containers in InputTruckPacket";
 

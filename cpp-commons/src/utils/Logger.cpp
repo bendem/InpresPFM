@@ -6,7 +6,7 @@ void Logger::log(Logger::Level level, const std::string& msg, const std::string&
     std::time_t time = std::time(nullptr);
     std::tm* now = std::localtime(&time);
 
-    for(auto handler : this->handlers) {
+    for(Handler handler : this->handlers) {
         handler(level, msg, file, line, now);
     }
 }

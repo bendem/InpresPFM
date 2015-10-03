@@ -20,7 +20,7 @@ void OutputReadyResponsePacket::encode(std::vector<char>& v) const {
         writeString(v, reason);
     } else {
         writePrimitive<uint32_t>(v, containerIds.size());
-        for(auto value : containerIds) {
+        for(const std::string& value : containerIds) {
             writeString(v, value);
         }
     }

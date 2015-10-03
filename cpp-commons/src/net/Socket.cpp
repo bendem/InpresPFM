@@ -186,7 +186,7 @@ void Socket::close(Socket::CloseReason reason) {
     LOG << "closing socket " << this->handle;
     std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
     ::close(this->handle);
-    for(auto handler : this->closeHandlers) {
+    for(CloseHandler handler : this->closeHandlers) {
         handler(*this, reason);
     }
     this->handle = -1;

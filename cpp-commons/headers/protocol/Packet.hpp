@@ -50,7 +50,7 @@ void Packet<P>::registerHandler(PacketHandler<P> handler) {
 
 template<class P>
 void Packet<P>::handle(std::shared_ptr<Socket> socket) const {
-    for(auto handler : handlers) {
+    for(PacketHandler<P> handler : handlers) {
         handler(static_cast<const P&>(*this), socket);
     }
 }

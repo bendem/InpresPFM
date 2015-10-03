@@ -18,7 +18,8 @@ InputTruckResponsePacket InputTruckResponsePacket::decode(std::vector<char>::con
                 destination = readString(it);
                 x = readPrimitive<uint32_t>(it);
                 y = readPrimitive<uint32_t>(it);
-                containers.push_back(Container(container_id, destination, std::make_pair(x, y)));
+
+                containers.emplace_back(Container { container_id, destination, x, y });
             }
         }
     } else {
@@ -34,11 +35,11 @@ void InputTruckResponsePacket::encode(std::vector<char>& v) const {
         writeString(v, reason);
     } else {
         writePrimitive<uint32_t>(v, containers.size());
-        for(const Container& cont : containers) {
-            writeString(v, cont.getId());
-            writeString(v, cont.getDestination());
-            writePrimitive(v, cont.getX());
-            writePrimitive(v, cont.getY());
+        for(const Container& container : containers) {
+            writeString(v, container.id);
+            writeString(v, container.destination);
+            writePrimitive(v, container.x);
+            writePrimitive(v, container.y);
         }
     }
 }
