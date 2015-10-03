@@ -100,24 +100,71 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
     this->proto.write(s, LoginResponsePacket(false, "Invalid password"));
 }
 
-void ContainerServer::inputTruckHandler(const InputTruckPacket&, std::shared_ptr<Socket>) {
-    // TODO Implement inputTruckHandler
+void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_ptr<Socket> s) {
+    std::vector<Container> containers;
+    for(auto container : p.getContainers()) {
+        Container container_add = Container(std::get<0>(container), std::get<1>(container), std::make_pair(0, 0));
+        //container_add.save("FICH_PARC"); // Might have to be moved to inputDoneHandler if we need to add a weight to the container
+        containers.push_back(container_add);
+    }
+    LOG << "[InputTruckHandler] Received " << containers.size() << " containers in InputTruckPacket";
+
+    this->proto.write(s, InputTruckResponsePacket(true, containers, ""));
+
 }
 
-void ContainerServer::inputDoneHandler(const InputDonePacket&, std::shared_ptr<Socket>) {
-    // TODO Implement inputDoneHandler
+void ContainerServer::inputDoneHandler(const InputDonePacket& p, std::shared_ptr<Socket> s) {
+    // TODO Do something with the weight
+    this->proto.write(s, InputDoneResponsePacket(true, ""));
 }
 
-void ContainerServer::outputReadyHandler(const OutputReadyPacket&, std::shared_ptr<Socket>) {
-    // TODO Implement outputReadyHandler
+void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared_ptr<Socket> s) {
+    std::vector<Container> containers;
+    std::vector<std::string> containers_to_send;
+    int loaded = 0;
+    LOG << "[OutputReadyHandler] Transport n° " << p.getLicense() << " going to " << p.getDestination() << " can carry " << p.getCapacity() << " containers.";
+
+    /*containers = fileUtils.loadFile("FICH_PARC");
+    for(auto cont : containers) {
+        if(loaded < p.getCapacity()) {
+            if(cont.getDestination() == p.getDestination()){
+                containers_to_send.push_back(cont);
+                loaded++;
+            }
+        } else {
+            break;
+        }
+    }
+    */
+    if(containers_to_send.size()) {
+        LOG << "[OutputReadyHandler] Sending " << containers_to_send.size() << " containers";
+        this->proto.write(s, OutputReadyResponsePacket(true, containers_to_send, ""));
+    } else {
+        LOG << "[OutputReadyHandler] No containers available for " << p.getDestination();
+        this->proto.write(s, OutputReadyResponsePacket(false, containers_to_send, "No containers for this destination."));
+    }
+
 }
 
-void ContainerServer::outputOneHandler(const OutputOnePacket&, std::shared_ptr<Socket>) {
-    // TODO Implement outputOneHandler
+void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr<Socket> s) {
+    int test = 0;
+    /* test = UtilsFich.deleteFromFile(p.getContainerId()); */
+
+    if (test) {
+        LOG << "[OutputOneHandler] Container " << p.getContainerId() << " is loaded";
+        this->proto.write(s, OutputOneResponsePacket(true, ""));
+    } else {
+        LOG << "[OutputOneHandler] Container " << p.getContainerId() << " doesn't exist";
+        this->proto.write(s, OutputOneResponsePacket(false, "Container doesn't exist."));
+    }
 }
 
-void ContainerServer::outputDoneHandler(const OutputDonePacket&, std::shared_ptr<Socket>) {
-    // TODO Implement outputDoneHandler
+void ContainerServer::outputDoneHandler(const OutputDonePacket& p, std::shared_ptr<Socket> s) {
+    // TODO Add a way to remember the number of containers sent in OutputReadyHadler
+
+    LOG << "[OutputDoneHandler] Loaded " << p.getContainerCount();
+
+    this->proto.write(s, OutputDoneResponsePacket(true, ""));
 }
 
 void ContainerServer::logoutHandler(const LogoutPacket&, std::shared_ptr<Socket> s) {
