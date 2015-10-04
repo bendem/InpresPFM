@@ -49,6 +49,8 @@ set(SOURCE_FILES
     headers/SelectorThread.hpp
 )
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/users.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data)
+
 add_subdirectory(../cpp-commons build)
 
 add_executable(container_server main.cpp ${SOURCE_FILES})

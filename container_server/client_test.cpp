@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     ProtocolHandler<CMMPTranslator, PacketId> proto(translator);
 
     LoginResponsePacket::registerHandler([](LoginResponsePacket p, std::shared_ptr<Socket>) {
-        std::cout << "received: " << (int) p.getId() << std::endl;
+        std::cout << "received: " << (int) p.getId() << ' ' << p.isOk() << ": " << p.getReason() << std::endl;
     });
     InputTruckResponsePacket::registerHandler([](InputTruckResponsePacket p, std::shared_ptr<Socket>) {
         std::cout << "received: " << (int) p.getId() << std::endl;
@@ -41,9 +41,10 @@ int main(int argc, char** argv) {
 
     LOG << "Sending all packets";
 
-    proto.write(s, LoginPacket("bendem", "thebest", false));
+    proto.write(s, LoginPacket("", "thebest", true));
     proto.read(s);
-    proto.write(s, LoginPacket("bendem", "thebest", false));
+    proto.write(s, LoginPacket("bendem", "thebest", true));
+    proto.read(s);
     s->close();/*
     proto.write(s, InputTruckPacket("license", "container-id"));
     proto.write(s, InputDonePacket(true, 1.2));

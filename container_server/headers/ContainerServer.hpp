@@ -49,6 +49,7 @@ public:
 
 private:
     CSVFile& users;
+    std::mutex usersMutex;
     ThreadPool& pool;
     ProtocolHandler<CMMPTranslator, PacketId> proto;
     Socket socket;

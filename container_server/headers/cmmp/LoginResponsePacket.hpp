@@ -9,7 +9,7 @@
 class LoginResponsePacket : public Packet<LoginResponsePacket> {
 
 public:
-    LoginResponsePacket(bool ok, std::string reason)
+    LoginResponsePacket(bool ok, std::string reason = "")
         : Packet(PacketId::LoginResponse),
           ok(ok),
           reason(reason) {}
