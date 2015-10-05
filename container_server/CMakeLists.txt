@@ -11,7 +11,7 @@ endif()
 include_directories(headers)
 include_directories(../cpp-commons/headers)
 
-set(SOURCE_FILES
+set(COMMON_FILES
     headers/cmmp/PacketId.hpp
     headers/cmmp/CMMPTranslator.hpp
     headers/cmmp/LoginPacket.hpp
@@ -44,17 +44,19 @@ set(SOURCE_FILES
     src/cmmp/LogoutResponsePacket.cpp
     headers/Container.hpp
     src/cmmp/CMMPTranslator.cpp
-    headers/ContainerServer.hpp
-    src/ContainerServer.cpp
-    headers/SelectorThread.hpp
 )
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/users.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data)
 
 add_subdirectory(../cpp-commons build)
 
-add_executable(container_server main.cpp ${SOURCE_FILES})
+add_executable(container_server
+    headers/ContainerServer.hpp
+    src/ContainerServer.cpp
+    headers/SelectorThread.hpp
+    server.cpp
+    ${COMMON_FILES})
 target_link_libraries(container_server cpp_commons)
 
-add_executable(container_server_test_application client_test.cpp ${SOURCE_FILES})
-target_link_libraries(container_server_test_application cpp_commons)
+add_executable(container_app client.cpp ${COMMON_FILES})
+target_link_libraries(container_app cpp_commons)
