@@ -1,5 +1,7 @@
 #include "cmmp/LogoutResponsePacket.hpp"
 
+const PacketId LogoutResponsePacket::id = PacketId::LogoutResponse;
+
 LogoutResponsePacket LogoutResponsePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
     std::string reason = ok ? "" : readString(it);

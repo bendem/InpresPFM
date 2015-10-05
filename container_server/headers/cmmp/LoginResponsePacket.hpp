@@ -9,9 +9,10 @@
 class LoginResponsePacket : public Packet<LoginResponsePacket> {
 
 public:
+    static const PacketId id;
+
     LoginResponsePacket(bool ok, std::string reason = "")
-        : Packet(PacketId::LoginResponse),
-          ok(ok),
+        : ok(ok),
           reason(reason) {}
 
     bool isOk() const { return ok; }

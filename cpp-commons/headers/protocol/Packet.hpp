@@ -9,16 +9,17 @@
 template<class P>
 using PacketHandler = std::function<void(const P&, std::shared_ptr<Socket>)>;
 
+/**
+ * Facility class to help with converting a network packet to/from a vector of chars
+ * and handle callbacks.
+ *
+ * A packet should implement
+ * + static P decode(vector<char>::const_iterator),
+ * + void encode(vector<char>&),
+ * + static Id id
+ */
 template<class P>
 class Packet {
-
-// Actual packet stuff
-public:
-    Packet(char id) : id(id) {}
-    char getId() const { return id; }
-
-private:
-    char id;
 
 // Event handling
 public:

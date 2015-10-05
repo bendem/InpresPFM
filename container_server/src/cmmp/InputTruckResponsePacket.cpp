@@ -1,5 +1,7 @@
 #include "cmmp/InputTruckResponsePacket.hpp"
 
+const PacketId InputTruckResponsePacket::id = PacketId::InputTruckResponse;
+
 InputTruckResponsePacket InputTruckResponsePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
     std::string reason;

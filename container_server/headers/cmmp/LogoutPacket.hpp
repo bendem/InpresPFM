@@ -9,9 +9,10 @@
 class LogoutPacket : public Packet<LogoutPacket> {
 
 public:
+    static const PacketId id;
+
     LogoutPacket(const std::string& username, const std::string& password)
-        : Packet(PacketId::Logout),
-          username(username),
+        : username(username),
           password(password) {}
 
     const std::string& getUsername() const { return username; }

@@ -7,9 +7,10 @@
 class InputDonePacket : public Packet<InputDonePacket> {
 
 public:
+    static const PacketId id;
+
     InputDonePacket(bool ok, float weight)
-        : Packet(PacketId::InputDone),
-          ok(ok),
+        : ok(ok),
           weight(weight) {}
 
     bool isOk() const { return ok; }

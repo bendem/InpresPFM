@@ -1,5 +1,7 @@
 #include "cmmp/OutputReadyPacket.hpp"
 
+const PacketId OutputReadyPacket::id = PacketId::OutputReady;
+
 OutputReadyPacket OutputReadyPacket::decode(std::vector<char>::const_iterator& it) {
     std::string license = readString(it);
     std::string destination = readString(it);

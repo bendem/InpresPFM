@@ -11,6 +11,11 @@
 #include "protocol/ProtocolError.hpp"
 #include "utils/Logger.hpp"
 
+/**
+ * Class abstracting the network implementation of a variable length protocol using limited framing.
+ * <Translator> Class handling the transformation of a packet id and a vector of chars to useable packets
+ * <Id>         Type of the packet ids (allows enum usage). The size of the id must be exactly 1 byte.
+ */
 template<class Translator, class Id>
 class ProtocolHandler {
 
@@ -21,6 +26,9 @@ public:
 
     void read(std::shared_ptr<Socket>);
 
+    template<class P>
+    P readSpecificPacket(std::shared_ptr<Socket>);
+
     template<class T>
     ProtocolHandler<Translator, Id>& write(std::shared_ptr<Socket>, const T&);
 
@@ -30,9 +38,9 @@ private:
     Translator translator;
     std::atomic_bool closed;
 
-    static const char FRAME_END;
+    std::pair<Id, std::vector<char>> readPacket(std::shared_ptr<Socket>);
 
-    static uint32_t parseLength(char*);
+    static const char FRAME_END;
 
 };
 
@@ -40,14 +48,15 @@ template<class Translator, class Id>
 const char ProtocolHandler<Translator, Id>::FRAME_END = 0x42;
 
 template<class Translator, class Id>
-void ProtocolHandler<Translator, Id>::read(std::shared_ptr<Socket> socket) {
+std::pair<Id, std::vector<char>> ProtocolHandler<Translator, Id>::readPacket(std::shared_ptr<Socket> socket) {
     Id id;
     uint32_t len;
     std::vector<char> v;
 
     socket->accumulate(5, v);
     id = (Id) v[0];
-    len = this->parseLength(&v[1]) + 1; // + 1 => end frame marquer
+    // TODO Validate the id and close the connection on protocol error!
+    len = *reinterpret_cast<const uint32_t*>(&v[1]) + 1; // + 1 => end frame marquer
 
     LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len << ":read:" << v.size();
 
@@ -63,8 +72,33 @@ void ProtocolHandler<Translator, Id>::read(std::shared_ptr<Socket> socket) {
         throw ProtocolError("Invalid frame end");
     }
     v.pop_back();
+    return { id, v };
+}
 
-    this->translator.decode(id, v, socket);
+template<class Translator, class Id>
+void ProtocolHandler<Translator, Id>::read(std::shared_ptr<Socket> socket) {
+    // TODO Check if there is a thing for unpacking?
+    const std::pair<Id, std::vector<char>>& tmp_packet = this->readPacket(socket);
+
+    this->translator.decode(tmp_packet.first, tmp_packet.second, socket);
+}
+
+template<class Translator, class Id>
+template<class P>
+P ProtocolHandler<Translator, Id>::readSpecificPacket(std::shared_ptr<Socket> socket) {
+    while(true) {
+        // TODO Check if there is a thing for unpacking?
+        const std::pair<Id, std::vector<char>>& tmp_packet = this->readPacket(socket);
+
+        auto it = tmp_packet.second.cbegin();
+        P packet = P::decode(it);
+        // Call the handlers, just in case
+        packet.handle(socket);
+
+        if(tmp_packet.first == P::id) {
+            return packet;
+        }
+    }
 }
 
 template<class Translator, class Id>
@@ -72,7 +106,7 @@ template<class T>
 ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(std::shared_ptr<Socket> socket, const T& item) {
     std::vector<char> v(5, 0); // Reserve 5 places for the id and the length
 
-    v[0] = item.getId();
+    v[0] = T::id;
     this->translator.encode(item, v);
 
     // Store packet length
@@ -90,11 +124,6 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(std::sha
     socket->write(v);
 
     return *this;
-}
-
-template<class Translator, class Id>
-uint32_t ProtocolHandler<Translator, Id>::parseLength(char* c) {
-    return *reinterpret_cast<const uint32_t*>(c);
 }
 
 #endif

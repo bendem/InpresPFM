@@ -10,9 +10,10 @@
 class InputTruckResponsePacket : public Packet<InputTruckResponsePacket> {
 
 public:
+    static const PacketId id;
+
     InputTruckResponsePacket(bool ok, std::vector<Container> containers, std::string reason)
-        : Packet(PacketId::InputTruckResponse),
-          ok(ok),
+        : ok(ok),
           containers(containers),
           reason(reason) {}
 

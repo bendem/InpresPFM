@@ -1,5 +1,7 @@
 #include "cmmp/LoginPacket.hpp"
 
+const PacketId LoginPacket::id = PacketId::Login;
+
 LoginPacket LoginPacket::decode(std::vector<char>::const_iterator& it) {
     std::string username = readString(it);
     std::string password = readString(it);

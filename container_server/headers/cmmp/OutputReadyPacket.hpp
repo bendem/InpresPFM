@@ -9,11 +9,12 @@
 class OutputReadyPacket : public Packet<OutputReadyPacket> {
 
 public:
+    static const PacketId id;
+
     OutputReadyPacket(const std::string& license, const std::string& destination, uint32_t capacity)
-            : Packet(PacketId::OutputReady),
-              license(license),
-              destination(destination),
-              capacity(capacity) {}
+        : license(license),
+          destination(destination),
+          capacity(capacity) {}
 
     const std::string& getLicense() const { return license; }
     const std::string& getDestination() const { return destination; }

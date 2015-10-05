@@ -9,9 +9,10 @@
 class LoginPacket : public Packet<LoginPacket> {
 
 public:
+    static const PacketId id;
+
     LoginPacket(const std::string& username, const std::string& password, bool newUser)
-        : Packet(PacketId::Login),
-          username(username),
+        : username(username),
           password(password),
           newUser(newUser) {}
 

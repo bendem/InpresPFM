@@ -9,9 +9,11 @@
 class OutputDonePacket : public Packet<OutputDonePacket> {
 
 public:
+    static const PacketId id;
+
     OutputDonePacket(const std::string& license, uint32_t container_count)
-        : Packet(PacketId::OutputDone),
-          license(license), containerCount(container_count) {}
+        : license(license),
+          containerCount(container_count) {}
 
     const std::string& getLicense() const { return license; }
     uint32_t getContainerCount() const { return containerCount; }

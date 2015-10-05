@@ -1,5 +1,7 @@
 #include "cmmp/InputTruckPacket.hpp"
 
+const PacketId InputTruckPacket::id = PacketId::InputTruck;
+
 InputTruckPacket InputTruckPacket::decode(std::vector<char>::const_iterator& it) {
     std::string license = readString(it);
     uint32_t size = readPrimitive<uint32_t>(it);

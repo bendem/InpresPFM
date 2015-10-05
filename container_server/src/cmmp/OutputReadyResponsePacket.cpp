@@ -1,5 +1,7 @@
 #include "cmmp/OutputReadyResponsePacket.hpp"
 
+const PacketId OutputReadyResponsePacket::id = PacketId::OutputReadyResponse;
+
 OutputReadyResponsePacket OutputReadyResponsePacket::decode(std::vector<char>::const_iterator& it) {
     bool ok = readPrimitive<bool>(it);
     std::string reason = ok ? "" : readString(it);

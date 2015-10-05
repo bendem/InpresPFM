@@ -10,9 +10,10 @@
 class InputTruckPacket : public Packet<InputTruckPacket> {
 
 public:
+    static const PacketId id;
+
     InputTruckPacket(const std::string& license, const std::vector<Container>& containers)
-        : Packet(PacketId::InputTruck),
-          license(license),
+        : license(license),
           containers(containers) {}
 
     const std::string& getLicense() const { return license; }

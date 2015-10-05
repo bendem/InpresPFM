@@ -1,5 +1,7 @@
 #include "cmmp/OutputOnePacket.hpp"
 
+const PacketId OutputOnePacket::id = PacketId::OutputOne;
+
 OutputOnePacket OutputOnePacket::decode(std::vector<char>::const_iterator& it) {
     std::string container_id = readString(it);
 

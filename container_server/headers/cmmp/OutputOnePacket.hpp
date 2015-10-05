@@ -9,9 +9,10 @@
 class OutputOnePacket : public Packet<OutputOnePacket> {
 
 public:
+    static const PacketId id;
+
     OutputOnePacket(const std::string& container_id)
-        : Packet(PacketId::OutputOne),
-          containerId(container_id) {}
+        : containerId(container_id) {}
 
     const std::string& getContainerId() const { return containerId; }
 

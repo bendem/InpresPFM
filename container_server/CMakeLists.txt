@@ -54,8 +54,14 @@ add_executable(container_server
     headers/server/ContainerServer.hpp
     src/server/ContainerServer.cpp
     server.cpp
-    ${COMMON_FILES})
+    ${COMMON_FILES}
+)
 target_link_libraries(container_server cpp_commons)
 
-add_executable(container_app client.cpp ${COMMON_FILES})
+add_executable(container_app
+    client.cpp
+    headers/client/ContainerClient.hpp
+    src/client/ContainerClient.cpp
+    ${COMMON_FILES}
+)
 target_link_libraries(container_app cpp_commons)

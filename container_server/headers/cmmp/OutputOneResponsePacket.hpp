@@ -9,9 +9,10 @@
 class OutputOneResponsePacket : public Packet<OutputOneResponsePacket> {
 
 public:
+    static const PacketId id;
+
     OutputOneResponsePacket(bool ok, std::string reason)
-        : Packet(PacketId::OutputOneResponse),
-          ok(ok),
+        : ok(ok),
           reason(reason) {}
 
     bool isOk() const { return ok; }
