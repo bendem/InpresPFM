@@ -8,9 +8,8 @@
 #include <vector>
 
 #include "net/Socket.hpp"
-#include "utils/Logger.hpp"
-
 #include "protocol/ProtocolError.hpp"
+#include "utils/Logger.hpp"
 
 template<class Translator, class Id>
 class ProtocolHandler {

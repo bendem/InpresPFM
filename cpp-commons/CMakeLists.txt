@@ -12,21 +12,22 @@ find_package(Threads)
 include_directories(headers)
 
 set(SOURCE_FILES
-    headers/net/Socket.hpp
-    src/net/Socket.cpp
+    headers/io/CSVFile.hpp
     headers/net/IOError.hpp
-    headers/protocol/ProtocolHandler.hpp
+    headers/net/Selector.hpp
+    headers/net/SelectorThread.hpp
+    headers/net/Socket.hpp
     headers/protocol/Packet.hpp
     headers/protocol/ProtocolError.hpp
+    headers/protocol/ProtocolHandler.hpp
     headers/threading/ThreadPool.hpp
-    src/threading/ThreadPool.cpp
-    headers/net/Selector.hpp
-    src/net/Selector.cpp
     headers/utils/Logger.hpp
-    src/utils/Logger.cpp
-    headers/io/CSVFile.hpp
-    src/io/CSVFile.cpp
     headers/utils/Sanity.hpp
+    src/io/CSVFile.cpp
+    src/net/Selector.cpp
+    src/net/Socket.cpp
+    src/threading/ThreadPool.cpp
+    src/utils/Logger.cpp
     src/utils/Sanity.cpp
 )
 

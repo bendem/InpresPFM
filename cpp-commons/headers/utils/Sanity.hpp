@@ -1,9 +1,9 @@
 #ifndef CPP_COMMONS_SANITY_HPP
 #define CPP_COMMONS_SANITY_HPP
 
+#include <iostream>
 #include <stdexcept>
 #include <string>
-#include <iostream>
 
 class Sanity {
 

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <thread>
 
 #include "cmmp/CMMPTranslator.hpp"
 #include "net/Socket.hpp"

@@ -3,9 +3,9 @@
 
 #include <string>
 
+#include "Container.hpp"
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
-#include "Container.hpp"
 
 class InputTruckResponsePacket : public Packet<InputTruckResponsePacket> {
 
