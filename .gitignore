@@ -1,6 +1,8 @@
-.idea/
+.gradle/
 target/
 build/
+.idea/
 *.exe
 *.log
+*.iml
 *.o

@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+group 'be.hepl.benbear'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+compileJava {
+    options.encoding = 'UTF-8'
+}
