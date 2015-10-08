@@ -1,10 +1,3 @@
-create table parcs (
-    x            number(4, 0),
-    y            number(4, 0),
-    container_id varchar2(63) constraint fk_parcs_container_id references containers(container_id),
-    constraint pk_parcs primary key (x, y)
-);
-
 create table companies (
     company_id number constraint pk_companies primary key,
     name       varchar2(63),
@@ -15,7 +8,7 @@ create table companies (
 
 create sequence company_seq;
 create or replace trigger company_autoinc
-before insert on
+before insert on companies
 for each row begin
     select company_seq.nextval into :new.company_seq from dual;
 end;
@@ -26,6 +19,13 @@ create table containers (
     company_id   number       constraint fk_containers_company_id references companies(company_id),
     content_type varchar2(63),
     dangers      varchar2(63)
+);
+
+create table parcs (
+    x            number(4, 0),
+    y            number(4, 0),
+    container_id varchar2(63) constraint fk_parcs_container_id references containers(container_id),
+    constraint pk_parcs primary key (x, y)
 );
 
 create table transporters (
@@ -44,7 +44,7 @@ create table destinations (
 
 create sequence destination_seq;
 create or replace trigger destination_autoinc
-before insert on
+before insert on destinations
 for each row begin
     select destination_seq.nextval into :new.destination_seq from dual;
 end;
@@ -55,7 +55,7 @@ create table movements (
     container_id       varchar2(63) constraint fk_movements_container_id references containers(container_id),
     company_id         number       constraint fk_movements_company_id references companies(company_id),
     transporter_id_in  varchar2(63) constraint fk_movements_transporter_id_in references transporters(transporter_id),
-    transporter_id_out varchar2(63) constraint fk_movements_transporter_id_out references transporters(transporter_id),
+    transporter_id_out varchar2(63) constraint fk_movements_transporter_id_ou references transporters(transporter_id),
     date_arrival       date,
     date_departure     date,
     weight             number,
@@ -64,7 +64,7 @@ create table movements (
 
 create sequence movement_seq;
 create or replace trigger movement_autoinc
-before insert on
+before insert on movements
 for each row begin
     select movement_seq.nextval into :new.movement_seq from dual;
 end;
