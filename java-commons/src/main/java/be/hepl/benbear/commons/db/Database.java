@@ -16,7 +16,7 @@ public class Database implements AutoCloseable {
     // but they made me do it...
     private final Tuple<Thread, DbRunnable<ResultSet>> readWorker;
     private final Tuple<Thread, DbRunnable<Boolean>> writeWorker;
-    private final Map<Class<?>, Table<?>> tables;
+    private final Map<String, Table<?>> tables;
     /* package */ Connection connection;
 
     // Someone told me this should be a bean, so there you go, empty constructor
@@ -40,13 +40,26 @@ public class Database implements AutoCloseable {
         } catch(SQLException e) {
             throw new RuntimeException(e);
         }
+
+        readWorker.first.start();
+        writeWorker.first.start();
+
         return this;
     }
 
     public <T> Database registerTable(Class<T> clazz, Table<T> table) {
         table.setDb(this);
-        tables.put(clazz, table);
+        tables.put(table.getName().toLowerCase(), table);
         return this;
+    }
+
+    public <T, TableType extends Table<T>> TableType table(String name) {
+        TableType table = (TableType) tables.get(name.toLowerCase());
+        if(table == null) {
+            throw new IllegalArgumentException("Unknown table: " + name);
+        }
+
+        return table;
     }
 
     public boolean isConnected() {

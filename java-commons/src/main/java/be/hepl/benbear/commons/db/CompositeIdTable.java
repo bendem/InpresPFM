@@ -4,7 +4,7 @@ import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 public class CompositeIdTable<T, Id1, Id2> extends Table<T> {
 
@@ -17,9 +17,10 @@ public class CompositeIdTable<T, Id1, Id2> extends Table<T> {
         this.idField2 = idField2;
     }
 
-    public Future<Optional<T>> byId(Id1 id1, Id2 id2) {
+    public CompletableFuture<Optional<T>> byId(Id1 id1, Id2 id2) {
         return db.readOp(() -> {
-            PreparedStatement stmt = db.connection.prepareStatement("select * from ? where ? = ? and ? = ?");
+            PreparedStatement stmt = db.connection.prepareStatement(
+                "select * from " + name + " where " + idField1 + " = ? and " + idField2 + " = ?");
             set(1, stmt, name);
             set(2, stmt, idField1);
             set(3, stmt, id1);

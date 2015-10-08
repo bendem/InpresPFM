@@ -12,15 +12,12 @@ grant create view to role_traffic;
 grant create job to role_traffic;
 grant create materialized view to role_traffic;
 
-create user dbtraffic identified by &1
+create user dbtraffic identified by bleh
     default tablespace users
     temporary tablespace temp
     profile default
     account unlock;
 alter user dbtraffic quota unlimited on users;
 grant role_traffic to dbtraffic;
-
-grant execute on dbms_lock to dbtraffic;
-grant execute on sys.owa_opt_lock to dbtraffic;
 
 exit

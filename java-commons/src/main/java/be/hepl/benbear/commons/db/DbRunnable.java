@@ -28,7 +28,6 @@ public class DbRunnable<T> implements Runnable {
             try {
                 tuple = queue.take();
             } catch(InterruptedException e) {
-                e.printStackTrace();
                 Thread.currentThread().interrupt();
                 return;
             }

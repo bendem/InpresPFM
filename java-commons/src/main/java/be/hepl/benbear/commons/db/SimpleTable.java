@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class SimpleTable<T, Id> extends Table<T> {
@@ -17,14 +17,13 @@ public class SimpleTable<T, Id> extends Table<T> {
         this.idField = idField;
     }
 
-    public Future<Optional<T>> byId(Id id, Consumer<SQLException> handler) {
+    public CompletableFuture<Optional<T>> byId(Id id, Consumer<SQLException> handler) {
         return db.readOp(() -> {
-            PreparedStatement stmt = db.connection.prepareStatement("select * from ? where ? = ?");
-            set(1, stmt, name);
-            set(2, stmt, idField);
-            set(3, stmt, id);
+            PreparedStatement stmt = db.connection.prepareStatement(
+                "select * from " + name + " where " + idField + " = ?");
+            set(1, stmt, id);
             return stmt;
-        }).thenApply(new DBMappingFunction<T>(mapper, Throwable::printStackTrace));
+        }).thenApply(new DBMappingFunction<>(mapper, Throwable::printStackTrace));
     }
 
     @Override

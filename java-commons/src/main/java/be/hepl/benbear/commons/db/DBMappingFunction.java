@@ -24,10 +24,12 @@ public class DBMappingFunction<T> implements Function<ResultSet, Optional<T>> {
     @Override
     public Optional<T> apply(ResultSet r) {
         try {
-            return Optional.of(mapping.apply(r));
+            if(r.next()) {
+                return Optional.of(mapping.apply(r));
+            }
         } catch(SQLException e) {
             handler.accept(e);
-            return Optional.empty();
         }
+        return Optional.empty();
     }
 }

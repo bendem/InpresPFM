@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
+    compile 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
 }
 
 jar {

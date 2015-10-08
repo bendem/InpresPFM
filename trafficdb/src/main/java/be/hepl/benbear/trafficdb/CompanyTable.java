@@ -4,7 +4,7 @@ import be.hepl.benbear.commons.db.SimpleTable;
 
 public class CompanyTable extends SimpleTable<Company, Integer> {
 
-    protected CompanyTable() {
+    public CompanyTable() {
         super(
             "companies",
             r -> new Company(
