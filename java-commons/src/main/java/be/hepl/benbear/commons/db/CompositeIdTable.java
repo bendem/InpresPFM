@@ -21,11 +21,8 @@ public class CompositeIdTable<T, Id1, Id2> extends Table<T> {
         return db.readOp(() -> {
             PreparedStatement stmt = db.connection.prepareStatement(
                 "select * from " + name + " where " + idField1 + " = ? and " + idField2 + " = ?");
-            set(1, stmt, name);
-            set(2, stmt, idField1);
-            set(3, stmt, id1);
-            set(2, stmt, idField2);
-            set(3, stmt, id2);
+            set(1, stmt, id1);
+            set(2, stmt, id2);
             return stmt;
         }).thenApply(new DBMappingFunction<>(mapper, Throwable::printStackTrace));
     }
