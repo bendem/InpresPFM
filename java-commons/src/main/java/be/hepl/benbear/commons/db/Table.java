@@ -63,9 +63,23 @@ public abstract class Table<T> {
         });
     }
 
+    public CompletableFuture<Stream<T>> find() {
+        return find(DBPredicate.empty());
+    }
+
+    public CompletableFuture<Stream<T>> find(DBPredicate predicate) {
+        return db.readOp(() -> {
+            PreparedStatement stmt = db.connection.prepareStatement("select * from " + name + predicate.toSql());
+            List<Object> values = predicate.values();
+            for(int i = 0; i < values.size(); ++i) {
+                set(i + 1, stmt, values.get(i));
+            }
+            return stmt;
+        }).thenApply(DBMappingFunction.multiple(mapper, Throwable::printStackTrace)); // Error handler arg
+    }
+
     private List<Tuple<String, Object>> getValues(T obj) {
         return Arrays.stream(obj.getClass().getDeclaredFields())
-            .peek(f -> System.out.println(f.getName()))
             .filter(f -> !f.isSynthetic())
             .filter(f -> !Modifier.isTransient(f.getModifiers()))
             .peek(f -> f.setAccessible(true))

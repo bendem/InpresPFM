@@ -3,33 +3,61 @@ package be.hepl.benbear.commons.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-public class DBMappingFunction<T> implements Function<ResultSet, Optional<T>> {
+public class DBMappingFunction {
 
     @FunctionalInterface
     public interface DBMapping<T> {
         T apply(ResultSet r) throws SQLException;
     }
 
-    private final DBMapping<T> mapping;
-    private final Consumer<SQLException> handler;
-
-    public DBMappingFunction(DBMapping<T> mapping, Consumer<SQLException> handler) {
-        this.mapping = mapping;
-        this.handler = handler;
+    public static <T> Function<ResultSet, Optional<T>> unique(DBMapping<T> mapping, Consumer<SQLException> handler) {
+        return r -> {
+            try {
+                if(r.next()) {
+                    return Optional.of(mapping.apply(r));
+                }
+            } catch(SQLException e) {
+                handler.accept(e);
+            }
+            return Optional.empty();
+        };
     }
 
-    @Override
-    public Optional<T> apply(ResultSet r) {
-        try {
-            if(r.next()) {
-                return Optional.of(mapping.apply(r));
+    public static <T> Function<ResultSet, Stream<T>> multiple(DBMapping<T> mapping, Consumer<SQLException> handler) {
+        return r -> StreamSupport.stream(new Spliterator<T>() {
+            @Override
+            public boolean tryAdvance(Consumer<? super T> consumer) {
+                try {
+                    if(r.next()) {
+                        consumer.accept(mapping.apply(r));
+                        return true;
+                    }
+                } catch(SQLException e) {
+                    handler.accept(e);
+                }
+                return false;
             }
-        } catch(SQLException e) {
-            handler.accept(e);
-        }
-        return Optional.empty();
+
+            @Override
+            public Spliterator<T> trySplit() {
+                return null;
+            }
+
+            @Override
+            public long estimateSize() {
+                return 0;
+            }
+
+            @Override
+            public int characteristics() {
+                return ORDERED;
+            }
+        }, false);
     }
 }

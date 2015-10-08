@@ -23,7 +23,7 @@ public class SimpleTable<T, Id> extends Table<T> {
                 "select * from " + name + " where " + idField + " = ?");
             set(1, stmt, id);
             return stmt;
-        }).thenApply(new DBMappingFunction<>(mapper, Throwable::printStackTrace));
+        }).thenApply(DBMappingFunction.unique(mapper, Throwable::printStackTrace));
     }
 
     @Override

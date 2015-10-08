@@ -33,6 +33,8 @@ public class Main {
             System.out.println(comp.get());
         }
         company.insert(new Company(0, "bleh", "mail", "phone", "bestaddress")).get();
+
+        company.find().get().map(Company::getCompanyId).forEach(System.out::println);
         // ------
     }
 

@@ -24,7 +24,7 @@ public class CompositeIdTable<T, Id1, Id2> extends Table<T> {
             set(1, stmt, id1);
             set(2, stmt, id2);
             return stmt;
-        }).thenApply(new DBMappingFunction<>(mapper, Throwable::printStackTrace));
+        }).thenApply(DBMappingFunction.unique(mapper, Throwable::printStackTrace));
     }
 
     @Override

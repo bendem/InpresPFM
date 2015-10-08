@@ -10,7 +10,7 @@ create sequence company_seq;
 create or replace trigger company_autoinc
 before insert on companies
 for each row begin
-    select company_seq.nextval into :new.company_seq from dual;
+    select company_seq.nextval into :new.company_id from dual;
 end;
 /
 
@@ -46,7 +46,7 @@ create sequence destination_seq;
 create or replace trigger destination_autoinc
 before insert on destinations
 for each row begin
-    select destination_seq.nextval into :new.destination_seq from dual;
+    select destination_seq.nextval into :new.destination_id from dual;
 end;
 /
 
@@ -66,7 +66,7 @@ create sequence movement_seq;
 create or replace trigger movement_autoinc
 before insert on movements
 for each row begin
-    select movement_seq.nextval into :new.movement_seq from dual;
+    select movement_seq.nextval into :new.movement_id from dual;
 end;
 /
 
