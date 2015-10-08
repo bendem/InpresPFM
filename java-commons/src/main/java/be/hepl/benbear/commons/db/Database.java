@@ -122,15 +122,4 @@ public class Database implements AutoCloseable {
         connection.close();
     }
 
-    // TODO Move out from here, maybe add a value inside @PrimaryKey instead?
-    /* package */ static String transformName(String name) {
-        StringBuilder builder = new StringBuilder(name);
-        for(int i = 0; i < builder.length(); ++i) {
-            if(Character.isUpperCase(builder.charAt(i))) {
-                builder.setCharAt(i, Character.toLowerCase(builder.charAt(i)));
-                builder.insert(i, '_');
-            }
-        }
-        return builder.toString();
-    }
 }
