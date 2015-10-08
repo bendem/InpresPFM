@@ -1,7 +1,7 @@
 create table parcs (
     x            number(4, 0),
     y            number(4, 0),
-    container_id varchar2(63),
+    container_id varchar2(63) constraint fk_parcs_container_id references containers(container_id),
     constraint pk_parcs primary key (x, y)
 );
 
