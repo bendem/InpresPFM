@@ -6,14 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a class as mappable to a sql table.
+ * Defines the name of a field explicitly instead of relying on automatic detection.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface DBTable {
+@Target(ElementType.FIELD)
+public @interface As {
 
     /**
-     * The name of the sql table the annotated class is mappable to.
+     * The name of the corresponding column in the sql table.
      */
     String value();
 

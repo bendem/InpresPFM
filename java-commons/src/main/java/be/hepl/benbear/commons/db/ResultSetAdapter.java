@@ -9,14 +9,18 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class DBMappingFunction {
+/* package */ class ResultSetAdapter {
 
-    @FunctionalInterface
-    public interface DBMapping<T> {
-        T apply(ResultSet r) throws SQLException;
-    }
-
-    public static <T> Function<ResultSet, Optional<T>> unique(DBMapping<T> mapping, Consumer<SQLException> handler) {
+    /**
+     * Retrieves a single element from a ResultSet and maps it to a java object
+     * using the provided mapping function.
+     *
+     * @param mapping a mapping function to convert the ResultSet row
+     * @param handler a sql error handler
+     * @param <T> the type of the expected object
+     * @return a function able to map a sql row to a java object
+     */
+    public static <T> Function<ResultSet, Optional<T>> unique(Mapping.DBToJavaMapping<T> mapping, ErrorHandler handler) {
         return r -> {
             try {
                 if(r.next()) {
@@ -29,7 +33,16 @@ public class DBMappingFunction {
         };
     }
 
-    public static <T> Function<ResultSet, Stream<T>> multiple(DBMapping<T> mapping, Consumer<SQLException> handler) {
+    /**
+     * Lazily retrieves multiple elements from a ResultSet and maps them to java
+     * objects using the provided mapping function.
+     *
+     * @param mapping a mapping function to convert a ResultSet row
+     * @param handler a sql error handler
+     * @param <T> the type of the expected objects
+     * @return a function able to map a sql row to a stream of java object
+     */
+    public static <T> Function<ResultSet, Stream<T>> multiple(Mapping.DBToJavaMapping<T> mapping, ErrorHandler handler) {
         return r -> StreamSupport.stream(new Spliterator<T>() {
             @Override
             public boolean tryAdvance(Consumer<? super T> consumer) {
@@ -46,12 +59,14 @@ public class DBMappingFunction {
 
             @Override
             public Spliterator<T> trySplit() {
+                // Not supported
                 return null;
             }
 
             @Override
             public long estimateSize() {
-                return 0;
+                // Not supported
+                return Long.MAX_VALUE;
             }
 
             @Override

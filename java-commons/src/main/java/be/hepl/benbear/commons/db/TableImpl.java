@@ -3,24 +3,22 @@ package be.hepl.benbear.commons.db;
 import be.hepl.benbear.commons.generics.Tuple;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TableImpl<T> implements Table<T> {
 
     private final String name;
-    private final DBMappingFunction.DBMapping<T> mapper;
+    private final Mapping.DBToJavaMapping<T> mapper;
     private final Database db;
     private final List<Tuple<String, Class<?>>> primaryKeys; // name, type
 
-    protected TableImpl(Class<T> clazz, DBMappingFunction.DBMapping<T> mapper, Database db) {
+    protected TableImpl(Class<T> clazz, Database db) {
         DBTable annotation = clazz.getAnnotation(DBTable.class);
         if(annotation == null) {
             throw new IllegalArgumentException("Class '" + clazz.getName() + "' is not annotated with @" + DBTable.class.getName());
@@ -28,14 +26,23 @@ public class TableImpl<T> implements Table<T> {
 
         this.name = annotation.value();
         this.primaryKeys = Collections.unmodifiableList(collectPrimaryKeys(clazz));
-        this.mapper = mapper;
+        this.mapper = Mapping.createDBToJavaMapping(clazz);
         this.db = db;
     }
 
     private List<Tuple<String, Class<?>>> collectPrimaryKeys(Class<T> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
             .filter(f -> f.getAnnotation(PrimaryKey.class) != null)
-            .<Tuple<String, Class<?>>>map(f -> new Tuple<>(Database.transformName(f.getName()), f.getType()))
+            .<Tuple<String, Class<?>>>map(f -> {
+                As as = f.getAnnotation(As.class);
+                String name;
+                if(as == null) {
+                    name = Mapping.transformName(f.getName());
+                } else {
+                    name = as.value();
+                }
+                return new Tuple<>(name, f.getType());
+            })
             .collect(Collectors.toList());
     }
 
@@ -45,8 +52,8 @@ public class TableImpl<T> implements Table<T> {
     }
 
     @Override
-    public CompletableFuture<Optional<T>> byId(Consumer<SQLException> handler, Object... ids) {
-        if(ids.length != getIdCount()) {
+    public CompletableFuture<Optional<T>> byId(ErrorHandler handler, Object... ids) {
+        if(ids.length == 0 || getIdCount() == 0 || ids.length != getIdCount()) {
             throw new IllegalArgumentException("Table has " + getIdCount() + ", got " + ids.length);
         }
         // TODO Type check ids against primaryKeys.second?
@@ -65,7 +72,7 @@ public class TableImpl<T> implements Table<T> {
             }
 
             return stmt;
-        }).thenApply(DBMappingFunction.unique(mapper, handler));
+        }).thenApply(ResultSetAdapter.unique(mapper, handler));
     }
 
     @Override
@@ -81,8 +88,14 @@ public class TableImpl<T> implements Table<T> {
             for(int i = 0; i < values.size(); ++i) {
                 JDBCAdapter.set(stmt, i + 1, values.get(i));
             }
+
             return stmt;
-        }).thenApply(DBMappingFunction.multiple(mapper, Throwable::printStackTrace)); // Error handler arg
+        }).thenApply(ResultSetAdapter.multiple(mapper, Throwable::printStackTrace)); // TODO Error handler arg
+    }
+
+    @Override
+    public CompletableFuture<Optional<T>> findOne(DBPredicate predicate) {
+        return find(predicate).thenApply(Stream::findFirst);
     }
 
     @Override
@@ -104,9 +117,11 @@ public class TableImpl<T> implements Table<T> {
         return db.writeOp(() -> {
             PreparedStatement stmt = db.connection.prepareStatement(
                 "insert into " + name + "(" + columns + ") values (" + values + ")");
+
             for(int i = 0; i < v.size(); ++i) {
                 JDBCAdapter.set(stmt, i + 1, v.get(i).second);
             }
+
             return stmt;
         });
     }

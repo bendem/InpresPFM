@@ -1,13 +1,8 @@
 package be.hepl.benbear.commons.db;
 
 import be.hepl.benbear.commons.generics.Tuple;
-import be.hepl.benbear.commons.streams.UncheckedLambda;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -19,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+// TODO Doc
 public class Database implements AutoCloseable {
 
     // I'm against this, a thread pool would make much more sense
@@ -57,52 +53,9 @@ public class Database implements AutoCloseable {
     }
 
     public <T> Database registerClass(Class<T> clazz) {
-        DBTable annotation = clazz.getAnnotation(DBTable.class);
-
-        TableImpl<T> table = new TableImpl<>(clazz, createMapper(clazz), this);
+        TableImpl<T> table = new TableImpl<>(clazz, this);
         tables.put(clazz, table);
-
         return this;
-    }
-
-    // TODO Move that to its own class
-    private <T> DBMappingFunction.DBMapping<T> createMapper(Class<T> clazz) {
-        List<Field> fields = Arrays.stream(clazz.getDeclaredFields())
-            .filter(f -> !f.isSynthetic())
-            .filter(f -> !Modifier.isTransient(f.getModifiers()))
-            .collect(Collectors.toList());
-
-        Class<?>[] types = fields.stream().map(Field::getType).toArray(Class[]::new);
-
-        Constructor<T> ctor;
-        try {
-            ctor = clazz.getConstructor(types);
-        } catch(NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-
-        if(!Arrays.equals(types, Arrays.stream(ctor.getParameters()).map(Parameter::getType).toArray())) {
-            throw new IllegalArgumentException(
-                "Malformed object, fields and constructor arguments need to match");
-        }
-
-        return r -> {
-            Object[] args = fields.stream()
-                .map(UncheckedLambda.function(
-                    f -> JDBCAdapter.<Object>get(r, transformName(f.getName()), f.getType()),
-                    e -> {
-                        throw new RuntimeException(e);
-                    }
-                ))
-                .map(o -> o.get())
-                .toArray();
-
-            try {
-                return ctor.newInstance(args);
-            } catch(InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        };
     }
 
     // TODO Move that to its own class, maybe replace it with a reverse DBMapping
@@ -113,7 +66,7 @@ public class Database implements AutoCloseable {
             .peek(f -> f.setAccessible(true))
             .map(f -> {
                 try {
-                    return new Tuple<>(transformName(f.getName()), f.get(obj));
+                    return new Tuple<>(Mapping.transformName(f.getName()), f.get(obj));
                 } catch(IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
