@@ -10,8 +10,8 @@ public class Main {
 
     private final Database database;
 
-    public Main() throws Exception {
-        database = new Database();
+    public Main(Database db) throws Exception {
+        database = db;
         database.registerTable(Company.class, new CompanyTable());
         database.registerTable(Container.class, new ContainerTable());
         database.registerTable(Destination.class, new DestinationTable());
@@ -32,14 +32,15 @@ public class Main {
         if(comp.isPresent()) {
             System.out.println(comp.get());
         }
+        company.insert(new Company(0, "bleh", "mail", "phone", "bestaddress")).get();
         // ------
-
-        database.close();
     }
 
     public static void main(String[] args) throws Exception {
         // TODO Arg parsing
-        new Main();
+        try(Database db = new Database()) {
+            new Main(db);
+        }
     }
 
 }

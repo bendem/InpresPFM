@@ -15,7 +15,7 @@ public class Database implements AutoCloseable {
     // I'm against this, a thread pool would make much more sense
     // but they made me do it...
     private final Tuple<Thread, DbRunnable<ResultSet>> readWorker;
-    private final Tuple<Thread, DbRunnable<Boolean>> writeWorker;
+    private final Tuple<Thread, DbRunnable<Integer>> writeWorker;
     private final Map<String, Table<?>> tables;
     /* package */ Connection connection;
 
@@ -24,7 +24,7 @@ public class Database implements AutoCloseable {
         DbRunnable<ResultSet> read = new DbRunnable<>();
         readWorker = new Tuple<>(new Thread(read), read);
 
-        DbRunnable<Boolean> write = new DbRunnable<>();
+        DbRunnable<Integer> write = new DbRunnable<>();
         writeWorker = new Tuple<>(new Thread(write), write);
 
         tables = new ConcurrentHashMap<>();
@@ -78,12 +78,12 @@ public class Database implements AutoCloseable {
         return readWorker.second.add(() -> supplier.supply().executeQuery());
     }
 
-    /* package */ CompletableFuture<Boolean> writeOp(DBOperationSupplier supplier) {
+    /* package */ CompletableFuture<Integer> writeOp(DBOperationSupplier supplier) {
         if(!isConnected()) {
             throw new IllegalStateException("Not connected");
         }
 
-        return writeWorker.second.add(() -> supplier.supply().execute());
+        return writeWorker.second.add(() -> supplier.supply().executeUpdate());
     }
 
     @Override
