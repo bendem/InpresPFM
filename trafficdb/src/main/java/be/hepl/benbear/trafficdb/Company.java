@@ -1,7 +1,12 @@
 package be.hepl.benbear.trafficdb;
 
+import be.hepl.benbear.commons.db.DBTable;
+import be.hepl.benbear.commons.db.PrimaryKey;
+
+@DBTable("companies")
 public class Company {
 
+    @PrimaryKey
     private final int companyId;
     private final String name;
     private final String mail;

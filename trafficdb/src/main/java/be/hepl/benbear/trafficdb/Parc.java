@@ -1,8 +1,14 @@
 package be.hepl.benbear.trafficdb;
 
+import be.hepl.benbear.commons.db.DBTable;
+import be.hepl.benbear.commons.db.PrimaryKey;
+
+@DBTable("parcs")
 public class Parc {
 
+    @PrimaryKey
     private final int x;
+    @PrimaryKey
     private final int y;
     private final String containerId;
 

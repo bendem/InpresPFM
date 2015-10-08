@@ -1,9 +1,14 @@
 package be.hepl.benbear.trafficdb;
 
+import be.hepl.benbear.commons.db.DBTable;
+import be.hepl.benbear.commons.db.PrimaryKey;
+
 import java.sql.Date;
 
+@DBTable("movements")
 public class Movement {
 
+    @PrimaryKey
     private final int movementId;
     private final String containerId;
     private final int companyId;
