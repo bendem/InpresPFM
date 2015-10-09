@@ -22,14 +22,16 @@ import java.util.stream.StreamSupport;
      */
     public static <T> Function<ResultSet, Optional<T>> unique(Mapping.DBToJavaMapping<T> mapping, ErrorHandler handler) {
         return r -> {
+            Optional<T> res = Optional.empty();
             try {
                 if(r.next()) {
-                    return Optional.of(mapping.apply(r));
+                    res = Optional.of(mapping.apply(r));
                 }
+                r.close();
             } catch(SQLException e) {
                 handler.accept(e);
             }
-            return Optional.empty();
+            return res;
         };
     }
 
@@ -51,6 +53,7 @@ import java.util.stream.StreamSupport;
                         consumer.accept(mapping.apply(r));
                         return true;
                     }
+                    r.close();
                 } catch(SQLException e) {
                     handler.accept(e);
                 }

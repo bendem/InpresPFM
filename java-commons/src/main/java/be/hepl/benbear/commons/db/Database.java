@@ -5,6 +5,7 @@ import be.hepl.benbear.commons.generics.Tuple;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -104,7 +105,11 @@ public class Database implements AutoCloseable {
             throw new IllegalStateException("Not connected");
         }
 
-        return writeWorker.second.add(() -> supplier.supply().executeUpdate());
+        return writeWorker.second.add(() -> {
+            try(PreparedStatement stmt = supplier.supply()) {
+                return stmt.executeUpdate();
+            }
+        });
     }
 
     @Override
