@@ -29,6 +29,18 @@ public interface DBPredicate {
     }
 
     /**
+     * Returns a predicate that'll represent the comparison of a column value and
+     * a provided value using a custom comparison.
+     *
+     * @param field the field name of the table
+     * @param value the value of the comparison
+     * @return the constructed predicate
+     */
+    static DBPredicate of(String field, Object value, String comparison) {
+        return new DBPredicateImpl(field, value, comparison, null, null);
+    }
+
+    /**
      * Chains the predicate with another predicate using AND and equality.
      *
      * @param field the field name of the table
