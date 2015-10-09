@@ -1,10 +1,12 @@
 #ifndef CONTAINER_SERVER_CONTAINERCLIENT_HPP
 #define CONTAINER_SERVER_CONTAINERCLIENT_HPP
 
+#include <cassert>
 #include <memory>
 #include <string>
 
 #include "cmmp/CMMPTranslator.hpp"
+#include "input/InputHelper.hpp"
 #include "net/Socket.hpp"
 #include "protocol/ProtocolHandler.hpp"
 
