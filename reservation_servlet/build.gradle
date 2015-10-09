@@ -8,6 +8,11 @@ version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
+configurations {
+    shadow
+    compile.extendsFrom shadow
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -15,8 +20,24 @@ repositories {
 
 dependencies {
     providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+    shadow 'be.hepl.benbear:trafficdb:1.0-SNAPSHOT'
+    shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
 }
 
 war {
+    configurations.shadow.each { slice ->
+        from(project.zipTree(slice)) {
+            exclude 'META-INF/DEPENDENCIES',
+                    'META-INF/ECLIPSEF.RSA',
+                    'META-INF/ECLIPSEF.SF',
+                    'META-INF/LICENSE',
+                    'META-INF/LICENSE.txt',
+                    'META-INF/NOTICE',
+                    'META-INF/NOTICE.txt',
+                    'about_files/**',
+                    'about.html',
+                    'LICENSE'
+        }
+    }
     archiveName 'reservation_servlet.war'
 }
