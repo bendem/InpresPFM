@@ -25,15 +25,16 @@ public interface DBPredicate {
      * @return the constructed predicate
      */
     static DBPredicate of(String field, Object value) {
-        return new DBPredicateImpl(field, value, DEFAULT_COMPARISON, null, null);
+        return of(field, value, DEFAULT_COMPARISON);
     }
 
     /**
-     * Returns a predicate that'll represent the comparison of a column value and
-     * a provided value using a custom comparison.
+     * Returns a predicate that'll represent the comparison of a column value
+     * and a provided value using a custom comparison.
      *
      * @param field the field name of the table
      * @param value the value of the comparison
+     * @param comparison the comparison to use (i.e. ">", "<", "<=", "<>")
      * @return the constructed predicate
      */
     static DBPredicate of(String field, Object value, String comparison) {
