@@ -14,8 +14,6 @@
 
 #define LOG LoggerStream(Logger::instance, Logger::Info, __FILE__, __LINE__)
 
-class LoggerStream;
-
 class Logger {
 
 public:

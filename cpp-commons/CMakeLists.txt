@@ -29,6 +29,8 @@ set(SOURCE_FILES
     src/threading/ThreadPool.cpp
     src/utils/Logger.cpp
     src/utils/Sanity.cpp
+    headers/input/InputHelper.hpp
+    src/input/InputHelper.cpp
 )
 
 add_library(cpp_commons ${SOURCE_FILES})
