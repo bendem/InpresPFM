@@ -1,3 +1,17 @@
+create table users (
+    user_id    number constraint pk_users primary key,
+    username   varchar2(63),
+    password   varchar2(63)
+);
+
+create sequence user_seq;
+create or replace trigger user_autoinc
+before insert on users
+for each row begin
+    select user_seq.nextval into :new.user_id from dual;
+end;
+/
+
 create table companies (
     company_id number constraint pk_companies primary key,
     name       varchar2(63),
