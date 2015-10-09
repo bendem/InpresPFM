@@ -31,6 +31,7 @@ import java.util.stream.StreamSupport;
             } finally {
                 try {
                     r.close();
+                    r.getStatement().close();
                 } catch(SQLException e) {
                     handler.accept(e);
                 }
@@ -58,6 +59,7 @@ import java.util.stream.StreamSupport;
                         consumer.accept(mapping.apply(r));
                         return true;
                     }
+                    r.getStatement().close();
                     r.close();
                 } catch(SQLException e) {
                     handler.accept(e);
