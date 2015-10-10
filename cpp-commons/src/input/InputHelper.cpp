@@ -6,6 +6,7 @@ const std::map<std::string, bool> InputHelper::BOOLEANS {
     { "oui",    true },
     { "o",      true },
     { "yeah",   true },
+    { "yep",    true },
     { "sure",   true },
     { "ok",     true },
     { "da",     true },

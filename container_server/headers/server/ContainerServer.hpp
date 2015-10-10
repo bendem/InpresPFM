@@ -1,6 +1,7 @@
 #ifndef CONTAINER_SERVER_SERVER_HPP
 #define CONTAINER_SERVER_SERVER_HPP
 
+#include <fstream>
 #include <unordered_set>
 
 #include "cmmp/CMMPTranslator.hpp"
@@ -15,7 +16,7 @@
 class ContainerServer {
 
 public:
-    ContainerServer(unsigned short, CSVFile&, ThreadPool&);
+    ContainerServer(unsigned short, const std::string&, ThreadPool&);
     ~ContainerServer();
 
     /**
@@ -48,7 +49,8 @@ public:
     bool isLoggedIn(std::shared_ptr<Socket>);
 
 private:
-    CSVFile& users;
+    const std::string userFile;
+    CSVFile users;
     std::mutex usersMutex;
     ThreadPool& pool;
     ProtocolHandler<CMMPTranslator, PacketId> proto;

@@ -1,7 +1,8 @@
 #include "server/ContainerServer.hpp"
 
-ContainerServer::ContainerServer(unsigned short port, CSVFile& users, ThreadPool& pool)
-        : users(users),
+ContainerServer::ContainerServer(unsigned short port, const std::string& user_file, ThreadPool& pool)
+        : userFile(user_file),
+          users(std::ifstream(user_file.c_str()) >> std::skipws, ';'), // skipws transforms the temporary rvalue to a lvalue
           pool(pool),
           proto(CMMPTranslator()),
           socket(),
@@ -75,14 +76,24 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
             return;
         }
 
+        if(p.getUsername().find_first_of("\n;\r\0") != std::string::npos
+                || p.getPassword().find_first_of("\n;\r\0") != std::string::npos) {
+            this->proto.write(s, LoginResponsePacket(false, "Invalid character in username"));
+            return;
+        }
+
         std::lock_guard<std::mutex> usersLock(this->usersMutex);
         if(!this->users.find("username", p.getUsername()).empty()) {
             this->proto.write(s, LoginResponsePacket(false, "Username already in use"));
             return;
         }
 
+        // Insert and save
         this->users.insert({ p.getUsername(), p.getPassword() });
-        // TODO Save new user after insertion
+        std::ofstream os(this->userFile);
+        this->users.save(os, ';');
+
+        // Login
         std::lock_guard<std::mutex> loggedInUsersLock(this->loggedInUsersMutex);
         this->loggedInUsers.insert({ s.get(), p.getUsername() });
 

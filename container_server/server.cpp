@@ -15,17 +15,13 @@ int main(int argc, char** argv) {
         port = atoi(argv[1]);
     }
 
-    LOG << "Loading user file";
-    std::ifstream user_file("data/users.csv");
-    CSVFile users(user_file, ';');
-
     LOG << "Creating thread pool";
     ThreadPool pool(5, [] {
         LOG << Logger::Debug << "Starting thread from pool";
     });
 
     LOG << "Creating server";
-    ContainerServer server(port, users, pool);
+    ContainerServer server(port, "data/users.csv", pool);
 
     LOG << "Starting up";
     server.init().listen();
