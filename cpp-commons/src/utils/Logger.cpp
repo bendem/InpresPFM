@@ -6,13 +6,20 @@ void Logger::log(Logger::Level level, const std::string& msg, const std::string&
     std::time_t time = std::time(nullptr);
     std::tm* now = std::localtime(&time);
 
+    std::string log_line(this->formatter(level, msg, file, line, now));
     for(Handler handler : this->handlers) {
-        handler(level, msg, file, line, now);
+        handler(level, log_line);
     }
 }
 
-void Logger::addHandler(Handler handler) {
+Logger& Logger::setFormatter(Formatter formatter) {
+    this->formatter = formatter;
+    return *this;
+}
+
+Logger& Logger::addHandler(Handler handler) {
     this->handlers.push_back(handler);
+    return *this;
 }
 
 Logger& Logger::clearHandlers() {
@@ -34,17 +41,23 @@ std::string Logger::levelToName(Level level) {
     throw std::logic_error("Invalid log level");
 }
 
-void Logger::consoleHandler(Level level, const std::string& msg, const std::string& file, int line, std::tm* time) {
-    // TODO Maybe that's a thing?
+void Logger::consoleHandler(Level level, const std::string& log) {
     static std::mutex mutex;
     std::lock_guard<std::mutex> lk(mutex);
-    (level > Logger::Info ? std::cerr : std::cout)
+    (level > Logger::Info ? std::cerr : std::cout) << log;
+}
+
+std::string Logger::defaultFormatter(Level level, const std::string& msg, const std::string& file, int line, const std::tm* time) {
+    std::ostringstream os;
+    os
         << '[' << std::put_time(time, "%H:%M:%S") << "] ["
         << Logger::levelToName(level) << "] ["
         << std::hex << std::this_thread::get_id() << std::dec << "] ["
         << file << ':' << line << "] "
         << msg << std::endl;
+    return os.str();
 }
+
 
 LoggerStream::LoggerStream(const Logger& logger, Logger::Level lvl, const std::string& file, int line)
     : logger(logger),

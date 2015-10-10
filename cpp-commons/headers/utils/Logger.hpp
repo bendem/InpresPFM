@@ -21,20 +21,28 @@ public:
         Debug, Info, Warning, Error
     };
 
-    using Handler = std::function<void(Level, const std::string&, const std::string&, int, std::tm*)>;
+    using Handler = std::function<void(Level, const std::string&)>;
+    using Formatter = std::function<std::string(Level, const std::string&, const std::string&, int, const std::tm*)>;
+
+    Logger() : formatter(&Logger::defaultFormatter), handlers(1, &Logger::consoleHandler) {}
 
     void log(Level, const std::string&, const std::string& = "n/a", int = 0) const;
 
-    void addHandler(Handler);
+    Logger& setFormatter(Formatter);
+
+    Logger& addHandler(Handler);
     Logger& clearHandlers();
 
     static Logger instance;
 
     static std::string levelToName(Level);
-    static void consoleHandler(Level, const std::string&, const std::string&, int, std::tm*);
+    static void consoleHandler(Level, const std::string&);
 
 private:
+    Formatter formatter;
     std::vector<Handler> handlers;
+
+    static std::string defaultFormatter(Level, const std::string&, const std::string&, int, const std::tm*);
 
 };
 
