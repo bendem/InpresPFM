@@ -6,11 +6,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 
-/* package */ class DbRunnable<T> implements Runnable {
+/* package */ class DBRunnable<T> implements Runnable {
 
     private final BlockingQueue<Tuple<DBOperation<T>, CompletableFuture<T>>> queue;
 
-    /* package */ DbRunnable() {
+    /* package */ DBRunnable() {
         this.queue = new LinkedBlockingQueue<>();
     }
 

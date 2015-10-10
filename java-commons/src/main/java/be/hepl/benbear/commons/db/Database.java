@@ -20,17 +20,17 @@ public class Database implements AutoCloseable {
 
     // I'm against this, a thread pool would make much more sense
     // but they made me do it...
-    private final Tuple<Thread, DbRunnable<ResultSet>> readWorker;
-    private final Tuple<Thread, DbRunnable<Integer>> writeWorker;
+    private final Tuple<Thread, DBRunnable<ResultSet>> readWorker;
+    private final Tuple<Thread, DBRunnable<Integer>> writeWorker;
     private final Map<Class<?>, Table<?>> tables;
     /* package */ Connection connection;
 
     // Someone told me this should be a bean, so there you go, empty constructor
     public Database() {
-        DbRunnable<ResultSet> read = new DbRunnable<>();
+        DBRunnable<ResultSet> read = new DBRunnable<>();
         readWorker = new Tuple<>(new Thread(read), read);
 
-        DbRunnable<Integer> write = new DbRunnable<>();
+        DBRunnable<Integer> write = new DBRunnable<>();
         writeWorker = new Tuple<>(new Thread(write), write);
 
         tables = new ConcurrentHashMap<>();
