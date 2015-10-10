@@ -75,9 +75,37 @@ std::string InputHelper::readNonEmtpyString() {
         std::getline(std::cin, input);
 
         if(input.empty()) {
-            std::cout << "> x Please provide a value" << std::endl;
+            std::cout << "> x Please provide a value: ";
         } else {
             return input;
         }
     }
+}
+
+std::string InputHelper::readPassword() {
+    std::string input;
+
+    for(;;) {
+        echoInput(false);
+        std::getline(std::cin, input);
+        echoInput(true);
+        std::cout << std::endl;
+
+        if(input.empty()) {
+            std::cout << "> x Please provide a value: ";
+        } else {
+            return input;
+        }
+    }
+}
+
+void InputHelper::echoInput(bool yes) {
+    struct termios tty;
+    tcgetattr(STDIN_FILENO, &tty);
+    if(yes) {
+        tty.c_lflag |= ECHO;
+    } else {
+        tty.c_lflag &= ~ECHO;
+    }
+    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 }

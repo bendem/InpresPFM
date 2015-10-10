@@ -6,6 +6,9 @@
 #include <map>
 #include <string>
 
+#include <termios.h>
+#include <unistd.h>
+
 class InputHelper {
 
 public:
@@ -13,6 +16,8 @@ public:
     static int readInt();
     static unsigned long readUnsignedInt();
     static std::string readNonEmtpyString();
+    static std::string readPassword();
+    static void echoInput(bool);
 
 private:
     static const std::map<std::string, bool> BOOLEANS;

@@ -17,13 +17,18 @@ ContainerClient& ContainerClient::mainLoop() {
         } else {
             this->loginMenu();
         }
+
+        std::string bah;
+        std::cout << " > Press a key to continue <" << std::endl;
+        getline(std::cin, bah);
+        std::cout << "\033[2J\033[;H";
     }
 
     return *this;
 }
 
 void ContainerClient::loginMenu() {
-    std::cout << "\033[2J\033[;H" << std::endl
+    std::cout
         << " Login" << std::endl
         << " -----" << std::endl << std::endl
         << " Create a new user? ";
@@ -31,7 +36,7 @@ void ContainerClient::loginMenu() {
     std::cout << " Username: ";
     std::string username = InputHelper::readNonEmtpyString();
     std::cout << " Password: ";
-    std::string password = InputHelper::readNonEmtpyString(); // TODO Hiding thing?
+    std::string password = InputHelper::readPassword();
 
     this->proto.write(this->socket, LoginPacket(username, password, newUser));
     LoginResponsePacket response = this->proto.readSpecificPacket<LoginResponsePacket>(this->socket);
@@ -49,13 +54,6 @@ std::string packetResult(const P& p) {
 }
 
 void ContainerClient::menu() {
-    std::string bah;
-    std::cout << " > Press a key to continue <" << std::endl;
-    getline(std::cin, bah);
-    std::cout << "\033[2J\033[;H";
-
-
-
     unsigned long input;
     std::cout
         << std::endl
