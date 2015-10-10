@@ -42,6 +42,16 @@ create table parcs (
     constraint pk_parcs primary key (x, y)
 );
 
+create table reservations (
+    date_arrival date,
+    x number(4,0),
+    y number(4,0),
+    destination_id number,
+    reservation_id varchar2(22),
+    constraint fk_reservations_parcs foreign key (x,y) references parcs(x,y),
+    constraint pk_reservations primary key (x, y, date_arrival)
+);
+
 create table transporters (
     transporter_id varchar2(63) constraint pk_transporters primary key,
     company_id     number       constraint fk_transporters_company_id references companies(company_id),
