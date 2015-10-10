@@ -1,5 +1,6 @@
 package be.hepl.benbear.commons.db;
 
+import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,6 +29,7 @@ import java.util.Optional;
         types.put(Boolean.class, JDBCType.BOOLEAN);
         types.put(boolean.class, JDBCType.BOOLEAN);
         types.put(String.class, JDBCType.VARCHAR);
+        types.put(Date.class, JDBCType.DATE);
         JAVA_TO_DB_TYPES = Collections.unmodifiableMap(types);
     }
 
@@ -57,6 +59,9 @@ import java.util.Optional;
                 break;
             case VARCHAR:
                 result = r.getString(name);
+                break;
+            case DATE:
+                result = r.getDate(name);
                 break;
             default:
                 throw new SQLFeatureNotSupportedException(type.name() + " not supported");
@@ -102,6 +107,9 @@ import java.util.Optional;
                 break;
             case VARCHAR:
                 stmt.setString(i, (String) obj);
+                break;
+            case DATE:
+                stmt.setDate(i, (Date) obj);
                 break;
             default:
                 throw new SQLFeatureNotSupportedException(type.name() + " not supported");
