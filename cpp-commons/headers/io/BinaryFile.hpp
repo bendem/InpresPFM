@@ -9,6 +9,8 @@
 #include "io/StreamUtils.hpp"
 #include "utils/Sanity.hpp"
 
+using std::ios;
+
 /**
  * Thread safe implementation of an utility to save an iterable
  * containing an overload for the operator<<(ostream&, const T&)
@@ -26,6 +28,7 @@ public:
     void save(ItFirst, ItLast);
 
     bool update(const T&, std::function<bool(const T&)>);
+    void append(const T&);
 
 private:
     const std::string file;
@@ -38,12 +41,12 @@ private:
 template<class T>
 std::vector<T> BinaryFile<T>::load() {
     std::lock_guard<std::mutex> lk(mutex);
-    std::ifstream is(file);
+    std::ifstream is(file, ios::in | ios::binary);
     if(!is.good()) {
         return {};
     }
 
-    Sanity::streamness(is, "Could not read file: " + file);
+    Sanity::streamness(is, "Could not open " + file + " to read");
 
     return this->collect(is, 0, StreamUtils::read<uint64_t>(is));
 }
@@ -52,8 +55,8 @@ template<class T>
 template<class ItFirst, class ItLast>
 void BinaryFile<T>::save(ItFirst first, ItLast last) {
     std::lock_guard<std::mutex> lk(mutex);
-    std::ofstream os(file);
-    Sanity::streamness(os, "Could not write to file: " + file);
+    std::ofstream os(file, ios::trunc | ios::out | ios::binary);
+    Sanity::streamness(os, "Could not open " + file + " to write");
 
     os.seekp(sizeof(uint64_t));
     uint64_t size;
@@ -68,8 +71,8 @@ template<class T>
 bool BinaryFile<T>::update(const T& t, std::function<bool(const T&)> predicate) {
     std::lock_guard<std::mutex> lk(mutex);
 
-    std::fstream ios(file);
-    Sanity::streamness(ios, "Could not open the file for update");
+    std::fstream ios(file, ios::out | ios::in | ios::binary);
+    Sanity::streamness(ios, "Could not open " + file + " to update");
 
     T tmp;
     ios.seekg(0);
@@ -90,6 +93,14 @@ bool BinaryFile<T>::update(const T& t, std::function<bool(const T&)> predicate) 
     }
 
     return false;
+}
+
+template<class T>
+void BinaryFile<T>::append(const T& t) {
+    std::lock_guard<std::mutex> lk(mutex);
+    std::ofstream os(file, ios::app | ios::out | ios::binary);
+    Sanity::streamness(os, "Could not open " + file + " to append");
+    os << t;
 }
 
 template<class T>
