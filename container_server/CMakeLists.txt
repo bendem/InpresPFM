@@ -44,8 +44,8 @@ set(COMMON_FILES
     src/cmmp/OutputOneResponsePacket.cpp
     src/cmmp/OutputReadyPacket.cpp
     src/cmmp/OutputReadyResponsePacket.cpp
-    headers/ParkLocation.hpp
-    src/ParkLocation.cpp
+    headers/ParcLocation.hpp
+    src/ParcLocation.cpp
 )
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/users.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data)

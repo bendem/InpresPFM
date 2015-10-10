@@ -4,7 +4,7 @@
 #include <fstream>
 #include <unordered_set>
 
-#include "ParkLocation.hpp"
+#include "ParcLocation.hpp"
 #include "cmmp/CMMPTranslator.hpp"
 #include "io/BinaryFile.hpp"
 #include "io/CSVFile.hpp"
@@ -51,7 +51,7 @@ public:
     bool isLoggedIn(std::shared_ptr<Socket>);
 
 private:
-    BinaryFile<ParkLocation> containerFile;
+    BinaryFile<ParcLocation> containerFile;
     CSVFile users;
     std::mutex usersMutex;
     ThreadPool& pool;

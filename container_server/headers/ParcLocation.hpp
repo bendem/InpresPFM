@@ -12,14 +12,14 @@ namespace ParkLocationFlag {
     };
 }
 
-struct ParkLocation {
+struct ParcLocation {
     uint16_t         x;
     uint16_t         y;
     std::string      containerId;
     ParkLocationFlag::ParkLocationFlag flag;
 };
 
-std::ostream& operator<<(std::ostream& os, const ParkLocation& p);
-std::istream& operator>>(std::istream& is, ParkLocation& p);
+std::ostream& operator<<(std::ostream& os, const ParcLocation& p);
+std::istream& operator>>(std::istream& is, ParcLocation& p);
 
 #endif
