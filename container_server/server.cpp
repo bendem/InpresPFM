@@ -5,6 +5,7 @@
 int main(int argc, char** argv) {
     // Logging setup
     std::cout << std::showbase;
+    std::cerr << std::showbase;
     Logger::instance.addHandler(Logger::consoleHandler);
 
     // TODO Setup a file logger?
