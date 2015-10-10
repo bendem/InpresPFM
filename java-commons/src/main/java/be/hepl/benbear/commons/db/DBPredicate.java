@@ -8,6 +8,7 @@ import java.util.List;
 public interface DBPredicate {
 
     String DEFAULT_COMPARISON = "=";
+    String NULL_COMPARISON = "is";
 
     /**
      * Returns an immutable no-op predicate.
@@ -20,12 +21,14 @@ public interface DBPredicate {
      * Returns a predicate that'll represent the equality of a column value and
      * a provided value.
      *
+     * A null value will generate a "is null" statement by default
+     *
      * @param field the field name of the table
      * @param value the value of the comparison
      * @return the constructed predicate
      */
     static DBPredicate of(String field, Object value) {
-        return of(field, value, DEFAULT_COMPARISON);
+        return of(field, value, value == null ? NULL_COMPARISON : DEFAULT_COMPARISON);
     }
 
     /**
@@ -44,12 +47,14 @@ public interface DBPredicate {
     /**
      * Chains the predicate with another predicate using AND and equality.
      *
+     * A null value will generate a "is null" statement by default.
+     *
      * @param field the field name of the table
      * @param value the value of the comparison
      * @return the chained predicate
      */
     default DBPredicate and(String field, Object value) {
-        return and(field, value, DEFAULT_COMPARISON);
+        return and(field, value, value == null ? NULL_COMPARISON : DEFAULT_COMPARISON);
     }
 
     /**
@@ -66,12 +71,14 @@ public interface DBPredicate {
     /**
      * Chains the predicate with another predicate using OR and equality.
      *
+     * A null value will generate a "is null" statement by default.
+     *
      * @param field the field name of the table
      * @param value the value of the comparison
      * @return the chained predicate
      */
     default DBPredicate or(String field, Object value) {
-        return or(field, value, DEFAULT_COMPARISON);
+        return or(field, value, value == null ? NULL_COMPARISON : DEFAULT_COMPARISON);
     }
 
     /**

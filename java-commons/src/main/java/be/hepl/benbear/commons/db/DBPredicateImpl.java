@@ -46,7 +46,9 @@ public class DBPredicateImpl implements DBPredicate {
     private StringBuilder toSql(StringBuilder builder) {
         builder
             .append(field)
+            .append(' ')
             .append(comparison)
+            .append(' ')
             .append("?");
 
         if(next != null) {
