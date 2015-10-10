@@ -9,6 +9,7 @@ const std::map<std::string, bool> InputHelper::BOOLEANS {
     { "sure",   true },
     { "ok",     true },
     { "da",     true },
+    { "true",   true },
     { "no",     false },
     { "non",    false },
     { "n",      false },
@@ -17,6 +18,7 @@ const std::map<std::string, bool> InputHelper::BOOLEANS {
     { "niet",   false },
     { "nada",   false },
     { "nein",   false },
+    { "false",  false },
 };
 
 bool InputHelper::readBool() {
@@ -29,6 +31,7 @@ bool InputHelper::readBool() {
         if(it != BOOLEANS.end()) {
             return it->second;
         }
+        std::cout << " > Invalid boolean, try again: ";
     }
 }
 

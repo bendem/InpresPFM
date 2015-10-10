@@ -90,14 +90,16 @@ P ProtocolHandler<Translator, Id>::readSpecificPacket(std::shared_ptr<Socket> so
         // TODO Check if there is a thing for unpacking?
         const std::pair<Id, std::vector<char>>& tmp_packet = this->readPacket(socket);
 
+        if(tmp_packet.first != P::id) {
+            LOG << Logger::Warning << "Ignored invalid packet with id " << tmp_packet.first;
+            continue;
+        }
+
         auto it = tmp_packet.second.cbegin();
         P packet = P::decode(it);
         // Call the handlers, just in case
         packet.handle(socket);
-
-        if(tmp_packet.first == P::id) {
-            return packet;
-        }
+        return packet;
     }
 }
 

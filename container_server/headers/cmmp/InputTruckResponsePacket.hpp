@@ -19,6 +19,7 @@ public:
 
     bool isOk() const { return ok; }
     std::vector<Container> getContainers() const { return containers; }
+    std::string getReason() const { return reason; }
 
     static InputTruckResponsePacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
