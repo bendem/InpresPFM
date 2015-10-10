@@ -25,7 +25,6 @@ private:
     bool loggedIn;
 
     void loginMenu();
-    void login(bool);
     void menu();
 
 };

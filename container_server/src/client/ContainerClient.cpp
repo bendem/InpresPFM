@@ -23,11 +23,11 @@ ContainerClient& ContainerClient::mainLoop() {
 }
 
 void ContainerClient::loginMenu() {
-    std::cout << " Create a new user? ";
-    this->login(InputHelper::readBool());
-}
-
-void ContainerClient::login(bool newUser) {
+    std::cout << "\033[2J\033[;H" << std::endl
+        << " Login" << std::endl
+        << " -----" << std::endl << std::endl
+        << " Create a new user? ";
+    bool newUser = InputHelper::readBool();
     std::cout << " Username: ";
     std::string username = InputHelper::readNonEmtpyString();
     std::cout << " Password: ";
@@ -67,11 +67,12 @@ void ContainerClient::menu() {
         << "    4. Send a OutputOne packet" << std::endl
         << "    5. Send a OutputDone packet" << std::endl
         << "    6. Send a Logout packet" << std::endl
+        << "    7. Quit" << std::endl
         << std::endl << " Your choice: ";
 
     while(true) {
         input = InputHelper::readUnsignedInt();
-        if(input > 0 && input < 7) {
+        if(input > 0 && input < 8) {
             break;
         }
         std::cout << " > Invalid choice, try again: ";
@@ -126,6 +127,19 @@ void ContainerClient::menu() {
                 std::cout << e.what() << std::endl;
                 this->closed = true;
             }
+            this->loggedIn = false;
+            break;
+        }
+        case 7: {
+            this->proto.write(this->socket, LogoutPacket("", ""));
+            try {
+                std::cout << packetResult(
+                    this->proto.readSpecificPacket<LogoutResponsePacket>(this->socket)
+                ) << std::endl;
+            } catch(IOError e) {
+                std::cout << e.what() << std::endl;
+            }
+            this->closed = true;
             this->loggedIn = false;
             break;
         }

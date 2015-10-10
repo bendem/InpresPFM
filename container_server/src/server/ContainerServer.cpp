@@ -224,7 +224,9 @@ void ContainerServer::logoutHandler(const LogoutPacket&, std::shared_ptr<Socket>
     // TODO Not sure what the stuff from the packet is useful for...
     std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
     this->loggedInUsers.erase(s.get());
-    s->close();
+    this->proto.write(s, LogoutResponsePacket(true, "Logged out"));
+
+    // s->close(); // Not closing the connection so he can reconnect without restarting the application
 }
 
 bool ContainerServer::isLoggedIn(std::shared_ptr<Socket> socket) {
