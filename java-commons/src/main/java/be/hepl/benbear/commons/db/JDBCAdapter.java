@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+// TODO This could be rewritten to be more modular
+// store it in a Map<Class<?>, Tuple<ToPreparedStatement, FromResultSet>>?
 /* package */ final class JDBCAdapter {
 
     private JDBCAdapter() {}

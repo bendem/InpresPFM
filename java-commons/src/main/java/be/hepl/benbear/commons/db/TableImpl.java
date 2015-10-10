@@ -95,6 +95,7 @@ public class TableImpl<T> implements Table<T> {
 
     @Override
     public CompletableFuture<Optional<T>> findOne(DBPredicate predicate) {
+        // TODO Use ResultSetAdaptater.unique instead to be sure the stmt/resultset is closed
         return find(predicate).thenApply(Stream::findFirst);
     }
 
