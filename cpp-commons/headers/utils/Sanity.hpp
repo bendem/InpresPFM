@@ -9,8 +9,10 @@ class Sanity {
 
 public:
     static void truthness(bool, const std::string&);
-template<class T>
-static void streamness(const std::basic_ios<T>&, const std::string&);
+
+    template<class T>
+    static void streamness(const std::basic_ios<T>&, const std::string&);
+
     template<class T>
     static void nullness(const T&, const std::string&);
 
