@@ -25,9 +25,13 @@ public:
     template<class ItFirst, class ItLast>
     void save(ItFirst, ItLast);
 
+    bool update(const T&, std::function<bool(const T&)>);
+
 private:
     const std::string file;
     std::mutex mutex;
+
+    std::vector<T> collect(std::istream&, uint64_t, uint64_t);
 
 };
 
@@ -41,18 +45,7 @@ std::vector<T> BinaryFile<T>::load() {
 
     Sanity::streamness(is, "Could not read file: " + file);
 
-    // Read count
-    uint64_t size = StreamUtils::read<uint64_t>(is), i = 0;
-
-    std::vector<T> result;
-    result.reserve(size);
-    T t;
-    while(i++ < size) {
-        is >> t;
-        result.push_back(t);
-    }
-
-    return result;
+    return this->collect(is, 0, StreamUtils::read<uint64_t>(is));
 }
 
 template<class T>
@@ -71,5 +64,46 @@ void BinaryFile<T>::save(ItFirst first, ItLast last) {
     StreamUtils::write(os, size);
 }
 
+template<class T>
+bool BinaryFile<T>::update(const T& t, std::function<bool(const T&)> predicate) {
+    std::lock_guard<std::mutex> lk(mutex);
+
+    std::fstream ios(file);
+    Sanity::streamness(ios, "Could not open the file for update");
+
+    T tmp;
+    ios.seekg(0);
+    uint64_t size = StreamUtils::read<uint64_t>(ios);
+    for(uint64_t i = 0; i < size; ++i) {
+        std::ios::pos_type fpos = ios.tellg();
+        ios >> tmp;
+
+        if(predicate(tmp)) {
+            std::vector<T> collected(this->collect(ios, i + 1, size));
+            ios.seekp(fpos);
+            ios << t;
+            for(auto item : collected) {
+                ios << item;
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+template<class T>
+std::vector<T> BinaryFile<T>::collect(std::istream& is, uint64_t i, uint64_t count) {
+    std::vector<T> res;
+    res.reserve(count - i);
+
+    T t;
+    for(; i < count; ++i) {
+        is >> t;
+        res.emplace_back(t);
+    }
+
+    return res;
+}
 
 #endif
