@@ -49,7 +49,7 @@ public class DBPredicateImpl implements DBPredicate {
             .append(' ')
             .append(comparison)
             .append(' ')
-            .append("?");
+            .append(value == null ? "null" : "?");
 
         if(next != null) {
             builder
@@ -72,7 +72,10 @@ public class DBPredicateImpl implements DBPredicate {
     }
 
     private List<Object> values(List<Object> list) {
-        list.add(value);
+        if(value != null) {
+            list.add(value);
+        }
+
         return list;
     }
 }
