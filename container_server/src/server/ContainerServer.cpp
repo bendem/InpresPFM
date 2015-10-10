@@ -1,8 +1,8 @@
 #include "server/ContainerServer.hpp"
 
-ContainerServer::ContainerServer(unsigned short port, const std::string& user_file, ThreadPool& pool)
-        : userFile(user_file),
-          users(std::ifstream(user_file.c_str()) >> std::skipws, ';'), // skipws transforms the temporary rvalue to a lvalue
+ContainerServer::ContainerServer(unsigned short port, const std::string& container_file, const std::string& user_file, ThreadPool& pool)
+        : containerFile(container_file),
+          users(user_file, ';'),
           pool(pool),
           proto(CMMPTranslator()),
           socket(),
@@ -90,8 +90,7 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
 
         // Insert and save
         this->users.insert({ p.getUsername(), p.getPassword() });
-        std::ofstream os(this->userFile);
-        this->users.save(os, ';');
+        this->users.save();
 
         // Login
         std::lock_guard<std::mutex> loggedInUsersLock(this->loggedInUsersMutex);

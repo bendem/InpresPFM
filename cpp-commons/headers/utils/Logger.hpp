@@ -60,8 +60,8 @@ private:
 };
 
 template<class T>
-LoggerStream& LoggerStream::operator<<(const T& string) {
-    input << string;
+LoggerStream& LoggerStream::operator<<(const T& t) {
+    input << t;
     return *this;
 }
 

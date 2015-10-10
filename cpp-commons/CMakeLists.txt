@@ -31,6 +31,9 @@ set(SOURCE_FILES
     src/utils/Sanity.cpp
     headers/input/InputHelper.hpp
     src/input/InputHelper.cpp
+    headers/io/BinaryFile.hpp
+    headers/io/StreamUtils.hpp
+    src/io/StreamUtils.cpp
 )
 
 add_library(cpp_commons ${SOURCE_FILES})

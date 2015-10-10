@@ -9,8 +9,8 @@
 struct Container {
     std::string id;
     std::string destination;
-    uint32_t x;
-    uint32_t y;
+    uint16_t x;
+    uint16_t y;
 };
 
 #endif

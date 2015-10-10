@@ -1,6 +1,7 @@
 #include "io/CSVFile.hpp"
 
-CSVFile::CSVFile(std::istream& is, char sep) {
+CSVFile::CSVFile(const std::string& file, char sep) : file(file), sep(sep) {
+    std::ifstream is(file);
     Sanity::streamness(is, "Invalid stream provided to CSVFile");
     std::string line;
     getline(is, line);
@@ -37,7 +38,8 @@ CSVFile& CSVFile::insert(const std::vector<std::string>& values) {
     return *this;
 }
 
-CSVFile& CSVFile::save(std::ostream& os, char sep) {
+CSVFile& CSVFile::save() {
+    std::ofstream os(file);
     Sanity::streamness(os, "Invalid stream passed to CSVFile::save");
 
     if(this->data.empty()) {

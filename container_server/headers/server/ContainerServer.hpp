@@ -4,7 +4,9 @@
 #include <fstream>
 #include <unordered_set>
 
+#include "ParkLocation.hpp"
 #include "cmmp/CMMPTranslator.hpp"
+#include "io/BinaryFile.hpp"
 #include "io/CSVFile.hpp"
 #include "net/Selector.hpp"
 #include "net/SelectorThread.hpp"
@@ -16,7 +18,7 @@
 class ContainerServer {
 
 public:
-    ContainerServer(unsigned short, const std::string&, ThreadPool&);
+    ContainerServer(unsigned short, const std::string&, const std::string&, ThreadPool&);
     ~ContainerServer();
 
     /**
@@ -49,7 +51,7 @@ public:
     bool isLoggedIn(std::shared_ptr<Socket>);
 
 private:
-    const std::string userFile;
+    BinaryFile<ParkLocation> containerFile;
     CSVFile users;
     std::mutex usersMutex;
     ThreadPool& pool;

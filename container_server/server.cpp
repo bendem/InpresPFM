@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     });
 
     LOG << "Creating server";
-    ContainerServer server(port, "data/users.csv", pool);
+    ContainerServer server(port, "data/park.dat", "data/users.csv", pool);
 
     LOG << "Starting up";
     server.init().listen();

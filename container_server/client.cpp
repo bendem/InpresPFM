@@ -1,6 +1,8 @@
 #include "client/ContainerClient.hpp"
 
 int main(int argc, char** argv) {
+    Logger::instance.addHandler(Logger::consoleHandler);
+
     unsigned short port = 31060;
     if(argc >= 2) {
         port = atoi(argv[1]);
