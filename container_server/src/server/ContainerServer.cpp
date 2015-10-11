@@ -289,7 +289,7 @@ void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr
     this->proto.write(s, OutputOneResponsePacket(false, "Invalid container id (not existing or ready to leave)"));
 }
 
-void ContainerServer::outputDoneHandler(const OutputDonePacket& p, std::shared_ptr<Socket> s) {
+void ContainerServer::outputDoneHandler(const OutputDonePacket&, std::shared_ptr<Socket> s) {
     if(!this->isLoggedIn(s)) {
         this->proto.write(s, OutputDoneResponsePacket(false, "Not logged in"));
         return;
