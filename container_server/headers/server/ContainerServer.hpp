@@ -16,10 +16,16 @@
 #include "threading/ThreadPool.hpp"
 #include "utils/Logger.hpp"
 
+using namespace std::placeholders;
+
 class ContainerServer {
 
+    using Mutex = std::recursive_mutex;
+    using Lock = std::lock_guard<Mutex>;
+    using string = std::string;
+
 public:
-    ContainerServer(unsigned short, const std::string&, const std::string&, ThreadPool&);
+    ContainerServer(unsigned short, const string&, const string&, ThreadPool&);
     ~ContainerServer();
 
     /**
@@ -54,19 +60,27 @@ public:
 private:
     BinaryFile<ParcLocation> containerFile;
     std::vector<ParcLocation> parcLocations;
-    std::mutex parcLocationsMutex;
+    Mutex parcLocationsMutex;
+    std::unordered_map<Socket*, std::vector<Container>> containersBeingStored;
+    Mutex containersBeingStoredMutex;
+
     CSVFile users;
-    std::mutex usersMutex;
+    Mutex usersMutex;
+
     ThreadPool& pool;
+
     ProtocolHandler<CMMPTranslator, PacketId> proto;
     Socket socket;
     Selector selector;
     SelectorThread<CMMPTranslator, PacketId> selectorThread;
     std::atomic_bool closed;
+
     std::unordered_map<Socket*, std::string> loggedInUsers;
-    std::mutex loggedInUsersMutex;
+    Mutex loggedInUsersMutex;
 
     bool findFreePlace(Container&);
+
+    void cleanupContainersBeingStored(Socket&, Socket::CloseReason);
 
 };
 

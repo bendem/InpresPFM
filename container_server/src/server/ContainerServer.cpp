@@ -21,9 +21,6 @@ ContainerServer::~ContainerServer() {
 }
 
 ContainerServer& ContainerServer::init() {
-    using std::placeholders::_1;
-    using std::placeholders::_2;
-
     LoginPacket::registerHandler(std::bind(&ContainerServer::loginHandler, this, _1, _2));
     InputTruckPacket::registerHandler(std::bind(&ContainerServer::inputTruckHandler, this, _1, _2));
     InputDonePacket::registerHandler(std::bind(&ContainerServer::inputDoneHandler, this, _1, _2));
@@ -41,12 +38,15 @@ ContainerServer& ContainerServer::listen() {
             std::shared_ptr<Socket> connection = socket.accept();
             LOG << Logger::Debug << "Connection accepted " << connection->getHandle();
 
-            connection->registerCloseHandler([this](Socket& s, Socket::CloseReason) {
-                std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
-                if(this->loggedInUsers.erase(&s) == 1) {
-                    LOG << Logger::Debug << "Removed connected user, connection closed";
-                }
-            });
+            // Set up connection cleanup
+            connection
+                ->registerCloseHandler(std::bind(&ContainerServer::cleanupContainersBeingStored, this, _1, _2))
+                .registerCloseHandler([this](Socket& s, Socket::CloseReason) {
+                    Lock lk(this->loggedInUsersMutex);
+                    if(this->loggedInUsers.erase(&s) > 0) {
+                        LOG << Logger::Debug << "Removed connected user, connection closed";
+                    }
+                });
             this->selector.addSocket(connection);
         } catch(IOError e) {
             LOG << Logger::Error << "IOError: " << e.what();
@@ -85,7 +85,7 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
             return;
         }
 
-        std::lock_guard<std::mutex> usersLock(this->usersMutex);
+        Lock usersLock(this->usersMutex);
         if(!this->users.find("username", p.getUsername()).empty()) {
             this->proto.write(s, LoginResponsePacket(false, "Username already in use"));
             return;
@@ -96,14 +96,14 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
         this->users.save();
 
         // Login
-        std::lock_guard<std::mutex> loggedInUsersLock(this->loggedInUsersMutex);
+        Lock loggedInUsersLock(this->loggedInUsersMutex);
         this->loggedInUsers.insert({ s.get(), p.getUsername() });
 
         this->proto.write(s, LoginResponsePacket(true));
         return;
     }
 
-    std::lock_guard<std::mutex> lk(this->usersMutex);
+    Lock lk(this->usersMutex);
     std::map<std::string, std::string> map = this->users.find("username", p.getUsername());
     if(map.empty()) {
         LOG << Logger::Warning << "Tried to login with unknown username: " << p.getUsername();
@@ -115,7 +115,7 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
     if(map.begin()->second == p.getPassword()) {
         LOG << p.getUsername() << " logged in";
 
-        std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
+        Lock lk(this->loggedInUsersMutex);
         this->loggedInUsers.insert({ s.get(), p.getUsername() });
         this->proto.write(s, LoginResponsePacket(true));
         return;
@@ -131,37 +131,94 @@ void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_p
         return;
     }
 
-    std::vector<Container> containers(p.getContainers());
-    LOG << "Received " << containers.size() << " containers";
-
     {
-        std::lock_guard<std::mutex> lk(this->parcLocationsMutex);
-        for(Container& container : containers) {
+        // Check a the client isn't already storing containers
+        Lock lk(this->containersBeingStoredMutex);
+        if(this->containersBeingStored.find(s.get()) != this->containersBeingStored.end()) {
+            this->proto.write(s, InputTruckResponsePacket(false, {}, "Already storing containers"));
+            return;
+        }
+    }
+
+    std::vector<Container> containers;
+    {
+        Lock lk(this->parcLocationsMutex);
+
+        Container tmp;
+        for(const Container& container : p.getContainers()) {
+            // Find a place for the container
+            tmp = container;
             bool had_place = false;
             try {
-                had_place = this->findFreePlace(container);
+                had_place = this->findFreePlace(tmp);
             } catch(std::logic_error e) {
                 LOG << Logger::Error << "Something is really bad: " << e.what();
+                this->proto.write(s, InputTruckResponsePacket(false, {}, std::string("Something is really bad: ") + e.what()));
+                return;
             }
 
             if(!had_place) {
                 this->proto.write(s, InputTruckResponsePacket(false, {}, "No free place available"));
                 return;
+            } else {
+                // Save the container info for later
+                containers.emplace_back(tmp);
             }
         }
+
+        this->containersBeingStored.insert({ s.get(), containers });
     }
 
     this->proto.write(s, InputTruckResponsePacket(true, containers));
 }
 
-void ContainerServer::inputDoneHandler(const InputDonePacket&, std::shared_ptr<Socket> s) {
+void ContainerServer::inputDoneHandler(const InputDonePacket& p, std::shared_ptr<Socket> s) {
     if(!this->isLoggedIn(s)) {
         this->proto.write(s, InputDoneResponsePacket(false, "Not logged in"));
         return;
     }
 
-    // TODO Do something with the weight
-    this->proto.write(s, InputDoneResponsePacket(true, ""));
+    Lock lk(this->containersBeingStoredMutex);
+    auto containersToValidate = this->containersBeingStored.find(s.get());
+    if(containersToValidate == this->containersBeingStored.end()) {
+        LOG << Logger::Warning << "Received InputDone even tho no containers where being stored";
+        this->proto.write(s, InputDoneResponsePacket(false, "No containers currently being stored"));
+        return;
+    }
+
+    if(!p.isOk()) {
+        LOG << Logger::Debug << "Something happened while storing, cleaning up";
+        this->cleanupContainersBeingStored(*s, Socket::CloseReason::Error);
+        this->proto.write(s, InputDoneResponsePacket(true));
+        return;
+    }
+
+    {
+        Lock lk(this->parcLocationsMutex);
+        LOG << Logger::Debug << containersToValidate->second.size() << " got stored";
+
+        // Mark all places as taken
+        for(Container& container : containersToValidate->second) {
+            auto it = std::find_if(
+                this->parcLocations.begin(),
+                this->parcLocations.end(),
+                [&container](const ParcLocation& location) {
+                    return location.x == container.x && location.y == container.y;
+                }
+            );
+
+            if(it != this->parcLocations.end()) {
+                it->flag = ParkLocationFlag::Taken;
+            }
+        }
+        this->containersBeingStored.erase(containersToValidate);
+
+        // Save
+        this->containerFile.save(this->parcLocations.begin(), this->parcLocations.end());
+    }
+
+    // TODO Do something with the weight?
+    this->proto.write(s, InputDoneResponsePacket(true));
 }
 
 void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared_ptr<Socket> s) {
@@ -235,7 +292,7 @@ void ContainerServer::logoutHandler(const LogoutPacket&, std::shared_ptr<Socket>
     }
 
     // TODO Not sure what the stuff from the packet is useful for...
-    std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
+    Lock lk(this->loggedInUsersMutex);
     this->loggedInUsers.erase(s.get());
     this->proto.write(s, LogoutResponsePacket(true, "Logged out"));
 
@@ -243,7 +300,7 @@ void ContainerServer::logoutHandler(const LogoutPacket&, std::shared_ptr<Socket>
 }
 
 bool ContainerServer::isLoggedIn(std::shared_ptr<Socket> socket) {
-    std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
+    Lock lk(this->loggedInUsersMutex);
     return this->loggedInUsers.find(socket.get()) != this->loggedInUsers.end();
 }
 
@@ -265,7 +322,7 @@ bool ContainerServer::findFreePlace(Container& container) {
                 LOG << Logger::Debug << "Found a free/reserved place in " << location.x << ':' << location.y;
                 container.x = location.x;
                 container.y = location.y;
-                location.flag = ParkLocationFlag::Reserved;
+                location.flag = ParkLocationFlag::Storing;
                 return true;
             }
 
@@ -280,11 +337,37 @@ bool ContainerServer::findFreePlace(Container& container) {
                     }
                 }
             }
+            // TODO Am pretty sure this doesn't actually always works
         }
     } while(changed);
 
     LOG << Logger::Debug << "Found a place not in the file " << container.x << ':' << container.y;
-    this->parcLocations.emplace_back(ParcLocation { container.x, container.y, container.id, ParkLocationFlag::Reserved });
+    this->parcLocations.emplace_back(ParcLocation { container.x, container.y, container.id, ParkLocationFlag::Storing });
 
     return true;
+}
+
+void ContainerServer::cleanupContainersBeingStored(Socket& s, Socket::CloseReason) {
+    Lock lk(this->containersBeingStoredMutex);
+    auto it = this->containersBeingStored.find(&s);
+
+    if(it != this->containersBeingStored.end()) {
+        Lock lk(this->parcLocationsMutex);
+        LOG << Logger::Warning << "Removing user currently storing containers";
+
+        for(Container& container : it->second) {
+            auto to_fix = std::find_if(
+                this->parcLocations.begin(),
+                this->parcLocations.end(),
+                [&container](const ParcLocation& location) {
+                    return location.x == container.x && location.y == container.y;
+                }
+            );
+
+            if(to_fix != this->parcLocations.end()) {
+                to_fix->flag = ParkLocationFlag::Free;
+            }
+        }
+        this->containersBeingStored.erase(&s);
+    }
 }
