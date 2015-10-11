@@ -80,25 +80,28 @@ std::pair<Id, std::vector<char>> ProtocolHandler<Translator, Id>::readPacket(std
 
 template<class Translator, class Id>
 void ProtocolHandler<Translator, Id>::read(std::shared_ptr<Socket> socket) {
-    // TODO Check if there is a thing for unpacking?
-    const std::pair<Id, std::vector<char>>& tmp_packet = this->readPacket(socket);
+    Id id;
+    std::vector<char> chars;
 
-    this->translator.decode(tmp_packet.first, tmp_packet.second, socket);
+    std::tie(id, chars) = this->readPacket(socket);
+    this->translator.decode(id, chars, socket);
 }
 
 template<class Translator, class Id>
 template<class P>
 P ProtocolHandler<Translator, Id>::readSpecificPacket(std::shared_ptr<Socket> socket) {
     while(true) {
-        // TODO Check if there is a thing for unpacking?
-        const std::pair<Id, std::vector<char>>& tmp_packet = this->readPacket(socket);
+        Id id;
+        std::vector<char> chars;
 
-        if(tmp_packet.first != P::id) {
-            LOG << Logger::Warning << "Ignored invalid packet with id " << tmp_packet.first;
+        std::tie(id, chars) = this->readPacket(socket);
+
+        if(id != P::id) {
+            LOG << Logger::Warning << "Ignored invalid packet with id " << id;
             continue;
         }
 
-        auto it = tmp_packet.second.cbegin();
+        auto it = chars.cbegin();
         P packet = P::decode(it);
         // Call the handlers, just in case
         packet.handle(socket);

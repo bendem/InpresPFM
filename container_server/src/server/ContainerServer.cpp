@@ -61,8 +61,7 @@ void ContainerServer::close() {
     if(this->closed.exchange(true)) {
         return;
     }
-    // TODO Close more?
-    // TODO Stop accept
+    this->socket.close();
 }
 
 void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket> s) {
@@ -325,7 +324,6 @@ bool ContainerServer::findFreePlace(Container& container) {
 
         for(ParcLocation& location : this->parcLocations) {
             if(location.flag == ParkLocationFlag::Taken && location.containerId == container.id) {
-                // TODO Better exception? (as always)
                 throw std::logic_error("Container '" + container.id + "' is already stored "
                     "in the parc at " + std::to_string(location.x) + ":" + std::to_string(location.y));
                 return false;
