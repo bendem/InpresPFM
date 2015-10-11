@@ -12,7 +12,10 @@ find_package(Threads)
 include_directories(headers)
 
 set(SOURCE_FILES
+    headers/input/InputHelper.hpp
+    headers/io/BinaryFile.hpp
     headers/io/CSVFile.hpp
+    headers/io/StreamUtils.hpp
     headers/net/IOError.hpp
     headers/net/Selector.hpp
     headers/net/SelectorThread.hpp
@@ -23,17 +26,14 @@ set(SOURCE_FILES
     headers/threading/ThreadPool.hpp
     headers/utils/Logger.hpp
     headers/utils/Sanity.hpp
+    src/input/InputHelper.cpp
     src/io/CSVFile.cpp
+    src/io/StreamUtils.cpp
     src/net/Selector.cpp
     src/net/Socket.cpp
     src/threading/ThreadPool.cpp
     src/utils/Logger.cpp
     src/utils/Sanity.cpp
-    headers/input/InputHelper.hpp
-    src/input/InputHelper.cpp
-    headers/io/BinaryFile.hpp
-    headers/io/StreamUtils.hpp
-    src/io/StreamUtils.cpp
 )
 
 add_library(cpp_commons ${SOURCE_FILES})

@@ -29,6 +29,7 @@ set(COMMON_FILES
     headers/cmmp/OutputReadyResponsePacket.hpp
     headers/cmmp/PacketId.hpp
     headers/Container.hpp
+    headers/ParcLocation.hpp
     src/cmmp/CMMPTranslator.cpp
     src/cmmp/InputDonePacket.cpp
     src/cmmp/InputDoneResponsePacket.cpp
@@ -44,7 +45,6 @@ set(COMMON_FILES
     src/cmmp/OutputOneResponsePacket.cpp
     src/cmmp/OutputReadyPacket.cpp
     src/cmmp/OutputReadyResponsePacket.cpp
-    headers/ParcLocation.hpp
     src/ParcLocation.cpp
 )
 add_library(cmmp_protocol ${COMMON_FILES})
@@ -62,9 +62,9 @@ target_link_libraries(container_server cpp_commons)
 target_link_libraries(container_server cmmp_protocol)
 
 add_executable(container_app
-    client.cpp
     headers/client/ContainerClient.hpp
     src/client/ContainerClient.cpp
+    client.cpp
 )
 target_link_libraries(container_app cpp_commons)
 target_link_libraries(container_app cmmp_protocol)
