@@ -142,8 +142,6 @@ void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_p
                 had_place = this->findFreePlace(container);
             } catch(std::logic_error e) {
                 LOG << Logger::Error << "Something is really bad: " << e.what();
-            } catch(std::runtime_error e) {
-                LOG << Logger::Error << "Could not find a free place: " << e.what();
             }
 
             if(!had_place) {
@@ -278,7 +276,6 @@ bool ContainerServer::findFreePlace(Container& container) {
                     container.x = 0;
                     ++container.y;
                     if(container.y > 200) { // TODO Put a real value here
-                        throw std::runtime_error("Could not find any place to store " + container.id);
                         return false;
                     }
                 }
