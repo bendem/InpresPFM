@@ -1,7 +1,7 @@
 create table users (
-    user_id    number constraint pk_users primary key,
-    username   varchar2(63),
-    password   varchar2(63)
+    user_id    number constraint pk_users primary key not null,
+    username   varchar2(63) constraint u_users_username unique not null,
+    password   varchar2(63) not null
 );
 
 create sequence user_seq;
@@ -13,8 +13,8 @@ end;
 /
 
 create table companies (
-    company_id number constraint pk_companies primary key,
-    name       varchar2(63),
+    company_id number constraint pk_companies primary key not null,
+    name       varchar2(63) not null,
     mail       varchar2(63),
     phone      varchar2(63),
     address    varchar2(63)
@@ -29,38 +29,38 @@ end;
 /
 
 create table containers (
-    container_id varchar2(63) constraint pk_containers primary key,
-    company_id   number       constraint fk_containers_company_id references companies(company_id),
-    content_type varchar2(63),
+    container_id varchar2(63) constraint pk_containers primary key not null,
+    company_id   number       constraint fk_containers_company_id references companies(company_id) not null,
+    content_type varchar2(63) not null,
     dangers      varchar2(63)
 );
 
 create table parcs (
-    x            number(4, 0),
-    y            number(4, 0),
-    container_id varchar2(63) constraint fk_parcs_container_id references containers(container_id),
+    x            number(4, 0) not null,
+    y            number(4, 0) not null,
+    container_id varchar2(63) constraint fk_parcs_container_id references containers(container_id) not null,
     constraint pk_parcs primary key (x, y)
 );
 
 create table reservations (
-    date_arrival date,
-    x number(4,0),
-    y number(4,0),
-    destination_id number,
+    date_arrival date not null,
+    x number(4,0) not null,
+    y number(4,0) not null,
+    destination_id number not null,
     reservation_id varchar2(22),
     constraint fk_reservations_parcs foreign key (x,y) references parcs(x,y),
     constraint pk_reservations primary key (x, y, date_arrival)
 );
 
 create table transporters (
-    transporter_id varchar2(63) constraint pk_transporters primary key,
-    company_id     number       constraint fk_transporters_company_id references companies(company_id),
+    transporter_id varchar2(63) constraint pk_transporters primary key not null,
+    company_id     number       constraint fk_transporters_company_id references companies(company_id) not null,
     info           varchar2(127)
 );
 
 create table destinations (
-    destination_id number constraint pk_destinations primary key,
-    city           varchar2(63),
+    destination_id number constraint pk_destinations primary key not null,
+    city           varchar2(63) not null,
     distance_road  number,
     distance_boat  number,
     distance_train number
@@ -75,15 +75,15 @@ end;
 /
 
 create table movements (
-    movement_id        number       constraint pk_movements primary key,
-    container_id       varchar2(63) constraint fk_movements_container_id references containers(container_id),
-    company_id         number       constraint fk_movements_company_id references companies(company_id),
+    movement_id        number       constraint pk_movements primary key not null,
+    container_id       varchar2(63) constraint fk_movements_container_id references containers(container_id) not null,
+    company_id         number       constraint fk_movements_company_id references companies(company_id) not null,
     transporter_id_in  varchar2(63) constraint fk_movements_transporter_id_in references transporters(transporter_id),
     transporter_id_out varchar2(63) constraint fk_movements_transporter_id_ou references transporters(transporter_id),
     date_arrival       date,
     date_departure     date,
     weight             number,
-    destination_id     number       constraint fk_movements_destination_id references destinations(destination_id)
+    destination_id     number       constraint fk_movements_destination_id references destinations(destination_id) not null
 );
 
 create sequence movement_seq;
