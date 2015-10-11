@@ -1,6 +1,6 @@
 #include "server/ContainerServer.hpp"
 
-ContainerServer::ContainerServer(unsigned short port, const std::string& container_file, const std::string& user_file, ThreadPool& pool)
+ContainerServer::ContainerServer(unsigned short port, const string& container_file, const string& user_file, ThreadPool& pool)
         : containerFile(container_file),
           parcLocations(containerFile.load()),
           users(user_file, ';'),
@@ -79,8 +79,8 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
             return;
         }
 
-        if(p.getUsername().find_first_of("\n;\r\0") != std::string::npos
-                || p.getPassword().find_first_of("\n;\r\0") != std::string::npos) {
+        if(p.getUsername().find_first_of("\n;\r\0") != string::npos
+                || p.getPassword().find_first_of("\n;\r\0") != string::npos) {
             this->proto.write(s, LoginResponsePacket(false, "Invalid character in username"));
             return;
         }
@@ -104,7 +104,7 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
     }
 
     Lock lk(this->usersMutex);
-    std::map<std::string, std::string> map = this->users.find("username", p.getUsername());
+    std::map<string, string> map = this->users.find("username", p.getUsername());
     if(map.empty()) {
         LOG << Logger::Warning << "Tried to login with unknown username: " << p.getUsername();
 
@@ -153,7 +153,7 @@ void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_p
                 had_place = this->findFreePlace(tmp);
             } catch(std::logic_error e) {
                 LOG << Logger::Error << "Something is really bad: " << e.what();
-                this->proto.write(s, InputTruckResponsePacket(false, {}, std::string("Something is really bad: ") + e.what()));
+                this->proto.write(s, InputTruckResponsePacket(false, {}, string("Something is really bad: ") + e.what()));
                 return;
             }
 
@@ -228,7 +228,7 @@ void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared
     }
 
     std::vector<Container> containers;
-    std::vector<std::string> containers_to_send;
+    std::vector<string> containers_to_send;
     //int loaded = 0;
     LOG << "[OutputReadyHandler] Transport n° " << p.getLicense() << " going to " << p.getDestination() << " can carry " << p.getCapacity() << " containers.";
 
