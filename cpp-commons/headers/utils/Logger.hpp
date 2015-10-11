@@ -12,7 +12,7 @@
 #include <thread>
 #include <vector>
 
-#define LOG LoggerStream(Logger::instance, Logger::Info, __FILE__, __LINE__)
+#define LOG LoggerStream(Logger::instance, Logger::Info, __FILE__, __LINE__, __FUNCTION__)
 
 class Logger {
 
@@ -22,11 +22,11 @@ public:
     };
 
     using Handler = std::function<void(Level, const std::string&)>;
-    using Formatter = std::function<std::string(Level, const std::string&, const std::string&, int, const std::tm*)>;
+    using Formatter = std::function<std::string(Level, const std::string&, const std::string&, int, const std::string&, const std::tm*)>;
 
     Logger() : formatter(&Logger::defaultFormatter), handlers(1, &Logger::consoleHandler) {}
 
-    void log(Level, const std::string&, const std::string& = "n/a", int = 0) const;
+    void log(Level, const std::string&, const std::string& = "n/a", int = 0, const std::string& = "n/a") const;
 
     Logger& setFormatter(Formatter);
 
@@ -42,14 +42,14 @@ private:
     Formatter formatter;
     std::vector<Handler> handlers;
 
-    static std::string defaultFormatter(Level, const std::string&, const std::string&, int, const std::tm*);
+    static std::string defaultFormatter(Level, const std::string&, const std::string&, int, const std::string&, const std::tm*);
 
 };
 
 class LoggerStream {
 
 public:
-    LoggerStream(const Logger& logger, Logger::Level, const std::string&, int);
+    LoggerStream(const Logger& logger, Logger::Level, const std::string&, int, const std::string&);
     ~LoggerStream();
 
     template<class T>
@@ -61,6 +61,7 @@ private:
     Logger::Level level;
     std::string file;
     int line;
+    std::string function;
     std::ostringstream input;
 
     static std::string fileToName(std::string);

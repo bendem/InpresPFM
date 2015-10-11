@@ -2,11 +2,11 @@
 
 Logger Logger::instance;
 
-void Logger::log(Logger::Level level, const std::string& msg, const std::string& file, int line) const {
+void Logger::log(Logger::Level level, const std::string& msg, const std::string& file, int line, const std::string& func) const {
     std::time_t time = std::time(nullptr);
     std::tm* now = std::localtime(&time);
 
-    std::string log_line(this->formatter(level, msg, file, line, now));
+    std::string log_line(this->formatter(level, msg, file, line, func, now));
     for(Handler handler : this->handlers) {
         handler(level, log_line);
     }
@@ -47,27 +47,28 @@ void Logger::consoleHandler(Level level, const std::string& log) {
     (level > Logger::Info ? std::cerr : std::cout) << log;
 }
 
-std::string Logger::defaultFormatter(Level level, const std::string& msg, const std::string& file, int line, const std::tm* time) {
+std::string Logger::defaultFormatter(Level level, const std::string& msg, const std::string& file, int line, const std::string& func, const std::tm* time) {
     std::ostringstream os;
     os
         << '[' << std::put_time(time, "%H:%M:%S") << "] ["
         << Logger::levelToName(level) << "] ["
         << std::hex << std::this_thread::get_id() << std::dec << "] ["
-        << file << ':' << line << "] "
+        << file << ':' << line << ':' << func << "] "
         << msg << std::endl;
     return os.str();
 }
 
 
-LoggerStream::LoggerStream(const Logger& logger, Logger::Level lvl, const std::string& file, int line)
+LoggerStream::LoggerStream(const Logger& logger, Logger::Level lvl, const std::string& file, int line, const std::string& func)
     : logger(logger),
       level(lvl),
       file(fileToName(file)),
-      line(line) {
+      line(line),
+      function(func) {
 }
 
 LoggerStream::~LoggerStream() {
-    this->logger.log(this->level, this->input.str(), this->file, this->line);
+    this->logger.log(this->level, this->input.str(), this->file, this->line, this->function);
 }
 
 LoggerStream& LoggerStream::operator<<(const Logger::Level& lvl) {
