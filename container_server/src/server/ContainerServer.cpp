@@ -10,7 +10,7 @@ ContainerServer::ContainerServer(unsigned short port, const string& container_fi
           selector(),
           selectorThread(selector, pool, proto),
           closed(false) {
-    LOG << Logger::Debug << "Loaded " << parcLocations.size() << " location";
+    LOG << Logger::Debug << "Loaded " << parcLocations.size() << " location from " << container_file;
 
     LOG << "Binding server socket to " << port;
     socket.bind(port);
@@ -342,7 +342,17 @@ bool ContainerServer::findFreePlace(Container& container) {
     } while(changed);
 
     LOG << Logger::Debug << "Found a place not in the file " << container.x << ':' << container.y;
-    this->parcLocations.emplace_back(ParcLocation { container.x, container.y, container.id, ParkLocationFlag::Storing });
+    this->parcLocations.emplace_back(ParcLocation {
+        container.x,
+        container.y,
+        container.id,
+        ParkLocationFlag::Storing,
+        "now",                     // TODO Need to be handled by the db
+        "now",                     // TODO Need to be handled by the db
+        0,                         // TODO Weight is not clearly defined, I'd just remove it all together
+        container.destination,
+        MeanOfTransportation::Boat // TODO Ask if this really matters (as long as it gets to the destination, it's ok no?)
+    });
 
     return true;
 }

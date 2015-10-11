@@ -15,11 +15,22 @@ namespace ParkLocationFlag {
     };
 }
 
+namespace MeanOfTransportation {
+    enum MeanOfTransportation : uint8_t {
+        Boat, Train
+    };
+}
+
 struct ParcLocation {
-    uint16_t         x;
-    uint16_t         y;
-    std::string      containerId;
+    uint16_t             x;
+    uint16_t             y;
+    std::string          containerId;
     ParkLocationFlag::ParkLocationFlag flag;
+    std::string          reservationDate;
+    std::string          arrivalDate;
+    uint32_t             weight;
+    std::string          destination;
+    MeanOfTransportation::MeanOfTransportation meanOfTranspartation;
 };
 
 // Allow to be used by BinaryFile
