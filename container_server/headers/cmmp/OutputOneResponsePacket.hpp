@@ -11,7 +11,7 @@ class OutputOneResponsePacket : public Packet<OutputOneResponsePacket> {
 public:
     static const PacketId id;
 
-    OutputOneResponsePacket(bool ok, std::string reason)
+    OutputOneResponsePacket(bool ok, std::string reason = "")
         : ok(ok),
           reason(reason) {}
 

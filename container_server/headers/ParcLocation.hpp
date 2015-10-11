@@ -11,6 +11,7 @@ namespace ParkLocationFlag {
         Free,     // Place can be taken by anyone
         Reserved, // Place can only be taken if the containerId matches
         Storing,  // Place is being filled (should not be stored in the file)
+        Leaving,  // Place is being freed (should not be stored in the file)
         Taken     // Place is taken
     };
 }

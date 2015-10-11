@@ -11,13 +11,12 @@ class OutputReadyResponsePacket : public Packet<OutputReadyResponsePacket> {
 public:
     static const PacketId id;
 
-    OutputReadyResponsePacket(bool ok, const std::vector<std::string>& containerIds, const std::string& reason)
+    OutputReadyResponsePacket(bool ok, const std::vector<std::string>& containerIds, const std::string& reason = "")
         : ok(ok),
           containerIds(containerIds),
           reason(reason) {}
 
     bool isOk() const { return ok; }
-    uint32_t getSize() const { return containerIds.size(); }
     const std::vector<std::string>& getContainerIds() const { return containerIds; }
     const std::string& getReason() const { return reason; }
 

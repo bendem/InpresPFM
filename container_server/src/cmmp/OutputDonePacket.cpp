@@ -4,7 +4,7 @@ const PacketId OutputDonePacket::id = PacketId::OutputDone;
 
 OutputDonePacket OutputDonePacket::decode(std::vector<char>::const_iterator& it) {
     std::string license = readString(it);
-    uint32_t container_count = readPrimitive<uint32_t>(it);
+    uint16_t container_count = readPrimitive<uint16_t>(it);
 
     return OutputDonePacket(license, container_count);
 }

@@ -11,19 +11,19 @@ class OutputDonePacket : public Packet<OutputDonePacket> {
 public:
     static const PacketId id;
 
-    OutputDonePacket(const std::string& license, uint32_t container_count)
+    OutputDonePacket(const std::string& license, uint16_t container_count)
         : license(license),
           containerCount(container_count) {}
 
     const std::string& getLicense() const { return license; }
-    uint32_t getContainerCount() const { return containerCount; }
+    uint16_t getContainerCount() const { return containerCount; }
 
     static OutputDonePacket decode(std::vector<char>::const_iterator&);
     void encode(std::vector<char>&) const;
 
 private:
     std::string license;
-    uint32_t containerCount;
+    uint16_t containerCount;
 
 };
 

@@ -227,29 +227,37 @@ void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared
         return;
     }
 
-    std::vector<Container> containers;
-    std::vector<string> containers_to_send;
-    //int loaded = 0;
-    LOG << "[OutputReadyHandler] Transport n° " << p.getLicense() << " going to " << p.getDestination() << " can carry " << p.getCapacity() << " containers.";
+    uint16_t capacity = p.getCapacity();
+    if(capacity == 0 || p.getDestination().empty()) {
+        this->proto.write(s, OutputReadyResponsePacket(false, {}, "Invalid value received"));
+        return;
+    }
 
-    /*containers = fileUtils.loadFile("FICH_PARC");
-    for(auto cont : containers) {
-        if(loaded < p.getCapacity()) {
-            if(cont.getDestination() == p.getDestination()){
-                containers_to_send.push_back(cont);
-                loaded++;
+    LOG << Logger::Debug
+        << "Transport '" << p.getLicense()
+        << "' going to '" << p.getDestination()
+        << "' can carry " << capacity << " container(s)";
+
+    std::vector<string> containers;
+    {
+        Lock lk(this->parcLocationsMutex);
+
+        for(ParcLocation& location : this->parcLocations) {
+            if(location.destination == p.getDestination()) {
+                containers.emplace_back(location.containerId);
+                location.flag = ParkLocationFlag::Leaving;
+
+                if(--capacity == 0) {
+                    break;
+                }
             }
-        } else {
-            break;
         }
     }
-    */
-    if(containers_to_send.size()) {
-        LOG << "[OutputReadyHandler] Sending " << containers_to_send.size() << " containers";
-        this->proto.write(s, OutputReadyResponsePacket(true, containers_to_send, ""));
+
+    if(containers.empty()) {
+        this->proto.write(s, OutputReadyResponsePacket(false, {}, "No containers for this destination"));
     } else {
-        LOG << "[OutputReadyHandler] No containers available for " << p.getDestination();
-        this->proto.write(s, OutputReadyResponsePacket(false, containers_to_send, "No containers for this destination."));
+        this->proto.write(s, OutputReadyResponsePacket(true, containers));
     }
 
 }
@@ -260,16 +268,25 @@ void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr
         return;
     }
 
-    int test = 0;
-    /* test = UtilsFich.deleteFromFile(p.getContainerId()); */
+    bool found = false;
+    {
+        Lock lk(this->parcLocationsMutex);
+        for(ParcLocation& location : this->parcLocations) {
+            if(location.containerId == p.getContainerId() && location.flag == ParkLocationFlag::Leaving) {
+                location.flag = ParkLocationFlag::Free;
+                found = true;
+                break;
+            }
+        }
 
-    if (test) {
-        LOG << "[OutputOneHandler] Container " << p.getContainerId() << " is loaded";
-        this->proto.write(s, OutputOneResponsePacket(true, ""));
-    } else {
-        LOG << "[OutputOneHandler] Container " << p.getContainerId() << " doesn't exist";
-        this->proto.write(s, OutputOneResponsePacket(false, "Container doesn't exist."));
+        if(found) {
+            this->containerFile.save(this->parcLocations.begin(), this->parcLocations.end());
+            this->proto.write(s, OutputOneResponsePacket(true));
+            return;
+        }
     }
+
+    this->proto.write(s, OutputOneResponsePacket(false, "Invalid container id (not existing or ready to leave)"));
 }
 
 void ContainerServer::outputDoneHandler(const OutputDonePacket& p, std::shared_ptr<Socket> s) {
@@ -278,11 +295,8 @@ void ContainerServer::outputDoneHandler(const OutputDonePacket& p, std::shared_p
         return;
     }
 
-    // TODO Add a way to remember the number of containers sent in OutputReadyHadler
-
-    LOG << "[OutputDoneHandler] Loaded " << p.getContainerCount();
-
-    this->proto.write(s, OutputDoneResponsePacket(true, ""));
+    // TODO mkay? :/ That's some useless stuff here
+    this->proto.write(s, OutputDoneResponsePacket(true));
 }
 
 void ContainerServer::logoutHandler(const LogoutPacket&, std::shared_ptr<Socket> s) {
