@@ -2,16 +2,16 @@
 
 const PacketId OutputDoneResponsePacket::id = PacketId::OutputDoneResponse;
 
-OutputDoneResponsePacket OutputDoneResponsePacket::decode(std::vector<char>::const_iterator& it) {
-    bool ok = readPrimitive<bool>(it);
-    std::string reason = ok ? "" : readString(it);
+OutputDoneResponsePacket OutputDoneResponsePacket::decode(std::istream& is) {
+    bool ok = StreamUtils::read<bool>(is) ;
+    std::string reason = ok ? "" : StreamUtils::read<std::string>(is) ;
 
     return OutputDoneResponsePacket(ok, reason);
 }
 
-void OutputDoneResponsePacket::encode(std::vector<char>& v) const {
-    writePrimitive(v, ok);
+void OutputDoneResponsePacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, ok);
     if(!ok) {
-        writeString(v, reason);
+        StreamUtils::write(os, reason);
     }
 }

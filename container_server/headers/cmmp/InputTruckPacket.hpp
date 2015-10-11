@@ -19,8 +19,8 @@ public:
     const std::string& getLicense() const { return license; }
     const std::vector<Container>& getContainers() const { return containers; }
 
-    static InputTruckPacket decode(std::vector<char>::const_iterator&);
-    void encode(std::vector<char>&) const;
+    static InputTruckPacket decode(std::istream&);
+    void encode(std::ostream&) const;
 
 private:
     std::string license;

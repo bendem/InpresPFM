@@ -1,49 +1,48 @@
 #include "cmmp/CMMPTranslator.hpp"
 
-void CMMPTranslator::decode(PacketId id, const std::vector<char>& v, std::shared_ptr<Socket> socket) {
-    std::vector<char>::const_iterator it = v.begin();
+void CMMPTranslator::decode(PacketId id, std::istream& is, std::shared_ptr<Socket> socket) {
     switch(id) {
         case PacketId::Login:
-            LoginPacket::decode(it).handle(socket);
+            LoginPacket::decode(is).handle(socket);
             return;
         case PacketId::InputTruck:
-            InputTruckPacket::decode(it).handle(socket);
+            InputTruckPacket::decode(is).handle(socket);
             return;
         case PacketId::InputDone:
-            InputDonePacket::decode(it).handle(socket);
+            InputDonePacket::decode(is).handle(socket);
             return;
         case PacketId::OutputReady:
-            OutputReadyPacket::decode(it).handle(socket);
+            OutputReadyPacket::decode(is).handle(socket);
             return;
         case PacketId::OutputOne:
-            OutputOnePacket::decode(it).handle(socket);
+            OutputOnePacket::decode(is).handle(socket);
             return;
         case PacketId::OutputDone:
-            OutputDonePacket::decode(it).handle(socket);
+            OutputDonePacket::decode(is).handle(socket);
             return;
         case PacketId::Logout:
-            LogoutPacket::decode(it).handle(socket);
+            LogoutPacket::decode(is).handle(socket);
             return;
         case PacketId::LoginResponse:
-            LoginResponsePacket::decode(it).handle(socket);
+            LoginResponsePacket::decode(is).handle(socket);
             return;
         case PacketId::InputTruckResponse:
-            InputTruckResponsePacket::decode(it).handle(socket);
+            InputTruckResponsePacket::decode(is).handle(socket);
             return;
         case PacketId::InputDoneResponse:
-            InputDoneResponsePacket::decode(it).handle(socket);
+            InputDoneResponsePacket::decode(is).handle(socket);
             return;
         case PacketId::OutputReadyResponse:
-            OutputReadyResponsePacket::decode(it).handle(socket);
+            OutputReadyResponsePacket::decode(is).handle(socket);
             return;
         case PacketId::OutputOneResponse:
-            OutputOneResponsePacket::decode(it).handle(socket);
+            OutputOneResponsePacket::decode(is).handle(socket);
             return;
         case PacketId::OutputDoneResponse:
-            OutputDoneResponsePacket::decode(it).handle(socket);
+            OutputDoneResponsePacket::decode(is).handle(socket);
             return;
         case PacketId::LogoutResponse:
-            LogoutResponsePacket::decode(it).handle(socket);
+            LogoutResponsePacket::decode(is).handle(socket);
             return;
     }
 

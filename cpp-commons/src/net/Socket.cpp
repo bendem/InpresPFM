@@ -101,36 +101,35 @@ std::shared_ptr<Socket> Socket::accept() {
     return s;
 }
 
-long Socket::write(const std::vector<char>& vector) {
+long Socket::write(const std::string& string) {
     this->checkOpen();
     if(this->server) {
         throw std::logic_error("Trying to write on a server socket");
     }
 
-    long len = send(this->handle, vector.data(), vector.size() * sizeof(char), 0);
+    long len = send(this->handle, string.data(), string.size() * sizeof(char), 0);
 
     if(len == -1) {
-        this->error("Failed to write " + std::to_string(vector.size()) + " bytes", errno);
+        this->error("Failed to write " + std::to_string(string.size()) + " bytes", errno);
     } else if(len == 0) {
         this->close(Gone);
         throw IOError("Failed to write, client closed the connection");
-    } else if(len != vector.size()) {
+    } else if(len != string.size()) {
         this->error("Didn't write enough bytes, "
-            "expected: " + std::to_string(vector.size())
+            "expected: " + std::to_string(string.size())
             + ", wrote " + std::to_string(len), errno);
     }
 
     return len;
 }
 
-std::vector<char> Socket::read(unsigned int max) {
+unsigned Socket::read(unsigned int max, std::ostream& os) {
     this->checkOpen();
     if(this->server) {
         throw std::logic_error("Trying to read on a server socket");
     }
 
-    std::vector<char> result;
-    char* c = new char[max]; // TODO Don't do that
+    char* c = new char[max];
 
     this->handleMutex.lock();
     ssize_t len = recv(this->handle, c, max, 0);
@@ -140,28 +139,27 @@ std::vector<char> Socket::read(unsigned int max) {
         delete c;
         this->error("Failed to read " + std::to_string(max) + " bytes", errno);
     } else if(len == 0) {
+        delete c;
         this->close(Gone);
         throw IOError("Failed to read, client closed the connection");
     }
 
-    result.reserve(len);
-    for(long i = 0; i < len; ++i) {
-        result.push_back(c[i]);
-    }
+    LOG << Logger::Debug << (int) c[0];
 
+    os.write(c, len);
     delete c;
 
-    return result;
+    return len;
 }
 
-void Socket::accumulate(unsigned int len, std::vector<char>& result) {
+void Socket::accumulate(unsigned int len, std::ostream& os) {
     this->checkOpen();
 
     std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
 
-    while(result.size() < len) {
-        const std::vector<char>& x = this->read(len - result.size());
-        result.insert(result.end(), x.begin(), x.end());
+    unsigned read = 0;
+    while(read < len) {
+        read += this->read(len - read, os);
     }
 }
 

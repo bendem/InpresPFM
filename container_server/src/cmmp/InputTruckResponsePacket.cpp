@@ -2,13 +2,13 @@
 
 const PacketId InputTruckResponsePacket::id = PacketId::InputTruckResponse;
 
-InputTruckResponsePacket InputTruckResponsePacket::decode(std::vector<char>::const_iterator& it) {
-    bool ok = readPrimitive<bool>(it);
+InputTruckResponsePacket InputTruckResponsePacket::decode(std::istream& is) {
+    bool ok = StreamUtils::read<bool>(is) ;
     std::string reason;
     std::vector<Container> containers;
 
     if (ok) {
-        uint32_t size = readPrimitive<uint32_t>(it);
+        uint32_t size = StreamUtils::read<uint32_t>(is) ;
         if (size) {
             std::string container_id;
             std::string destination;
@@ -16,32 +16,32 @@ InputTruckResponsePacket InputTruckResponsePacket::decode(std::vector<char>::con
             uint16_t y;
 
             for(uint32_t i = 0; i < size; i++) {
-                container_id = readString(it);
-                destination = readString(it);
-                x = readPrimitive<uint16_t>(it);
-                y = readPrimitive<uint16_t>(it);
+                container_id = StreamUtils::read<std::string>(is) ;
+                destination = StreamUtils::read<std::string>(is) ;
+                x = StreamUtils::read<uint16_t>(is) ;
+                y = StreamUtils::read<uint16_t>(is) ;
 
                 containers.emplace_back(Container { container_id, destination, x, y });
             }
         }
     } else {
-        reason = readString(it);
+        reason = StreamUtils::read<std::string>(is) ;
     }
 
     return InputTruckResponsePacket(ok, containers, reason);
 }
 
-void InputTruckResponsePacket::encode(std::vector<char>& v) const {
-    writePrimitive(v, ok);
+void InputTruckResponsePacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, ok);
     if(!ok) {
-        writeString(v, reason);
+        StreamUtils::write(os, reason);
     } else {
-        writePrimitive<uint32_t>(v, containers.size());
+        StreamUtils::write<uint32_t>(os,  containers.size());
         for(const Container& container : containers) {
-            writeString(v, container.id);
-            writeString(v, container.destination);
-            writePrimitive(v, container.x);
-            writePrimitive(v, container.y);
+            StreamUtils::write(os, container.id);
+            StreamUtils::write(os, container.destination);
+            StreamUtils::write(os, container.x);
+            StreamUtils::write(os, container.y);
         }
     }
 }

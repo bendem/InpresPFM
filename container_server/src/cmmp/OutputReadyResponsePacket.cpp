@@ -2,28 +2,28 @@
 
 const PacketId OutputReadyResponsePacket::id = PacketId::OutputReadyResponse;
 
-OutputReadyResponsePacket OutputReadyResponsePacket::decode(std::vector<char>::const_iterator& it) {
-    bool ok = readPrimitive<bool>(it);
-    std::string reason = ok ? "" : readString(it);
-    uint32_t size = ok ? readPrimitive<uint32_t>(it) : 0;
+OutputReadyResponsePacket OutputReadyResponsePacket::decode(std::istream& is) {
+    bool ok = StreamUtils::read<bool>(is) ;
+    std::string reason = ok ? "" : StreamUtils::read<std::string>(is) ;
+    uint32_t size = ok ? StreamUtils::read<uint32_t>(is)  : 0;
     std::vector<std::string> containerIds;
     if (size) {
         for(uint32_t i = 0; i < size; i++) {
-            containerIds.push_back(readString(it));
+            containerIds.push_back(StreamUtils::read<std::string>(is) );
         }
     }
 
     return OutputReadyResponsePacket(ok, containerIds, reason);
 }
 
-void OutputReadyResponsePacket::encode(std::vector<char>& v) const {
-    writePrimitive(v, ok);
+void OutputReadyResponsePacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, ok);
     if(!ok) {
-        writeString(v, reason);
+        StreamUtils::write(os, reason);
     } else {
-        writePrimitive<uint32_t>(v, containerIds.size());
+        StreamUtils::write<uint32_t>(os,  containerIds.size());
         for(const std::string& value : containerIds) {
-            writeString(v, value);
+            StreamUtils::write(os, value);
         }
     }
 }

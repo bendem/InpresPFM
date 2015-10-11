@@ -18,8 +18,8 @@ public:
     bool isOk() const { return ok; }
     const std::string& getReason() const { return reason; }
 
-    static InputDoneResponsePacket decode(std::vector<char>::const_iterator&);
-    void encode(std::vector<char>&) const;
+    static InputDoneResponsePacket decode(std::istream&);
+    void encode(std::ostream&) const;
 
 private:
     bool ok;

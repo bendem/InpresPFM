@@ -2,16 +2,16 @@
 
 const PacketId InputTruckPacket::id = PacketId::InputTruck;
 
-InputTruckPacket InputTruckPacket::decode(std::vector<char>::const_iterator& it) {
-    std::string license = readString(it);
-    uint32_t size = readPrimitive<uint32_t>(it);
+InputTruckPacket InputTruckPacket::decode(std::istream& is) {
+    std::string license = StreamUtils::read<std::string>(is) ;
+    uint32_t size = StreamUtils::read<uint32_t>(is) ;
     std::vector<Container> containers;
     if (size) {
         std::string id;
         std::string destination;
         for(uint32_t i = 0; i < size; i++) {
-            id = readString(it);
-            destination = readString(it);
+            id = StreamUtils::read<std::string>(is) ;
+            destination = StreamUtils::read<std::string>(is) ;
             containers.emplace_back(Container { id, destination, 0, 0 });
         }
     }
@@ -19,11 +19,11 @@ InputTruckPacket InputTruckPacket::decode(std::vector<char>::const_iterator& it)
     return InputTruckPacket(license, containers);
 }
 
-void InputTruckPacket::encode(std::vector<char>& v) const {
-    writeString(v, license);
-    writePrimitive<uint32_t>(v, containers.size());
+void InputTruckPacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, license);
+    StreamUtils::write<uint32_t>(os,  containers.size());
     for(const Container& container : containers) {
-        writeString(v, container.id);
-        writeString(v, container.destination);
+        StreamUtils::write(os, container.id);
+        StreamUtils::write(os, container.destination);
     }
 }

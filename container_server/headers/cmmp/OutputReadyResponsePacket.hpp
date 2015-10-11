@@ -20,8 +20,8 @@ public:
     const std::vector<std::string>& getContainerIds() const { return containerIds; }
     const std::string& getReason() const { return reason; }
 
-    static OutputReadyResponsePacket decode(std::vector<char>::const_iterator&);
-    void encode(std::vector<char>&) const;
+    static OutputReadyResponsePacket decode(std::istream&);
+    void encode(std::ostream&) const;
 
 private:
     bool ok;

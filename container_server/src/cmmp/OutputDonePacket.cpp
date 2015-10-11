@@ -2,14 +2,14 @@
 
 const PacketId OutputDonePacket::id = PacketId::OutputDone;
 
-OutputDonePacket OutputDonePacket::decode(std::vector<char>::const_iterator& it) {
-    std::string license = readString(it);
-    uint16_t container_count = readPrimitive<uint16_t>(it);
+OutputDonePacket OutputDonePacket::decode(std::istream& is) {
+    std::string license = StreamUtils::read<std::string>(is) ;
+    uint16_t container_count = StreamUtils::read<uint16_t>(is) ;
 
     return OutputDonePacket(license, container_count);
 }
 
-void OutputDonePacket::encode(std::vector<char>& v) const {
-    writeString(v, license);
-    writePrimitive(v, containerCount);
+void OutputDonePacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, license);
+    StreamUtils::write(os, containerCount);
 }

@@ -2,14 +2,14 @@
 
 const PacketId LogoutPacket::id = PacketId::Logout;
 
-LogoutPacket LogoutPacket::decode(std::vector<char>::const_iterator& it) {
-    std::string username = readString(it);
-    std::string password = readString(it);
+LogoutPacket LogoutPacket::decode(std::istream& is) {
+    std::string username = StreamUtils::read<std::string>(is) ;
+    std::string password = StreamUtils::read<std::string>(is) ;
 
     return LogoutPacket(username, password);
 }
 
-void LogoutPacket::encode(std::vector<char>& vector) const {
-    writeString(vector, this->username);
-    writeString(vector, this->password);
+void LogoutPacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, this->username);
+    StreamUtils::write(os, this->password);
 }

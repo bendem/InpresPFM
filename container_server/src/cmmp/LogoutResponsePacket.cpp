@@ -2,16 +2,16 @@
 
 const PacketId LogoutResponsePacket::id = PacketId::LogoutResponse;
 
-LogoutResponsePacket LogoutResponsePacket::decode(std::vector<char>::const_iterator& it) {
-    bool ok = readPrimitive<bool>(it);
-    std::string reason = ok ? "" : readString(it);
+LogoutResponsePacket LogoutResponsePacket::decode(std::istream& is) {
+    bool ok = StreamUtils::read<bool>(is) ;
+    std::string reason = ok ? "" : StreamUtils::read<std::string>(is) ;
 
     return LogoutResponsePacket(ok, reason);
 }
 
-void LogoutResponsePacket::encode(std::vector<char>& v) const {
-    writePrimitive(v, ok);
+void LogoutResponsePacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, ok);
     if(!ok) {
-        writeString(v, reason);
+        StreamUtils::write(os, reason);
     }
 }

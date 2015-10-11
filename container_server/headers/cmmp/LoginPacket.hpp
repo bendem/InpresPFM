@@ -20,8 +20,8 @@ public:
     const std::string& getPassword() const { return password; }
     bool isNew() const { return newUser; }
 
-    static LoginPacket decode(std::vector<char>::const_iterator&);
-    void encode(std::vector<char>&) const;
+    static LoginPacket decode(std::istream&);
+    void encode(std::ostream&) const;
 
 private:
     std::string username;

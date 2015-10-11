@@ -20,8 +20,8 @@ public:
     const std::string& getDestination() const { return destination; }
     uint16_t getCapacity() const { return capacity; }
 
-    static OutputReadyPacket decode(std::vector<char>::const_iterator&);
-    void encode(std::vector<char>&) const;
+    static OutputReadyPacket decode(std::istream&);
+    void encode(std::ostream&) const;
 
 private:
     std::string license;

@@ -16,8 +16,8 @@ public:
     bool isOk() const { return ok; }
     float getWeight() const { return weight; }
 
-    static InputDonePacket decode(std::vector<char>::const_iterator&);
-    void encode(std::vector<char>&) const;
+    static InputDonePacket decode(std::istream&);
+    void encode(std::ostream&) const;
 
 private:
     bool ok;

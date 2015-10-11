@@ -2,7 +2,7 @@
 
 template<>
 std::string StreamUtils::read<std::string>(std::istream& is) {
-    uint64_t len = StreamUtils::read<uint64_t>(is);
+    uint32_t len = StreamUtils::read<uint32_t>(is);
     std::string res(len, 0);
     is.read(&res.front(), len);
     return res;
@@ -10,7 +10,8 @@ std::string StreamUtils::read<std::string>(std::istream& is) {
 
 template<>
 std::ostream& StreamUtils::write<std::string>(std::ostream& os, std::string s) {
-    StreamUtils::write<uint64_t>(os, s.size());
+    StreamUtils::write<uint32_t>(os, s.size());
+    LOG << Logger::Debug << "Writing str: " << s;
     os.write(&s[0], s.size());
     return os;
 }

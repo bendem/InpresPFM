@@ -2,16 +2,16 @@
 
 const PacketId LoginPacket::id = PacketId::Login;
 
-LoginPacket LoginPacket::decode(std::vector<char>::const_iterator& it) {
-    std::string username = readString(it);
-    std::string password = readString(it);
-    bool newUser = readPrimitive<bool>(it);
+LoginPacket LoginPacket::decode(std::istream& is) {
+    std::string username = StreamUtils::read<std::string>(is);
+    std::string password = StreamUtils::read<std::string>(is);
+    bool newUser = StreamUtils::read<bool>(is);
 
     return LoginPacket(username, password, newUser);
 }
 
-void LoginPacket::encode(std::vector<char>& vector) const {
-    writeString(vector, this->username);
-    writeString(vector, this->password);
-    writePrimitive(vector, this->newUser);
+void LoginPacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, this->username);
+    StreamUtils::write(os, this->password);
+    StreamUtils::write(os, this->newUser);
 }

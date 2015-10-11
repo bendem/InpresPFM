@@ -32,6 +32,7 @@ T StreamUtils::read(std::istream& is) {
 
 template<class T>
 std::ostream& StreamUtils::write(std::ostream& os, T t) {
+    LOG << Logger::Debug << "Writing " << sizeof(T) << ": " << t;
     os.write(reinterpret_cast<char*>(&t), sizeof(T));
     return os;
 }

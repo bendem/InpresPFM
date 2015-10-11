@@ -2,16 +2,16 @@
 
 const PacketId OutputReadyPacket::id = PacketId::OutputReady;
 
-OutputReadyPacket OutputReadyPacket::decode(std::vector<char>::const_iterator& it) {
-    std::string license = readString(it);
-    std::string destination = readString(it);
-    uint16_t capacity = readPrimitive<uint16_t>(it);
+OutputReadyPacket OutputReadyPacket::decode(std::istream& is) {
+    std::string license = StreamUtils::read<std::string>(is) ;
+    std::string destination = StreamUtils::read<std::string>(is) ;
+    uint16_t capacity = StreamUtils::read<uint16_t>(is) ;
 
     return OutputReadyPacket(license, destination, capacity);
 }
 
-void OutputReadyPacket::encode(std::vector<char>& v) const {
-    writeString(v, license);
-    writeString(v, destination);
-    writePrimitive(v, capacity);
+void OutputReadyPacket::encode(std::ostream& os) const {
+    StreamUtils::write(os, license);
+    StreamUtils::write(os, destination);
+    StreamUtils::write(os, capacity);
 }

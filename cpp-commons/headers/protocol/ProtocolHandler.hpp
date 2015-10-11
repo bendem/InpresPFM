@@ -6,6 +6,7 @@
 #include <map>
 #include <queue>
 #include <vector>
+#include <io/StreamUtils.hpp>
 
 #include "net/Socket.hpp"
 #include "protocol/ProtocolError.hpp"
@@ -41,7 +42,7 @@ private:
     Translator translator;
     std::atomic_bool closed;
 
-    std::pair<Id, std::vector<char>> readPacket(std::shared_ptr<Socket>);
+    std::pair<Id, std::string> readPacket(std::shared_ptr<Socket>);
 
     static const char FRAME_END;
 
@@ -51,40 +52,39 @@ template<class Translator, class Id>
 const char ProtocolHandler<Translator, Id>::FRAME_END = 0x42;
 
 template<class Translator, class Id>
-std::pair<Id, std::vector<char>> ProtocolHandler<Translator, Id>::readPacket(std::shared_ptr<Socket> socket) {
+std::pair<Id, std::string> ProtocolHandler<Translator, Id>::readPacket(std::shared_ptr<Socket> socket) {
     Id id;
     len_t len;
-    std::vector<char> v;
 
-    socket->accumulate(sizeof(len_t) + 1, v);
-    id = (Id) v[0];
-    // TODO Validate the id and close the connection on protocol error!
-    len = *reinterpret_cast<const len_t*>(&v[1]) + 1; // + 1 => end frame marquer
+    {
+        std::stringstream ios;
+        socket->accumulate(sizeof(len_t) + 1, ios);
 
-    LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len << ":read:" << v.size();
-
-    if(len < 1) {
-        throw ProtocolError("Invalid length: " + std::to_string(len));
+        id = StreamUtils::read<Id>(ios);
+        len = StreamUtils::read<len_t>(ios) + 1; // + 1 => end frame marquer
     }
 
-    v.clear();
-    v.reserve(len);
-    socket->accumulate(len, v);
+    LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len;
 
-    if (v.back() != FRAME_END) {
+    std::stringstream os;
+    socket->accumulate(len, os);
+    std::string packet = os.str();
+
+    if (packet.back() != FRAME_END) {
         throw ProtocolError("Invalid frame end");
     }
-    v.pop_back();
-    return { id, v };
+    packet.pop_back();
+    return { id, packet };
 }
 
 template<class Translator, class Id>
 void ProtocolHandler<Translator, Id>::read(std::shared_ptr<Socket> socket) {
     Id id;
-    std::vector<char> chars;
+    std::string chars;
 
     std::tie(id, chars) = this->readPacket(socket);
-    this->translator.decode(id, chars, socket);
+    std::istringstream is(chars);
+    this->translator.decode(id, is, socket);
 }
 
 template<class Translator, class Id>
@@ -92,7 +92,7 @@ template<class P>
 P ProtocolHandler<Translator, Id>::readSpecificPacket(std::shared_ptr<Socket> socket) {
     while(true) {
         Id id;
-        std::vector<char> chars;
+        std::string chars;
 
         std::tie(id, chars) = this->readPacket(socket);
 
@@ -101,8 +101,8 @@ P ProtocolHandler<Translator, Id>::readSpecificPacket(std::shared_ptr<Socket> so
             continue;
         }
 
-        auto it = chars.cbegin();
-        P packet = P::decode(it);
+        std::istringstream is(chars);
+        P packet = P::decode(is);
         // Call the handlers, just in case
         packet.handle(socket);
         return packet;
@@ -112,28 +112,27 @@ P ProtocolHandler<Translator, Id>::readSpecificPacket(std::shared_ptr<Socket> so
 template<class Translator, class Id>
 template<class T>
 ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(std::shared_ptr<Socket> socket, const T& item) {
-    std::vector<char> v(sizeof(len_t) + 1, 0); // Reserve places for the id and the packet length
+    std::ostringstream full_packet;
+    std::ostringstream packet_only;
 
-    v[0] = T::id;
-    this->translator.encode(item, v);
+    StreamUtils::write<Id>(full_packet, T::id);
+    this->translator.encode(item, packet_only);
+    std::string packet(packet_only.str());
 
     // Store packet length
-    uint64_t long_len = v.size() - (sizeof(len_t) + 1);
+    uint64_t long_len = packet.size();
     if(long_len > MAX_LEN) {
         throw std::runtime_error("Packet length too large for the protocol");
     }
+    StreamUtils::write(full_packet, static_cast<len_t>(long_len));
+    full_packet.write(packet.data(), packet.size());
+    StreamUtils::write(full_packet, FRAME_END);
 
-    len_t len = static_cast<len_t>(long_len);
-    const char* bytes = reinterpret_cast<const char*>(&len);
-    for(size_t i = 0; i < sizeof(len_t); ++i) {
-        v[i + 1] = bytes[i];
-    }
+    packet = full_packet.str();
 
-    v.push_back(FRAME_END);
+    LOG << Logger::Debug << "id:" << (int) packet[0] << ":len:" << packet.size();
 
-    LOG << Logger::Debug << "id:" << (int) v[0] << ":len:" << len << ":written:" << v.size();
-
-    socket->write(v);
+    socket->write(packet);
 
     return *this;
 }

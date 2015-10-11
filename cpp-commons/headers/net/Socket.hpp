@@ -69,14 +69,14 @@ public:
      * @param vector a byte vector
      * @return the number of bytes actually written
      */
-    long write(const std::vector<char>&);
+    long write(const std::string&);
 
     /**
      * Reads a certain amount of bytes from this socket.
      * @param count the amount of bytes to try to read
      * @return the bytes actually read
      */
-    std::vector<char> read(unsigned int);
+    unsigned read(unsigned int, std::ostream&);
 
     /**
      * Reads from this socket into a provided vector until its filled
@@ -84,7 +84,7 @@ public:
      * @param count the amount of bytes wanted
      * @param the vector to fill
      */
-    void accumulate(unsigned int, std::vector<char>&);
+    void accumulate(unsigned int, std::ostream&);
 
     /**
      * Gets the low level handle associated with this instance.

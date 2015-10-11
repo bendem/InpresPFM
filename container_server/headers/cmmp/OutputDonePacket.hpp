@@ -18,8 +18,8 @@ public:
     const std::string& getLicense() const { return license; }
     uint16_t getContainerCount() const { return containerCount; }
 
-    static OutputDonePacket decode(std::vector<char>::const_iterator&);
-    void encode(std::vector<char>&) const;
+    static OutputDonePacket decode(std::istream&);
+    void encode(std::ostream&) const;
 
 private:
     std::string license;
