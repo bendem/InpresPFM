@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -30,11 +31,11 @@ public class ReservationServlet extends HttpServlet {
         database.registerClass(Destination.class);
 
         try {
-            Class.forName("oracle.jdbc.driver.OracleDriver");
+            Class.forName(getInitParameter("jdbcDriver"));
         } catch(ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        database.connect("jdbc:oracle:thin:@178.32.41.4:8080:xe", "dbtraffic", "bleh");
+        database.connect(getInitParameter("jdbcConnection"), getInitParameter("jdbcUsername"), getInitParameter("jdbcPassword"));
     }
 
     public void destroy() {
@@ -53,10 +54,16 @@ public class ReservationServlet extends HttpServlet {
         String resId;
         if (logged != null)  {
             // TODO select * from parcs where container_id is null and (x,y) NOT IN (select X,Y from RESERVATIONS);
-            Parc parc = parcTable.findOne(DBPredicate.of("container_id", null)).get(5, TimeUnit.SECONDS).get();// ^ What it should do
-            resId = "R"+ Date.valueOf(req.getParameter("dateArrival"))+parc.getX()+parc.getY();
-            reservationTable.insert(new Reservation(parc.getX(), parc.getY(), Date.valueOf(req.getParameter("dateArrival")), req.getParameter("destination"), resId)).get();
-            sendConfirmation(req, resp, resId, parc.getX(), parc.getY());
+            Optional<Parc> qparc = parcTable.findOne(DBPredicate.of("container_id", null)).get(5, TimeUnit.SECONDS);// ^ What it should do
+            if(qparc.isPresent()) {
+                Parc parc = qparc.get();
+                resId = "R"+ Date.valueOf(req.getParameter("dateArrival"))+parc.getX()+parc.getY();
+                reservationTable.insert(new Reservation(parc.getX(), parc.getY(), Date.valueOf(req.getParameter("dateArrival")), req.getParameter("destination"), resId)).get();
+                sendConfirmation(req, resp, resId, parc.getX(), parc.getY());
+            } else {
+                session.setAttribute("noSpace", true);
+                resp.sendRedirect("ServletLog");
+            }
         } else {
             resp.sendRedirect("login.html");
         }

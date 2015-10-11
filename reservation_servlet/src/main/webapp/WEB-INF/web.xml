@@ -7,12 +7,44 @@
         <display-name>ReservationServlet</display-name>
         <servlet-name>ReservationServlet</servlet-name>
         <servlet-class>be.hepl.benbear.reservationservlet.ReservationServlet</servlet-class>
+        <init-param>
+            <param-name>jdbcDriver</param-name>
+            <param-value>oracle.jdbc.driver.OracleDriver</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jdbcConnection</param-name>
+            <param-value>jdbc:oracle:thin:@178.32.41.4:8080:xe</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jdbcUsername</param-name>
+            <param-value>dbtraffic</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jdbcPassword</param-name>
+            <param-value>bleh</param-value>
+        </init-param>
     </servlet>
 
     <servlet>
         <display-name>LoginServlet</display-name>
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>be.hepl.benbear.reservationservlet.LoginServlet</servlet-class>
+        <init-param>
+            <param-name>jdbcDriver</param-name>
+            <param-value>oracle.jdbc.driver.OracleDriver</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jdbcConnection</param-name>
+            <param-value>jdbc:oracle:thin:@178.32.41.4:8080:xe</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jdbcUsername</param-name>
+            <param-value>dbtraffic</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jdbcPassword</param-name>
+            <param-value>bleh</param-value>
+        </init-param>
     </servlet>
 
     <servlet-mapping>

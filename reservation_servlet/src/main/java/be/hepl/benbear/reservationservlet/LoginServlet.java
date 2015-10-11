@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -27,11 +28,11 @@ public class LoginServlet extends HttpServlet {
         database.registerClass(User.class);
 
         try {
-            Class.forName("oracle.jdbc.driver.OracleDriver");
+            Class.forName(getInitParameter("jdbcDriver"));
         } catch(ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        database.connect("jdbc:oracle:thin:@178.32.41.4:8080:xe", "dbtraffic", "bleh");
+        database.connect(getInitParameter("jdbcConnection"), getInitParameter("jdbcUsername"), getInitParameter("jdbcPassword"));
     }
 
     public void destroy() {
@@ -44,42 +45,59 @@ public class LoginServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, InterruptedException, ExecutionException, TimeoutException {
         Table<User> table = database.table(User.class);
-        if ("on".equals(req.getParameter("newuser"))) {
-            table.insert(new User(0, req.getParameter("username"), req.getParameter("password"))).get();
-            proceedToReservation(req, resp, req.getParameter("username"));
-        } else {
-            User user = table.find(DBPredicate.of("username", req.getParameter("username"))).get(5, TimeUnit.SECONDS).findFirst().get();
-            if(user.getPassword().equals(req.getParameter("password"))) {
-                proceedToReservation(req, resp, user.getUsername());
+        HttpSession session = req.getSession();
+        Object logged = session.getAttribute("logged");
+        if (logged == null) {
+            if ("on".equals(req.getParameter("newuser"))) {
+                table.insert(new User(0, req.getParameter("username"), req.getParameter("password"))).get();
+                proceedToReservation(req, resp);
             } else {
-                // TODO KO => Display the same login page with an error message?
+                Optional<User> quser = table.find(DBPredicate.of("username", req.getParameter("username"))).get(5, TimeUnit.SECONDS).findFirst();
+                if (quser.isPresent()) {
+                    User user = quser.get();
+                    if (user.getPassword().equals(req.getParameter("password"))) {
+                        proceedToReservation(req, resp);
+                    } else {
+                        resp.sendRedirect("login.html");
+                    }
+                } else {
+                    resp.sendRedirect("login.html");
+                }
             }
+        } else {
+            proceedToReservation(req, resp);
         }
     }
 
-    protected void proceedToReservation(HttpServletRequest req, HttpServletResponse resp, String username) throws IOException, ExecutionException, InterruptedException {
+    protected void proceedToReservation(HttpServletRequest req, HttpServletResponse resp) throws IOException, ExecutionException, InterruptedException {
         HttpSession sess = req.getSession();
 
         sess.setAttribute("logged", true);
-        sess.setAttribute("username", username);
 
+        Object noSpace = sess.getAttribute("noSpace");
         resp.setContentType("text/html;charset=UTF-8");
         PrintWriter out = resp.getWriter();
-
         out.println("<html><head><title>");
         out.println("Reservation");
         out.println("</title></head><body>");
-        out.println("<p>Reservation form</p>");
-        out.println("<form method=\"post\" action=\"ServletRes\">");
-        out.println("<p>Arrival date : <input type=\"date\" name=\"dateArrival\"></p>");
-        out.println("<p>Destination : </p><select name=\"destination\">");
 
-        Table<Destination> table = database.table(Destination.class);
-        table.find().get().forEach(row -> out.println("<option value=\"" + row.getDestinationId() + "\">" + row.getCity() + "</option>"));
+        if (noSpace == null) {
 
-        out.println("</select>");
-        out.println("<input type=\"submit\" value=\"Submit\">");
-        out.println("</body></html>");
+            out.println("<p>Reservation form</p>");
+            out.println("<form method=\"post\" action=\"ServletRes\">");
+            out.println("<p>Arrival date : <input type=\"date\" name=\"dateArrival\"></p>");
+            out.println("<p>Destination : </p><select name=\"destination\">");
+
+            Table<Destination> table = database.table(Destination.class);
+            table.find().get().forEach(row -> out.println("<option value=\"" + row.getDestinationId() + "\">" + row.getCity() + "</option>"));
+
+            out.println("</select>");
+            out.println("<input type=\"submit\" value=\"Submit\">");
+            out.println("</body></html>");
+        } else {
+            out.println("<p>No more space available</p>");
+            out.println("</body></html>");
+        }
     }
 
     @Override
