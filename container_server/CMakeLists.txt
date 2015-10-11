@@ -48,6 +48,7 @@ set(COMMON_FILES
     src/ParcLocation.cpp
 )
 add_library(cmmp_protocol ${COMMON_FILES})
+target_link_libraries(cmmp_protocol cpp_commons)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/users.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data)
 
