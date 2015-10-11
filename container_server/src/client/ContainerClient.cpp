@@ -49,8 +49,8 @@ void ContainerClient::loginMenu() {
 }
 
 template<class P>
-std::string packetResult(const P& p) {
-    return std::string(typeid(P).name()) + " went " + (p.isOk() ? "" : "not ") + "ok " + (p.isOk() ? "" : ": " + p.getReason());
+void packetResult(const P& p) {
+    LOG << Logger::Debug << std::string(typeid(P).name()) + " went " + (p.isOk() ? "" : "not ") + "ok" + (p.isOk() ? "" : ": " + p.getReason());
 }
 
 void ContainerClient::menu() {
@@ -80,47 +80,47 @@ void ContainerClient::menu() {
     switch(input) {
         case 1: {
             this->proto.write(this->socket, InputTruckPacket("license", {
-                { "id", "destination", 0, 0 }
+                { "id" + std::to_string(std::rand()), "destination", 0, 0 }
             }));
-            std::cout << packetResult(
-                this->proto.readSpecificPacket<InputTruckResponsePacket>(this->socket)
-            ) << std::endl;
+            InputTruckResponsePacket p = this->proto.readSpecificPacket<InputTruckResponsePacket>(this->socket);
+            packetResult(p);
+            if(p.isOk()) {
+                std::cout << " > " << p.getContainers().size() << " containers:" << std::endl;
+                for(const Container& container : p.getContainers()) {
+                    std::cout << " >> " << container.id << " to " << container.x << ':' << container.y << std::endl;
+                }
+            }
             break;
         }
         case 2: {
             this->proto.write(this->socket, InputDonePacket(true, 12.9));
-            std::cout << packetResult(
-                this->proto.readSpecificPacket<InputDoneResponsePacket>(this->socket)
-            ) << std::endl;
+            InputDoneResponsePacket p = this->proto.readSpecificPacket<InputDoneResponsePacket>(this->socket);
+            packetResult(p);
             break;
         }
         case 3: {
             this->proto.write(this->socket, OutputReadyPacket("license", "destination", 2));
-            std::cout << packetResult(
-                this->proto.readSpecificPacket<OutputReadyResponsePacket>(this->socket)
-            ) << std::endl;
+            OutputReadyResponsePacket p = this->proto.readSpecificPacket<OutputReadyResponsePacket>(this->socket);
+            packetResult(p);
             break;
         }
         case 4: {
             this->proto.write(this->socket, OutputOnePacket("id"));
-            std::cout << packetResult(
-                this->proto.readSpecificPacket<OutputOneResponsePacket>(this->socket)
-            ) << std::endl;
+            OutputOneResponsePacket p = this->proto.readSpecificPacket<OutputOneResponsePacket>(this->socket);
+            packetResult(p);
             break;
         }
         case 5: {
             this->proto.write(this->socket, OutputDonePacket("license", 2));
-            std::cout << packetResult(
-                this->proto.readSpecificPacket<OutputDoneResponsePacket>(this->socket)
-            ) << std::endl;
+            OutputDoneResponsePacket p = this->proto.readSpecificPacket<OutputDoneResponsePacket>(this->socket);
+            packetResult(p);
             break;
         }
         case 6: {
             this->proto.write(this->socket, LogoutPacket("", ""));
             try {
-                std::cout << packetResult(
-                    this->proto.readSpecificPacket<LogoutResponsePacket>(this->socket)
-                ) << std::endl;
+                LogoutResponsePacket p = this->proto.readSpecificPacket<LogoutResponsePacket>(this->socket);
+                packetResult(p);
             } catch(IOError e) {
                 std::cout << e.what() << std::endl;
                 this->closed = true;
@@ -131,9 +131,8 @@ void ContainerClient::menu() {
         case 7: {
             this->proto.write(this->socket, LogoutPacket("", ""));
             try {
-                std::cout << packetResult(
-                    this->proto.readSpecificPacket<LogoutResponsePacket>(this->socket)
-                ) << std::endl;
+                LogoutResponsePacket p = this->proto.readSpecificPacket<LogoutResponsePacket>(this->socket);
+                packetResult(p);
             } catch(IOError e) {
                 std::cout << e.what() << std::endl;
             }

@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <unordered_set>
+#include <vector>
 
 #include "ParcLocation.hpp"
 #include "cmmp/CMMPTranslator.hpp"
@@ -52,6 +53,8 @@ public:
 
 private:
     BinaryFile<ParcLocation> containerFile;
+    std::vector<ParcLocation> parcLocations;
+    std::mutex parcLocationsMutex;
     CSVFile users;
     std::mutex usersMutex;
     ThreadPool& pool;
@@ -62,6 +65,8 @@ private:
     std::atomic_bool closed;
     std::unordered_map<Socket*, std::string> loggedInUsers;
     std::mutex loggedInUsersMutex;
+
+    bool findFreePlace(Container&);
 
 };
 

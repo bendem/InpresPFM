@@ -12,7 +12,7 @@ class InputTruckResponsePacket : public Packet<InputTruckResponsePacket> {
 public:
     static const PacketId id;
 
-    InputTruckResponsePacket(bool ok, std::vector<Container> containers, std::string reason)
+    InputTruckResponsePacket(bool ok, std::vector<Container> containers, std::string reason = "")
         : ok(ok),
           containers(containers),
           reason(reason) {}

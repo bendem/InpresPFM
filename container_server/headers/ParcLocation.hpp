@@ -19,6 +19,7 @@ struct ParcLocation {
     ParkLocationFlag::ParkLocationFlag flag;
 };
 
+// Allow to be used by BinaryFile
 std::ostream& operator<<(std::ostream& os, const ParcLocation& p);
 std::istream& operator>>(std::istream& is, ParcLocation& p);
 

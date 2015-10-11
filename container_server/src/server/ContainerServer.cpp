@@ -2,6 +2,7 @@
 
 ContainerServer::ContainerServer(unsigned short port, const std::string& container_file, const std::string& user_file, ThreadPool& pool)
         : containerFile(container_file),
+          parcLocations(containerFile.load()),
           users(user_file, ';'),
           pool(pool),
           proto(CMMPTranslator()),
@@ -9,6 +10,8 @@ ContainerServer::ContainerServer(unsigned short port, const std::string& contain
           selector(),
           selectorThread(selector, pool, proto),
           closed(false) {
+    LOG << Logger::Debug << "Loaded " << parcLocations.size() << " location";
+
     LOG << "Binding server socket to " << port;
     socket.bind(port);
 }
@@ -128,16 +131,29 @@ void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_p
         return;
     }
 
-    std::vector<Container> containers;
-    for(const Container& container : p.getContainers()) {
-        // Might have to be moved to inputDoneHandler if we need to add a weight to the container
-        //container_add.save("FICH_PARC");
-        containers.emplace_back(Container { container.id, container.destination, 0, 0 });
+    std::vector<Container> containers(p.getContainers());
+    LOG << "Received " << containers.size() << " containers";
+
+    {
+        std::lock_guard<std::mutex> lk(this->parcLocationsMutex);
+        for(Container& container : containers) {
+            bool had_place = false;
+            try {
+                had_place = this->findFreePlace(container);
+            } catch(std::logic_error e) {
+                LOG << Logger::Error << "Something is really bad: " << e.what();
+            } catch(std::runtime_error e) {
+                LOG << Logger::Error << "Could not find a free place: " << e.what();
+            }
+
+            if(!had_place) {
+                this->proto.write(s, InputTruckResponsePacket(false, {}, "No free place available"));
+                return;
+            }
+        }
     }
-    LOG << "[InputTruckHandler] Received " << containers.size() << " containers in InputTruckPacket";
 
-    this->proto.write(s, InputTruckResponsePacket(true, containers, ""));
-
+    this->proto.write(s, InputTruckResponsePacket(true, containers));
 }
 
 void ContainerServer::inputDoneHandler(const InputDonePacket&, std::shared_ptr<Socket> s) {
@@ -231,4 +247,47 @@ void ContainerServer::logoutHandler(const LogoutPacket&, std::shared_ptr<Socket>
 bool ContainerServer::isLoggedIn(std::shared_ptr<Socket> socket) {
     std::lock_guard<std::mutex> lk(this->loggedInUsersMutex);
     return this->loggedInUsers.find(socket.get()) != this->loggedInUsers.end();
+}
+
+bool ContainerServer::findFreePlace(Container& container) {
+    bool changed;
+    do {
+        changed = false;
+
+        for(ParcLocation& location : this->parcLocations) {
+            if(location.flag == ParkLocationFlag::Taken && location.containerId == container.id) {
+                // TODO Better exception? (as always)
+                throw std::logic_error("Container '" + container.id + "' is already stored "
+                    "in the parc at " + std::to_string(location.x) + ":" + std::to_string(location.y));
+                return false;
+            }
+
+            if(location.flag == ParkLocationFlag::Free
+                    || (location.flag == ParkLocationFlag::Reserved && location.containerId == container.id)) {
+                LOG << Logger::Debug << "Found a free/reserved place in " << location.x << ':' << location.y;
+                container.x = location.x;
+                container.y = location.y;
+                location.flag = ParkLocationFlag::Reserved;
+                return true;
+            }
+
+            if(location.x == container.x && location.y == container.y) {
+                changed = true;
+                ++container.x;
+                if(container.x > 200) { // TODO Put a real value here
+                    container.x = 0;
+                    ++container.y;
+                    if(container.y > 200) { // TODO Put a real value here
+                        throw std::runtime_error("Could not find any place to store " + container.id);
+                        return false;
+                    }
+                }
+            }
+        }
+    } while(changed);
+
+    this->parcLocations.emplace_back(ParcLocation { container.x, container.y, container.id, ParkLocationFlag::Reserved });
+
+    LOG << Logger::Debug << "Found a place not in the file " << container.x << ':' << container.y;
+    return true;
 }
