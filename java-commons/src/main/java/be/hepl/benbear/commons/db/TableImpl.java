@@ -56,23 +56,12 @@ public class TableImpl<T> implements Table<T> {
         if(ids.length == 0 || getIdCount() == 0 || ids.length != getIdCount()) {
             throw new IllegalArgumentException("Table has " + getIdCount() + ", got " + ids.length);
         }
-        // TODO Type check ids against primaryKeys.second?
 
-        return db.readOp(() -> {
-            DBPredicate predicate = DBPredicate.of(getIdFields().get(0).first, ids[0]);
-            for(int i = 1; i < ids.length; ++i) {
-                predicate = predicate.and(getIdFields().get(i).first, ids[i]);
-            }
-
-            PreparedStatement stmt = db.connection.prepareStatement(
-                "select * from " + name + predicate.toSql());
-
-            for(int i = 0; i < ids.length; ++i) {
-                JDBCAdapter.set(stmt, i + 1, ids[i]);
-            }
-
-            return stmt;
-        }).thenApply(ResultSetAdapter.unique(mapper, handler));
+        DBPredicate predicate = DBPredicate.of(getIdFields().get(0).first, ids[0]);
+        for(int i = 1; i < ids.length; ++i) {
+            predicate = predicate.and(getIdFields().get(i).first, ids[i]);
+        }
+        return findOne(predicate);
     }
 
     @Override
@@ -95,8 +84,17 @@ public class TableImpl<T> implements Table<T> {
 
     @Override
     public CompletableFuture<Optional<T>> findOne(DBPredicate predicate) {
-        // TODO Use ResultSetAdaptater.unique instead to be sure the stmt/resultset is closed
-        return find(predicate).thenApply(Stream::findFirst);
+        return db.readOp(() -> {
+            PreparedStatement stmt = db.connection.prepareStatement(
+                "select * from " + name + predicate.toSql());
+
+            List<Object> values = predicate.values();
+            for(int i = 0; i < values.size(); i++) {
+                JDBCAdapter.set(stmt, i + 1, values.get(i));
+            }
+
+            return stmt;
+        }).thenApply(ResultSetAdapter.unique(mapper, Throwable::printStackTrace));
     }
 
     @Override
