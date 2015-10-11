@@ -3,6 +3,7 @@ package be.hepl.benbear.reservationservlet;
 import be.hepl.benbear.commons.db.DBPredicate;
 import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.Table;
+import be.hepl.benbear.trafficdb.Destination;
 import be.hepl.benbear.trafficdb.Parc;
 import be.hepl.benbear.trafficdb.Reservation;
 
@@ -13,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -27,6 +27,7 @@ public class ReservationServlet extends HttpServlet {
         database = new Database();
         database.registerClass(Reservation.class);
         database.registerClass(Parc.class);
+        database.registerClass(Destination.class);
 
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
@@ -45,31 +46,34 @@ public class ReservationServlet extends HttpServlet {
     }
 
     protected void processRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, InterruptedException, ExecutionException, TimeoutException {
-        HttpSession sess = req.getSession();
-        Table<Parc> tableParc = database.table(Parc.class);
-        Table<Reservation> tableReservation = database.table(Reservation.class);
-        Object logged = sess.getAttribute("logged");
+        HttpSession session = req.getSession();
+        Table<Parc> parcTable = database.table(Parc.class);
+        Table<Reservation> reservationTable = database.table(Reservation.class);
+        Object logged = session.getAttribute("logged");
         String resId;
         if (logged != null)  {
             // TODO select * from parcs where container_id is null and (x,y) NOT IN (select X,Y from RESERVATIONS);
-            Optional<Parc> parc = tableParc.findOne(DBPredicate.of("container_id", null)).get(5, TimeUnit.SECONDS);// ^ What it should do
-            Parc plswork;
-            if (parc.isPresent()) {
-                plswork = parc.get();
-                resId = "E"+ Date.valueOf(req.getParameter("dateArrival"))+plswork.getX()+plswork.getY();
-                tableReservation.insert(new Reservation(plswork.getX(), plswork.getY(), Date.valueOf(req.getParameter("dateArrival")), req.getParameter("destination"), resId)).get();
-                sendConfirmation(req, resp, resId);
-            } else {
-                System.out.println(parc);
-            }
-
+            Parc parc = parcTable.findOne(DBPredicate.of("container_id", null)).get(5, TimeUnit.SECONDS).get();// ^ What it should do
+            resId = "R"+ Date.valueOf(req.getParameter("dateArrival"))+parc.getX()+parc.getY();
+            reservationTable.insert(new Reservation(parc.getX(), parc.getY(), Date.valueOf(req.getParameter("dateArrival")), req.getParameter("destination"), resId)).get();
+            sendConfirmation(req, resp, resId, parc.getX(), parc.getY());
         } else {
             resp.sendRedirect("login.html");
         }
     }
 
-    private void sendConfirmation(HttpServletRequest req, HttpServletResponse resp, String resId) {
+    private void sendConfirmation(HttpServletRequest req, HttpServletResponse resp, String resId, int x, int y) throws IOException, ExecutionException, InterruptedException {
+        HttpSession session = req.getSession();
 
+        Table<Destination> destinationTable = database.table(Destination.class);
+
+        session.setAttribute("reservationid", resId);
+        session.setAttribute("positionx", x);
+        session.setAttribute("positiony", y);
+        session.setAttribute("datereservation", req.getParameter("dateArrival"));
+        session.setAttribute("destination", destinationTable.byId(Throwable::printStackTrace, req.getParameter("destination")).get().get().getCity());
+
+        resp.sendRedirect("Reservation.jsp");
     }
 
     @Override
