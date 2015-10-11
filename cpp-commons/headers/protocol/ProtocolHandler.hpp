@@ -19,6 +19,9 @@
 template<class Translator, class Id>
 class ProtocolHandler {
 
+    using len_t = uint16_t;
+    static const len_t MAX_LEN = UINT16_MAX;
+
 public:
     ProtocolHandler(const Translator& translator) : translator(translator), closed(false) {
         static_assert(sizeof(Id) == 1, "Can only use ProtocolHandler with 1 byte ids");
@@ -50,13 +53,13 @@ const char ProtocolHandler<Translator, Id>::FRAME_END = 0x42;
 template<class Translator, class Id>
 std::pair<Id, std::vector<char>> ProtocolHandler<Translator, Id>::readPacket(std::shared_ptr<Socket> socket) {
     Id id;
-    uint32_t len;
+    len_t len;
     std::vector<char> v;
 
-    socket->accumulate(5, v);
+    socket->accumulate(sizeof(len_t) + 1, v);
     id = (Id) v[0];
     // TODO Validate the id and close the connection on protocol error!
-    len = *reinterpret_cast<const uint32_t*>(&v[1]) + 1; // + 1 => end frame marquer
+    len = *reinterpret_cast<const len_t*>(&v[1]) + 1; // + 1 => end frame marquer
 
     LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len << ":read:" << v.size();
 
@@ -106,18 +109,22 @@ P ProtocolHandler<Translator, Id>::readSpecificPacket(std::shared_ptr<Socket> so
 template<class Translator, class Id>
 template<class T>
 ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(std::shared_ptr<Socket> socket, const T& item) {
-    std::vector<char> v(5, 0); // Reserve 5 places for the id and the length
+    std::vector<char> v(sizeof(len_t) + 1, 0); // Reserve places for the id and the packet length
 
     v[0] = T::id;
     this->translator.encode(item, v);
 
     // Store packet length
-    uint32_t len = v.size() - 5;
+    uint64_t long_len = v.size() - (sizeof(len_t) + 1);
+    if(long_len > MAX_LEN) {
+        throw std::runtime_error("Packet length too large for the protocol");
+    }
+
+    len_t len = static_cast<len_t>(long_len);
     const char* bytes = reinterpret_cast<const char*>(&len);
-    v[1] = bytes[0];
-    v[2] = bytes[1];
-    v[3] = bytes[2];
-    v[4] = bytes[3];
+    for(size_t i = 0; i < sizeof(len_t); ++i) {
+        v[i + 1] = bytes[i];
+    }
 
     v.push_back(FRAME_END);
 
