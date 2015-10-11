@@ -47,26 +47,30 @@ public class LoginServlet extends HttpServlet {
         Table<User> table = database.table(User.class);
         HttpSession session = req.getSession();
         Object logged = session.getAttribute("logged");
-        if (logged == null) {
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        if (logged != null) {
+            proceedToReservation(req, resp);
+            return;
+        }
+
+        if (username != null && password != null) {
             if ("on".equals(req.getParameter("newuser"))) {
-                table.insert(new User(0, req.getParameter("username"), req.getParameter("password"))).get();
+                table.insert(new User(0, username, password)).get();
                 proceedToReservation(req, resp);
+                return;
             } else {
-                Optional<User> quser = table.find(DBPredicate.of("username", req.getParameter("username"))).get(5, TimeUnit.SECONDS).findFirst();
+                Optional<User> quser = table.find(DBPredicate.of("username", username)).get(5, TimeUnit.SECONDS).findFirst();
                 if (quser.isPresent()) {
                     User user = quser.get();
-                    if (user.getPassword().equals(req.getParameter("password"))) {
+                    if (user.getPassword().equals(password)) {
                         proceedToReservation(req, resp);
-                    } else {
-                        resp.sendRedirect("login.html");
+                        return;
                     }
-                } else {
-                    resp.sendRedirect("login.html");
                 }
             }
-        } else {
-            proceedToReservation(req, resp);
         }
+        resp.sendRedirect("login.html");
     }
 
     protected void proceedToReservation(HttpServletRequest req, HttpServletResponse resp) throws IOException, ExecutionException, InterruptedException {
