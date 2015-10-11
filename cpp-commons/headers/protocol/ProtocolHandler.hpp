@@ -2,12 +2,8 @@
 #define CPP_COMMONS_PROTOCOLHANDLER_HPP
 
 #include <atomic>
-#include <functional>
-#include <map>
-#include <queue>
-#include <vector>
-#include <io/StreamUtils.hpp>
 
+#include "io/StreamUtils.hpp"
 #include "net/Socket.hpp"
 #include "protocol/ProtocolError.hpp"
 #include "utils/Logger.hpp"

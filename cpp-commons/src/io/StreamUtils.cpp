@@ -11,7 +11,6 @@ std::string StreamUtils::read<std::string>(std::istream& is) {
 template<>
 std::ostream& StreamUtils::write<std::string>(std::ostream& os, std::string s) {
     StreamUtils::write<uint32_t>(os, s.size());
-    LOG << Logger::Debug << "Writing str: " << s;
     os.write(&s[0], s.size());
     return os;
 }

@@ -144,8 +144,6 @@ unsigned Socket::read(unsigned int max, std::ostream& os) {
         throw IOError("Failed to read, client closed the connection");
     }
 
-    LOG << Logger::Debug << (int) c[0];
-
     os.write(c, len);
     delete c;
 

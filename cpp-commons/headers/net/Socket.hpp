@@ -1,11 +1,9 @@
 #ifndef CPP_COMMONS_SOCKET_HPP
 #define CPP_COMMONS_SOCKET_HPP
 
-#include <array>
 #include <atomic>
 #include <cstring>
 #include <string>
-#include <vector>
 
 #include <netdb.h>
 #include <netinet/in.h>
