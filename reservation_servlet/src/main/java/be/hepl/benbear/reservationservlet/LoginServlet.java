@@ -79,7 +79,7 @@ public class LoginServlet extends HttpServlet {
 
         out.println("</select>");
         out.println("<input type=\"submit\" value=\"Submit\">");
-        out.println("</body>");
+        out.println("</body></html>");
     }
 
     @Override

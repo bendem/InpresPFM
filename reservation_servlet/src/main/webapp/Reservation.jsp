@@ -6,12 +6,12 @@
 <body>
 <%
     Object resId = session.getAttribute("reservationid");
-    if(resId != null){
+    if(resId != null) {
 %>
-    <p>Reservation id : </p> <%=resId%>
-    <p>Reservation date : </p> <%=session.getAttribute("datereservation")%>
-    <p>Place reserved : </p> <%=session.getAttribute("positionx")%> <p>-</p> <%=session.getAttribute("positiony")%>
-    <p>Destination : </p> <%=session.getAttribute("destination")%>
+    <p>Reservation id : <%= resId %> </p>
+    <p>Reservation date : <%= session.getAttribute("datereservation") %> </p>
+    <p>Place reserved : <%= session.getAttribute("positionx") %> - <%= session.getAttribute("positiony") %> </p>
+    <p>Destination : <%= session.getAttribute("destination") %> </p>
 <%
     } else {
         response.sendRedirect("login.html");
