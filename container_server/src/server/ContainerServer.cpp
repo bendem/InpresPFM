@@ -286,8 +286,8 @@ bool ContainerServer::findFreePlace(Container& container) {
         }
     } while(changed);
 
+    LOG << Logger::Debug << "Found a place not in the file " << container.x << ':' << container.y;
     this->parcLocations.emplace_back(ParcLocation { container.x, container.y, container.id, ParkLocationFlag::Reserved });
 
-    LOG << Logger::Debug << "Found a place not in the file " << container.x << ':' << container.y;
     return true;
 }
