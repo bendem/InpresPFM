@@ -47,6 +47,7 @@ set(COMMON_FILES
     headers/ParcLocation.hpp
     src/ParcLocation.cpp
 )
+add_library(cmmp_protocol ${COMMON_FILES})
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/users.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data)
 
@@ -56,14 +57,14 @@ add_executable(container_server
     headers/server/ContainerServer.hpp
     src/server/ContainerServer.cpp
     server.cpp
-    ${COMMON_FILES}
 )
 target_link_libraries(container_server cpp_commons)
+target_link_libraries(container_server cmmp_protocol)
 
 add_executable(container_app
     client.cpp
     headers/client/ContainerClient.hpp
     src/client/ContainerClient.cpp
-    ${COMMON_FILES}
 )
 target_link_libraries(container_app cpp_commons)
+target_link_libraries(container_app cmmp_protocol)
