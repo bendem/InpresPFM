@@ -1,7 +1,6 @@
 package be.hepl.benbear.trafficdb;
 
 import be.hepl.benbear.commons.db.DBTable;
-import be.hepl.benbear.commons.db.ForeignKey;
 import be.hepl.benbear.commons.db.PrimaryKey;
 
 import java.sql.Date;
