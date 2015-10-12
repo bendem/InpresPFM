@@ -52,13 +52,11 @@ std::pair<Id, std::string> ProtocolHandler<Translator, Id>::readPacket(std::shar
     Id id;
     len_t len;
 
-    {
-        std::stringstream ios;
-        socket->accumulate(sizeof(len_t) + 1, ios);
+    std::stringstream ios;
+    socket->accumulate(sizeof(len_t) + 1, ios);
 
-        id = StreamUtils::read<Id>(ios);
-        len = StreamUtils::read<len_t>(ios) + 1; // + 1 => end frame marquer
-    }
+    id = StreamUtils::read<Id>(ios);
+    len = StreamUtils::read<len_t>(ios) + 1; // + 1 => end frame marquer
 
     LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len;
 
@@ -98,10 +96,7 @@ P ProtocolHandler<Translator, Id>::readSpecificPacket(std::shared_ptr<Socket> so
         }
 
         std::istringstream is(chars);
-        P packet = P::decode(is);
-        // Call the handlers, just in case
-        packet.handle(socket);
-        return packet;
+        return this->translator.template decodeSpecific<P>(is, socket);
     }
 }
 
@@ -112,6 +107,7 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(std::sha
     std::ostringstream packet_only;
 
     StreamUtils::write<Id>(full_packet, T::id);
+
     this->translator.encode(item, packet_only);
     std::string packet(packet_only.str());
 
