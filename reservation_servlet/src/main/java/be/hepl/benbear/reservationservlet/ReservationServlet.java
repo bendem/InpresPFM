@@ -7,17 +7,19 @@ import be.hepl.benbear.trafficdb.Destination;
 import be.hepl.benbear.trafficdb.Parc;
 import be.hepl.benbear.trafficdb.Reservation;
 
+import java.io.IOException;
+import java.sql.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.sql.Date;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class ReservationServlet extends HttpServlet {
 
@@ -53,8 +55,12 @@ public class ReservationServlet extends HttpServlet {
         Object logged = session.getAttribute("logged");
         String resId;
         if (logged != null)  {
-            // TODO select * from parcs where container_id is null and (x,y) NOT IN (select X,Y from RESERVATIONS);
-            Optional<Parc> qparc = parcTable.findOne(DBPredicate.of("container_id", null)).get(5, TimeUnit.SECONDS);// ^ What it should do
+            // TODO This would be faster db side
+            List<Reservation> reservations = reservationTable.find().get().collect(Collectors.toList());
+            Optional<Parc> qparc = parcTable.find(DBPredicate.of("container_id", null)).get()
+                .filter(p -> reservations.stream().noneMatch(r -> p.getX() == r.getX() && p.getY() == r.getY()))
+                .findFirst();
+
             if(qparc.isPresent()) {
                 Parc parc = qparc.get();
                 resId = "R"+ Date.valueOf(req.getParameter("dateArrival"))+parc.getX()+parc.getY();
