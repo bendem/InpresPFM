@@ -296,6 +296,7 @@ void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr
         }
     }
 
+    LOG << Logger::Warning << "Invalid container id output: " << p.getContainerId();
     this->proto.write(s, OutputOneResponsePacket(false, "Invalid container id (not existing or ready to leave)"));
 }
 
