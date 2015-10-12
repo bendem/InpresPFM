@@ -69,62 +69,67 @@ void ContainerServer::close() {
 }
 
 void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket> s) {
+    string username = p.getUsername();
     if(this->isLoggedIn(s)) {
-        LOG << Logger::Warning << "Ignoring connect attempt from an authentified socket: " << p.getUsername();
+        LOG << Logger::Warning << "Ignoring connect attempt from an authentified socket: " << username;
 
         this->proto.write(s, LoginResponsePacket(false, "Already logged in"));
         return;
     }
 
+    string password = p.getPassword();
+
     if(p.isNew()) {
-        if(p.getUsername().empty() || p.getPassword().empty()) {
+        if(username.empty() || password.empty()) {
             this->proto.write(s, LoginResponsePacket(false, "Empty username or password"));
             return;
         }
 
-        if(p.getUsername().find_first_of("\n;\r\0") != string::npos
-                || p.getPassword().find_first_of("\n;\r\0") != string::npos) {
-            this->proto.write(s, LoginResponsePacket(false, "Invalid character in username"));
+        if(username.find_first_of("\n;\r\0") != string::npos
+                || password.find_first_of("\n;\r\0") != string::npos
+                || std::count_if(username.begin(), username.end(), [](char c) { return !std::isprint(c); }) != 0
+                || std::count_if(password.begin(), password.end(), [](char c) { return !std::isprint(c); }) != 0) {
+            this->proto.write(s, LoginResponsePacket(false, "Invalid character in username or password"));
             return;
         }
 
         Lock usersLock(this->usersMutex);
-        if(!this->users.find("username", p.getUsername()).empty()) {
+        if(!this->users.find("username", username).empty()) {
             this->proto.write(s, LoginResponsePacket(false, "Username already in use"));
             return;
         }
 
         // Insert and save
-        this->users.insert({ p.getUsername(), p.getPassword() });
+        this->users.insert({username, password});
         this->users.save();
 
         // Login
         Lock loggedInUsersLock(this->loggedInUsersMutex);
-        this->loggedInUsers.insert({ s.get(), p.getUsername() });
+        this->loggedInUsers.insert({ s.get(), username});
 
         this->proto.write(s, LoginResponsePacket(true));
         return;
     }
 
     Lock lk(this->usersMutex);
-    std::map<string, string> map = this->users.find("username", p.getUsername());
+    std::map<string, string> map = this->users.find("username", username);
     if(map.empty()) {
-        LOG << Logger::Warning << "Tried to login with unknown username: " << p.getUsername();
+        LOG << Logger::Warning << "Tried to login with unknown username: " << username;
 
         this->proto.write(s, LoginResponsePacket(false, "user not found"));
         return;
     }
 
-    if(map.begin()->second == p.getPassword()) {
-        LOG << p.getUsername() << " logged in";
+    if(map.begin()->second == password) {
+        LOG << username << " logged in";
 
         Lock lk(this->loggedInUsersMutex);
-        this->loggedInUsers.insert({ s.get(), p.getUsername() });
+        this->loggedInUsers.insert({ s.get(), username});
         this->proto.write(s, LoginResponsePacket(true));
         return;
     }
 
-    LOG << Logger::Warning << "Tried to login from " << p.getUsername() << " with invalid password";
+    LOG << Logger::Warning << "Tried to login from " << username << " with invalid password";
     this->proto.write(s, LoginResponsePacket(false, "Invalid password"));
 }
 
