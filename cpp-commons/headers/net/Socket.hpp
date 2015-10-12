@@ -112,6 +112,10 @@ public:
      */
     Socket& registerCloseHandler(CloseHandler);
 
+    std::string getHost() const;
+
+    unsigned short getPort() const;
+
 private:
     bool server;
     int handle;

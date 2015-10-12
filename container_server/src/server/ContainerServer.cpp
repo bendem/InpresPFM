@@ -36,7 +36,9 @@ ContainerServer& ContainerServer::listen() {
     while(!closed) {
         try {
             std::shared_ptr<Socket> connection = socket.accept();
-            LOG << Logger::Debug << "Connection accepted " << connection->getHandle();
+            LOG << Logger::Debug
+                << "Connection accepted " << connection->getHandle()
+                << ": " << connection->getHost() << ':' << connection->getPort();
 
             // Set up connection cleanup
             connection

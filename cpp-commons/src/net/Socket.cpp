@@ -193,3 +193,14 @@ Socket& Socket::registerCloseHandler(Socket::CloseHandler handler) {
     this->closeHandlers.emplace_back(handler);
     return *this;
 }
+
+#include<arpa/inet.h>
+std::string Socket::getHost() const {
+    sockaddr_in* in = (sockaddr_in*) &this->addr;
+    return inet_ntoa(in->sin_addr);
+}
+
+unsigned short Socket::getPort() const {
+    sockaddr_in* in = (sockaddr_in*) &this->addr;
+    return in->sin_port;
+}
