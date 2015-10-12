@@ -5,6 +5,11 @@ int main(int argc, char** argv) {
     std::cout << std::showbase;
     std::cerr << std::showbase;
 
+    if(argc > 1 && argv[1] == std::string("-h")) {
+        std::cout << "Usage: " << argv[0] << " <port> <parc_file> <user_file>" << std::endl;
+        return 0;
+    }
+
     // TODO Setup a file logger?
     // TODO an argument parser?
 

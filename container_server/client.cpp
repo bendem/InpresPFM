@@ -1,6 +1,11 @@
 #include "client/ContainerClient.hpp"
 
 int main(int argc, char** argv) {
+    if(argc > 1 && argv[1] == std::string("-h")) {
+        std::cout << "Usage: " << argv[0] << " <port> <target host>" << std::endl;
+        return 0;
+    }
+
     unsigned short port = 31060;
     std::string host("localhost");
     if(argc >= 2) {
