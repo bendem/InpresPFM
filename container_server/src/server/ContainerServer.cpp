@@ -49,7 +49,11 @@ ContainerServer& ContainerServer::listen() {
                 });
             this->selector.addSocket(connection);
         } catch(IOError e) {
-            LOG << Logger::Error << "IOError: " << e.what();
+            if(e.reset) {
+                LOG << Logger::Debug << "IOError: connection reset: " << e.what();
+            } else {
+                LOG << Logger::Error << "IOError: " << e.what();
+            }
             continue;
         }
     }
@@ -147,7 +151,7 @@ void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_p
         for(const Container& container : p.getContainers()) {
             // Find a place for the container
             tmp = container;
-            bool had_place = false;
+            bool had_place;
             try {
                 had_place = this->findFreePlace(tmp);
             } catch(std::logic_error e) {

@@ -51,7 +51,11 @@ void SelectorThread<Translator, Id>::handle(std::shared_ptr<Socket> socket) {
         try {
             this->proto.read(socket);
         } catch(IOError e) {
-            LOG << Logger::Error << "Error reading from socket " << socket->getHandle() << ": " << e.what();
+            if(e.reset) {
+                LOG << Logger::Debug << "Connection reset: " << e.what();
+            } else {
+                LOG << Logger::Error << "Error reading from socket " << socket->getHandle() << ": " << e.what();
+            }
             return;
         } catch(ProtocolError e) {
             LOG << Logger::Error << "Protocol error while reading from " << socket->getHandle() << ": " << e.what();

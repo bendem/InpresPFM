@@ -113,7 +113,7 @@ long Socket::write(const std::string& string) {
         this->error("Failed to write " + std::to_string(string.size()) + " bytes", errno);
     } else if(len == 0) {
         this->close(Gone);
-        throw IOError("Failed to write, client closed the connection");
+        throw IOError("Failed to write, client closed the connection", true);
     } else if(len != string.size()) {
         this->error("Didn't write enough bytes, "
             "expected: " + std::to_string(string.size())
@@ -141,7 +141,7 @@ unsigned Socket::read(unsigned int max, std::ostream& os) {
     } else if(len == 0) {
         delete c;
         this->close(Gone);
-        throw IOError("Failed to read, client closed the connection");
+        throw IOError("Failed to read, client closed the connection", true);
     }
 
     os.write(c, len);

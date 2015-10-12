@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     }
 
     LOG << "Creating thread pool";
-    ThreadPool pool(5, [] {
+    ThreadPool pool(4, [] {
         LOG << Logger::Debug << "Starting thread from pool";
     });
 

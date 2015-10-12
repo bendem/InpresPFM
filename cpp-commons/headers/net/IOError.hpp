@@ -6,7 +6,9 @@
 class IOError : public std::runtime_error {
 
 public:
-    IOError(const std::string& what) : runtime_error(what) { }
+    IOError(const std::string& what, bool reset = false) : runtime_error(what), reset(reset) { }
+
+    const bool reset;
 
 };
 

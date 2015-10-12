@@ -79,8 +79,13 @@ void ContainerClient::menu() {
 
     switch(input) {
         case 1: {
+            // Temporary thing to generate random ids
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<> dis(0, 1000);
+
             this->proto.write(this->socket, InputTruckPacket("license", {
-                { "id" + std::to_string(std::rand()), "destination", 0, 0 }
+                { "id" + std::to_string(dis(gen)), "destination", 0, 0 }
             }));
             InputTruckResponsePacket p = this->proto.readSpecificPacket<InputTruckResponsePacket>(this->socket);
             packetResult(p);
