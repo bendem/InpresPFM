@@ -70,3 +70,7 @@ add_executable(container_app
 )
 target_link_libraries(container_app cpp_commons)
 target_link_libraries(container_app cmmp_protocol)
+
+add_executable(parc_debugger parc_debugger.cpp)
+target_link_libraries(parc_debugger cpp_commons)
+target_link_libraries(parc_debugger cmmp_protocol)

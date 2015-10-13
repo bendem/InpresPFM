@@ -280,23 +280,19 @@ void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr
         return;
     }
 
-    bool found = false;
     {
         Lock lk(this->parcLocationsMutex);
         for(ParcLocation& location : this->parcLocations) {
             if(location.containerId == p.getContainerId() && location.flag == ParkLocationFlag::Leaving) {
+                // The location is not removed from the file, only set free
+                location.containerId.clear();
                 location.flag = ParkLocationFlag::Free;
-                found = true;
-                break;
+                this->containerFile.update(location, [&location](const ParcLocation& file_location) {
+                    return location.x == file_location.x && location.y == file_location.y;
+                });
+                this->proto.write(s, OutputOneResponsePacket(true));
+                return;
             }
-        }
-
-        if(found) {
-            // TODO The location is never actually removed from this->parcLocations
-            this->containerFile.save(this->parcLocations.begin(), this->parcLocations.end());
-            LOG << Logger::Debug << "Saved " << parcLocations.size() << " locations";
-            this->proto.write(s, OutputOneResponsePacket(true));
-            return;
         }
     }
 
