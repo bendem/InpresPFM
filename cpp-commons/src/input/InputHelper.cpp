@@ -3,6 +3,7 @@
 const std::map<std::string, bool> InputHelper::BOOLEANS {
     { "yes",    true },
     { "y",      true },
+    { "1",      true },
     { "oui",    true },
     { "o",      true },
     { "yeah",   true },
@@ -14,6 +15,7 @@ const std::map<std::string, bool> InputHelper::BOOLEANS {
     { "no",     false },
     { "non",    false },
     { "n",      false },
+    { "0",      false },
     { "nope",   false },
     { "no way", false },
     { "niet",   false },
