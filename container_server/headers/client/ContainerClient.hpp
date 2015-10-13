@@ -11,6 +11,8 @@
 #include "protocol/ProtocolHandler.hpp"
 
 class ContainerClient {
+    using string = std::string;
+    using cstring_ref = const string&;
 
 public:
     ContainerClient(std::shared_ptr<Socket>, ProtocolHandler<CMMPTranslator, PacketId>&);

@@ -46,6 +46,7 @@ set(COMMON_FILES
     src/cmmp/OutputReadyPacket.cpp
     src/cmmp/OutputReadyResponsePacket.cpp
     src/ParcLocation.cpp
+    src/Container.cpp
 )
 add_library(cmmp_protocol ${COMMON_FILES})
 target_link_libraries(cmmp_protocol cpp_commons)

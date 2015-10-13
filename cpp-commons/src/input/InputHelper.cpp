@@ -22,7 +22,7 @@ const std::map<std::string, bool> InputHelper::BOOLEANS {
     { "false",  false },
 };
 
-bool InputHelper::readBool() {
+bool InputHelper::readBool(const std::string& error) {
     std::string input;
 
     for(;;) {
@@ -32,57 +32,88 @@ bool InputHelper::readBool() {
         if(it != BOOLEANS.end()) {
             return it->second;
         }
-        std::cout << " > Invalid boolean, try again: ";
+        std::cout << error;
     }
 }
 
-int InputHelper::readInt() {
+int InputHelper::readInt(predicate<int> predicate, const std::string& error) {
     std::string input;
 
     for(;;) {
         std::getline(std::cin, input);
 
         try {
-            return std::stoi(input);
+            int i = std::stoi(input);
+            if(!predicate(i)) {
+                std::cout << error;
+                continue;
+            }
+            return i;
         } catch(std::invalid_argument e) {
-            std::cout << "> x Input is not a valid int: " << e.what() << std::endl;
+            std::cout << "> x Input is not a valid int, enter a valid one: ";
         } catch(std::out_of_range e) {
-            std::cout << "> x Entered value is too big: " << e.what() << std::endl;
+            std::cout << "> x Entered value is too big, enter a smaller one: ";
         }
     }
 }
 
-unsigned long InputHelper::readUnsignedInt() {
+unsigned int InputHelper::readUnsignedInt(predicate<unsigned int> predicate, const std::string& error) {
     std::string input;
 
     for(;;) {
         std::getline(std::cin, input);
 
         try {
-            return std::stoul(input);
+            unsigned int i = static_cast<unsigned int>(std::stoi(input));
+            if(!predicate(i)) {
+                std::cout << error;
+                continue;
+            }
+            return i;
         } catch(std::invalid_argument e) {
-            std::cout << "> x Input is not a valid int: " << e.what() << std::endl;
+            std::cout << " > Input is not a valid int, enter a valid integer: ";
         } catch(std::out_of_range e) {
-            std::cout << "> x Entered value is too big: " << e.what() << std::endl;
+            std::cout << " > Entered value is too big, enter a smaller integer: ";
         }
     }
 }
 
-std::string InputHelper::readNonEmtpyString() {
+float InputHelper::readFloat(predicate<float> predicate, const std::string& error) {
     std::string input;
 
     for(;;) {
         std::getline(std::cin, input);
 
-        if(input.empty()) {
-            std::cout << "> x Please provide a value: ";
-        } else {
-            return input;
+        try {
+            float i = std::stof(input);
+            if(!predicate(i)) {
+                std::cout << error;
+                continue;
+            }
+            return i;
+        } catch(std::invalid_argument e) {
+            std::cout << "> x Input is not a valid float, enter a valid one: ";
+        } catch(std::out_of_range e) {
+            std::cout << "> x Entered value is too big, enter a smaller one: ";
         }
     }
 }
 
-std::string InputHelper::readPassword() {
+std::string InputHelper::readString(predicate<std::string> predicate, const std::string& error) {
+    std::string input;
+
+    for(;;) {
+        std::getline(std::cin, input);
+
+        if(!predicate(input)) {
+            std::cout << error;
+            continue;
+        }
+        return input;
+    }
+}
+
+std::string InputHelper::readPassword(predicate<std::string> predicate, const std::string& error) {
     std::string input;
 
     for(;;) {
@@ -91,11 +122,11 @@ std::string InputHelper::readPassword() {
         echoInput(true);
         std::cout << std::endl;
 
-        if(input.empty()) {
-            std::cout << "> x Please provide a value: ";
-        } else {
-            return input;
+        if(!predicate(input)) {
+            std::cout << error;
+            continue;
         }
+        return input;
     }
 }
 

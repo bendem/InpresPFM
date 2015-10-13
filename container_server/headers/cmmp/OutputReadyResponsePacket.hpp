@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "Container.hpp"
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
@@ -11,13 +12,13 @@ class OutputReadyResponsePacket : public Packet<OutputReadyResponsePacket> {
 public:
     static const PacketId id;
 
-    OutputReadyResponsePacket(bool ok, const std::vector<std::string>& containerIds, const std::string& reason = "")
+    OutputReadyResponsePacket(bool ok, const std::vector<Container>& containers, const std::string& reason = "")
         : ok(ok),
-          containerIds(containerIds),
+          containers(containers),
           reason(reason) {}
 
     bool isOk() const { return ok; }
-    const std::vector<std::string>& getContainerIds() const { return containerIds; }
+    const std::vector<Container>& getContainers() const { return containers; }
     const std::string& getReason() const { return reason; }
 
     static OutputReadyResponsePacket decode(std::istream&);
@@ -25,7 +26,7 @@ public:
 
 private:
     bool ok;
-    std::vector<std::string> containerIds;
+    std::vector<Container> containers;
     std::string reason;
 
 };

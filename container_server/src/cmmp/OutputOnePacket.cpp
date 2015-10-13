@@ -3,7 +3,7 @@
 const PacketId OutputOnePacket::id = PacketId::OutputOne;
 
 OutputOnePacket OutputOnePacket::decode(std::istream& is) {
-    std::string container_id = StreamUtils::read<std::string>(is) ;
+    std::string container_id = StreamUtils::read<std::string>(is);
 
     return OutputOnePacket(container_id);
 }

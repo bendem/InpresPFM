@@ -248,13 +248,15 @@ void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared
         << "' going to '" << p.getDestination()
         << "' can carry " << capacity << " container(s)";
 
-    std::vector<string> containers;
+    std::vector<Container> containers;
     {
         Lock lk(this->parcLocationsMutex);
 
         for(ParcLocation& location : this->parcLocations) {
             if(location.destination == p.getDestination()) {
-                containers.emplace_back(location.containerId);
+                containers.emplace_back(Container {
+                    location.containerId, location.destination, location.x, location.y
+                });
                 location.flag = ParkLocationFlag::Leaving;
 
                 if(--capacity == 0) {

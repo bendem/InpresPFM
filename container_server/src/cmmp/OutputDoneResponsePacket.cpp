@@ -3,8 +3,8 @@
 const PacketId OutputDoneResponsePacket::id = PacketId::OutputDoneResponse;
 
 OutputDoneResponsePacket OutputDoneResponsePacket::decode(std::istream& is) {
-    bool ok = StreamUtils::read<bool>(is) ;
-    std::string reason = ok ? "" : StreamUtils::read<std::string>(is) ;
+    bool ok = StreamUtils::read<bool>(is);
+    std::string reason = ok ? "" : StreamUtils::read<std::string>(is);
 
     return OutputDoneResponsePacket(ok, reason);
 }
