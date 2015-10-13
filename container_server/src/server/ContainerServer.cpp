@@ -292,7 +292,9 @@ void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr
         }
 
         if(found) {
+            // TODO The location is never actually removed from this->parcLocations
             this->containerFile.save(this->parcLocations.begin(), this->parcLocations.end());
+            LOG << Logger::Debug << "Saved " << parcLocations.size() << " locations";
             this->proto.write(s, OutputOneResponsePacket(true));
             return;
         }
