@@ -1,3 +1,4 @@
+#include <utils/StringUtils.hpp>
 #include "io/CSVFile.hpp"
 
 CSVFile::CSVFile(const std::string& file, char sep) : file(file), sep(sep) {
@@ -96,12 +97,5 @@ std::string CSVFile::join(const std::vector<std::string>& vector, char sep) {
         return vector[0];
     }
 
-    return std::accumulate(
-        vector.begin() + 1,
-        vector.end(),
-        vector.front(),
-        [sep](const std::string& a, const std::string b) {
-            return a + sep + b;
-        }
-    );
+    return StringUtils::join(vector.begin(), vector.end(), std::string(1, sep));
 }

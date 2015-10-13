@@ -1,36 +1,6 @@
 #include "server/ContainerServer.hpp"
 #include "utils/ProgramProperties.hpp"
 
-/*
-template<class T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& container) {
-    if(container.empty()) {
-        return os << "[]";
-    }
-
-    return os << '[' << std::accumulate(
-        container.begin() + 1,
-        container.end(),
-        container.front(),
-        [&os](const std::string& a, const std::string& b) {
-            return a + ", " + b;
-        }) << ']';
-}
-
-std::ostream& operator<<(std::ostream& os, const std::map<std::string, std::string>& container) {
-    if(container.empty()) {
-        return os << "[]";
-    }
-
-    return os << '[' << std::accumulate(
-        ++container.begin(),
-        container.end(),
-        '{' + container.begin()->first + ": " + container.begin()->second + '}',
-        [&os](std::string a, std::pair<std::string, std::string> b) {
-            return a + ", {" + b.first + ": " + b.second + '}';
-        }) << ']';
-}*/
-
 int main(int argc, char** argv) {
     // Logging setup
     std::cout << std::showbase << std::boolalpha;

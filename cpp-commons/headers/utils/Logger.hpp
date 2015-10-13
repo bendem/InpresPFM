@@ -1,10 +1,12 @@
 #ifndef CPP_COMMONS_LOGGER_HPP
 #define CPP_COMMONS_LOGGER_HPP
 
+#include <algorithm>
 #include <ctime>
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <sstream>
@@ -73,5 +75,8 @@ LoggerStream& LoggerStream::operator<<(const T& t) {
     input << t;
     return *this;
 }
+
+std::ostream& operator<<(std::ostream&, const std::vector<std::string>&);
+std::ostream& operator<<(std::ostream&, const std::map<std::string, std::string>&);
 
 #endif

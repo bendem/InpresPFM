@@ -1,3 +1,4 @@
+#include <utils/StringUtils.hpp>
 #include "utils/Logger.hpp"
 
 Logger Logger::instance;
@@ -92,4 +93,26 @@ std::string LoggerStream::fileToName(std::string file) {
     }
 
     return file;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& container) {
+    if(container.empty()) {
+        return os << "[]";
+    }
+
+    return os << '[' << StringUtils::join(container.begin(), container.end(), ", ", "[", "]");;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::map<std::string, std::string>& container) {
+    if(container.empty()) {
+        return os << "[]";
+    }
+
+    return os << '[' << std::accumulate(
+        ++container.begin(),
+        container.end(),
+        '{' + container.begin()->first + ": " + container.begin()->second + '}',
+        [&os](std::string a, std::pair<std::string, std::string> b) {
+            return a + ", {" + b.first + ": " + b.second + '}';
+        }) << ']';
 }
