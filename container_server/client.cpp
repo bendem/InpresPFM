@@ -1,19 +1,16 @@
 #include "client/ContainerClient.hpp"
+#include "utils/ProgramProperties.hpp"
 
 int main(int argc, char** argv) {
-    if(argc > 1 && argv[1] == std::string("-h")) {
-        std::cout << "Usage: " << argv[0] << " <port> <target host>" << std::endl;
+    ProgramProperties props(argc, argv);
+
+    if(props.has("h") || props.has("help")) {
+        std::cout << "Usage: " << argv[0] << " --port=<port> --host=<host>" << std::endl;
         return 0;
     }
 
-    unsigned short port = 31060;
-    std::string host("localhost");
-    if(argc >= 2) {
-        port = atoi(argv[1]);
-    }
-    if(argc >= 3) {
-        host = argv[2];
-    }
+    unsigned short port = props.getAsUnsignedShort("port", 31060);
+    std::string host = props.get("host", "localhost");
 
     std::shared_ptr<Socket> s(new Socket);
     s->connect(port, host);

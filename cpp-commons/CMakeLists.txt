@@ -34,7 +34,7 @@ set(SOURCE_FILES
     src/threading/ThreadPool.cpp
     src/utils/Logger.cpp
     src/utils/Sanity.cpp
-)
+    headers/utils/ProgramProperties.hpp src/utils/ProgramProperties.cpp headers/utils/StringUtils.hpp src/utils/StringUtils.cpp)
 
 add_library(cpp_commons ${SOURCE_FILES})
 target_link_libraries(cpp_commons ${CMAKE_THREAD_LIBS_INIT})
