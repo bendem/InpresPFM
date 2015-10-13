@@ -35,17 +35,16 @@ int main(int argc, char** argv) {
     BinaryFile<ParcLocation> file(argv[1]);
 
     vector<ParcLocation> locations = file.load();
-    for(const ParcLocation& location : locations) {
+    for(const ParcLocation& loc : locations) {
         cout
-            << " | x: " << location.x << endl
-            << " | y: " << location.y << endl
-            << " | containerId: " << location.containerId << endl
-            << " | flag: " << e(location.flag) << endl
-            << " | reservationDate: " << location.reservationDate << endl
-            << " | arrivalDate: " << location.arrivalDate << endl
-            << " | weight: " << location.weight << endl
-            << " | destination: " << location.destination << endl
-            << " | meanOfTranspartation: " << e(location.meanOfTranspartation) << endl
+            << " | x, y: " << loc.x << ", " << loc.y << endl
+            << " | containerId: " << loc.containerId << endl
+            << " | flag: " << e(loc.flag) << endl
+            << " | reservationDate: " << loc.reservationDate << endl
+            << " | arrivalDate: " << loc.arrivalDate << endl
+            << " | weight: " << loc.weight << endl
+            << " | destination: " << loc.destination << endl
+            << " | meanOfTranspartation: " << e(loc.meanOfTranspartation) << endl
             << endl;
     }
 }
