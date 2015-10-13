@@ -14,6 +14,8 @@
 #include <thread>
 #include <vector>
 
+#include "utils/StringUtils.hpp"
+
 #define LOG LoggerStream(Logger::instance, Logger::Info, __FILE__, __LINE__, __FUNCTION__)
 
 class Logger {

@@ -1,4 +1,3 @@
-#include <utils/StringUtils.hpp>
 #include "utils/Logger.hpp"
 
 Logger Logger::instance;
