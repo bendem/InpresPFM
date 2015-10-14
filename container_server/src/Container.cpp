@@ -1,7 +1,6 @@
 #include "Container.hpp"
 
-template<>
-std::ostream& StreamUtils::write<Container>(std::ostream& os, Container container) {
+template<> std::ostream& StreamUtils::write<Container>(std::ostream& os, const Container& container) {
     StreamUtils::write(os, container.id);
     StreamUtils::write(os, container.destination);
     StreamUtils::write(os, container.x);

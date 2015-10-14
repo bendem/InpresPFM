@@ -14,7 +14,7 @@ struct Container {
     uint16_t y;
 };
 
-template<> std::ostream& StreamUtils::write<const Container&>(std::ostream&, const Container&);
+template<> std::ostream& StreamUtils::write<Container>(std::ostream&, const Container&);
 template<> Container StreamUtils::read<Container>(std::istream&);
 
 #endif

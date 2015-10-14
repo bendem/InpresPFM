@@ -28,6 +28,7 @@ bool InputHelper::readBool(const std::string& error) {
     std::string input;
 
     for(;;) {
+        Sanity::streamness(std::cin, "cin got closed");
         std::getline(std::cin, input);
         std::transform(input.cbegin(), input.cend(), input.begin(), ::tolower);
         auto it = BOOLEANS.find(input);
@@ -42,6 +43,7 @@ int InputHelper::readInt(predicate<int> predicate, const std::string& error) {
     std::string input;
 
     for(;;) {
+        Sanity::streamness(std::cin, "cin got closed");
         std::getline(std::cin, input);
 
         try {
@@ -63,6 +65,7 @@ unsigned int InputHelper::readUnsignedInt(predicate<unsigned int> predicate, con
     std::string input;
 
     for(;;) {
+        Sanity::streamness(std::cin, "cin got closed");
         std::getline(std::cin, input);
 
         try {
@@ -84,6 +87,7 @@ float InputHelper::readFloat(predicate<float> predicate, const std::string& erro
     std::string input;
 
     for(;;) {
+        Sanity::streamness(std::cin, "cin got closed");
         std::getline(std::cin, input);
 
         try {
@@ -105,6 +109,7 @@ std::string InputHelper::readString(predicate<std::string> predicate, const std:
     std::string input;
 
     for(;;) {
+        Sanity::streamness(std::cin, "cin got closed");
         std::getline(std::cin, input);
 
         if(!predicate(input)) {
@@ -119,6 +124,7 @@ std::string InputHelper::readPassword(predicate<std::string> predicate, const st
     std::string input;
 
     for(;;) {
+        Sanity::streamness(std::cin, "cin got closed");
         echoInput(false);
         std::getline(std::cin, input);
         echoInput(true);

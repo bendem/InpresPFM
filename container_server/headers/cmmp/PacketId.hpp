@@ -1,7 +1,9 @@
 #ifndef CONTAINER_SERVER_PACKETID_HPP
 #define CONTAINER_SERVER_PACKETID_HPP
 
-enum PacketId : char {
+#include <cstdint>
+
+enum PacketId : uint8_t {
     Login,
     InputTruck,
     InputDone,

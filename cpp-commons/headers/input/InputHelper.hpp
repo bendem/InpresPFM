@@ -10,6 +10,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "utils/Sanity.hpp"
+
 template<class T>
 bool f(const T&) {
     return true;

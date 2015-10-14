@@ -40,12 +40,12 @@ private:
 
     std::pair<Id, std::string> readPacket(std::shared_ptr<Socket>);
 
-    static const char FRAME_END;
+    static const uint8_t FRAME_END;
 
 };
 
 template<class Translator, class Id>
-const char ProtocolHandler<Translator, Id>::FRAME_END = 0x42;
+const uint8_t ProtocolHandler<Translator, Id>::FRAME_END = 0x42;
 
 template<class Translator, class Id>
 std::pair<Id, std::string> ProtocolHandler<Translator, Id>::readPacket(std::shared_ptr<Socket> socket) {
@@ -55,7 +55,7 @@ std::pair<Id, std::string> ProtocolHandler<Translator, Id>::readPacket(std::shar
     std::stringstream ios;
     socket->accumulate(sizeof(len_t) + 1, ios);
 
-    id = StreamUtils::read<Id>(ios);
+    id = static_cast<Id>(StreamUtils::read<uint8_t>(ios));
     len = StreamUtils::read<len_t>(ios) + 1; // + 1 => end frame marquer
 
     LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len;
@@ -106,7 +106,7 @@ ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::write(std::sha
     std::ostringstream full_packet;
     std::ostringstream packet_only;
 
-    StreamUtils::write<Id>(full_packet, T::id);
+    StreamUtils::write(full_packet, static_cast<uint8_t>(T::id));
 
     this->translator.encode(item, packet_only);
     std::string packet(packet_only.str());
