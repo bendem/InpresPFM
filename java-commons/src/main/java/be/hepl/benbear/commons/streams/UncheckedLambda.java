@@ -1,5 +1,6 @@
 package be.hepl.benbear.commons.streams;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -31,6 +32,34 @@ public class UncheckedLambda {
 
     public static <T> Consumer<T> consumer(ThrowingConsumer<T> t, Consumer<Throwable> handler) {
         return new WrappedConsumer<>(t, handler);
+    }
+
+    @FunctionalInterface
+    public interface ThrowingBiConsumer<T, U> {
+        void accept(T t, U u) throws Throwable;
+    }
+
+    private static class WrappedBiConsumer<T, U> implements BiConsumer<T, U> {
+        private final ThrowingBiConsumer<T, U> consumer;
+        private final Consumer<Throwable> handler;
+
+        public WrappedBiConsumer(ThrowingBiConsumer<T, U> consumer, Consumer<Throwable> handler) {
+            this.consumer = consumer;
+            this.handler = handler;
+        }
+
+        @Override
+        public void accept(T t, U u) {
+            try {
+                consumer.accept(t, u);
+            } catch(Throwable e) {
+                handler.accept(e);
+            }
+        }
+    }
+
+    public static <T, U> BiConsumer<T, U> biconsumer(ThrowingBiConsumer<T, U> t, Consumer<Throwable> handler) {
+        return new WrappedBiConsumer<>(t, handler);
     }
 
     @FunctionalInterface

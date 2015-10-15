@@ -73,8 +73,7 @@ import java.util.stream.Collectors;
         return r -> {
             // Retrieve all the values the ResultSet based on the class fields
             Object[] args = fields.stream()
-                .map(UncheckedLambda.function(
-                    f -> {
+                .map(UncheckedLambda.function(f -> {
                         As as = f.getAnnotation(As.class);
                         String name;
                         if(as == null) {
