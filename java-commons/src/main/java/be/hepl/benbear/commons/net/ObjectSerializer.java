@@ -1,5 +1,7 @@
 package be.hepl.benbear.commons.net;
 
+import be.hepl.benbear.commons.checking.Sanity;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -20,6 +22,8 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
     private final Constructor<T> constructor;
 
     public ObjectSerializer(BinarySerializer serializer, Class<T> clazz) {
+        Sanity.noneNull(serializer, clazz);
+
         this.serializer = serializer;
         this.fields = collectFields(clazz);
         try {
@@ -45,6 +49,8 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
 
     @Override
     public T deserialize(ByteBuffer bb) {
+        Sanity.noneNull(bb);
+
         List<Object> args = fields.values().stream()
             .map(Field::getType)
             .map(serializer::getDeserializer)
@@ -66,6 +72,8 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
 
     @Override
     public void serialize(T object, DataOutputStream dos) {
+        Sanity.noneNull(object, dos);
+
         fields.forEach((clazz, field) -> {
             Serializer<Object> serializer = this.serializer.getSerializer(((Class) clazz)); // TODO Remove rawtype here
             if(serializer == null) {

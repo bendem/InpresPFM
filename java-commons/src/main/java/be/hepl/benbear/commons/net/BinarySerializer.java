@@ -1,5 +1,7 @@
 package be.hepl.benbear.commons.net;
 
+import be.hepl.benbear.commons.checking.Sanity;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
@@ -60,6 +62,8 @@ public class BinarySerializer {
     }
 
     public synchronized <T> void registerSerializer(Class<T> clazz, Serializer<T> serializer, Deserializer<T> deserializer) {
+        Sanity.noneNull(clazz, serializer, deserializer);
+
         deserializers.put(clazz, deserializer);
         serializers.put(clazz, serializer);
     }
@@ -73,6 +77,8 @@ public class BinarySerializer {
     }
 
     public <T> byte[] serialize(T object) {
+        Sanity.notNull(object, "object");
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
         // TODO Find out why this.<T>getSerializer doesn't work
@@ -82,6 +88,8 @@ public class BinarySerializer {
     }
 
     public <T> T deserialize(Class<T> clazz, ByteBuffer bb) {
+        Sanity.noneNull(clazz, bb);
+
         return getDeserializer(clazz).deserialize(bb);
     }
 

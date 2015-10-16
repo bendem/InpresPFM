@@ -1,5 +1,7 @@
 package be.hepl.benbear.commons.net;
 
+import be.hepl.benbear.commons.checking.Sanity;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,6 +25,8 @@ public class ProtocolHandler {
     }
 
     public synchronized <T> ProtocolHandler registerPacket(byte id, Class<T> packetClass) {
+        Sanity.noneNull(packetClass);
+
         if(packetsById.containsKey(id) || idsByClass.containsKey(packetClass)) {
             throw new IllegalStateException("A packet with id = " + id + " or class = " + packetClass.getName() + " is already registered");
         }
@@ -35,6 +39,8 @@ public class ProtocolHandler {
     }
 
     public <T> T read(InputStream is) throws IOException {
+        Sanity.noneNull(is);
+
         byte[] b = accumulate(is, 3);
         Class<T> packetClass = (Class<T>) packetsById.get(b[0]);
         if(packetClass == null) {
@@ -53,6 +59,8 @@ public class ProtocolHandler {
     }
 
     public <T> T readSpecific(InputStream is, Class<T> packetClass) throws IOException {
+        Sanity.noneNull(is, packetClass);
+
         T read;
 
         while((read = read(is)).getClass() != packetClass);
@@ -61,6 +69,8 @@ public class ProtocolHandler {
     }
 
     public <T> ProtocolHandler write(OutputStream os, T packet) throws IOException {
+        Sanity.noneNull(os, packet);
+
         byte[] bytes = serializer.serialize(packet);
         os.write(idsByClass.get(packet.getClass()));
         os.write(bytes.length & 0xff);
