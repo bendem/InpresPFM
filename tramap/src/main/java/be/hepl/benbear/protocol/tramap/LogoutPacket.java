@@ -1,11 +1,12 @@
 package be.hepl.benbear.protocol.tramap;
 
-public class LoginPacket {
+public class LogoutPacket {
 
+    // I'm against this, you should never ask anything on logout
     private final String username;
     private final String password;
 
-    public LoginPacket(String username, String password) {
+    public LogoutPacket(String username, String password) {
         this.username = username;
         this.password = password;
     }
