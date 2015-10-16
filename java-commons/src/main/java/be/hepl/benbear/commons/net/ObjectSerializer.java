@@ -17,14 +17,12 @@ import java.util.stream.Collectors;
 
 public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
 
-    private final BinarySerializer serializer;
     private final LinkedHashMap<Class<?>, Field> fields;
     private final Constructor<T> constructor;
 
-    public ObjectSerializer(BinarySerializer serializer, Class<T> clazz) {
-        Sanity.noneNull(serializer, clazz);
+    public ObjectSerializer(Class<T> clazz) {
+        Sanity.noneNull(clazz);
 
-        this.serializer = serializer;
         this.fields = collectFields(clazz);
         try {
             this.constructor = clazz.getConstructor(fields.keySet().toArray(new Class<?>[fields.size()]));
@@ -53,7 +51,7 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
 
         List<Object> args = fields.values().stream()
             .map(Field::getType)
-            .map(serializer::getDeserializer)
+            .map(BinarySerializer.getInstance()::getDeserializer)
             .peek(deserializer -> {
                 if(deserializer == null) {
                     throw new RuntimeException("Invalid type to deserialize in "
@@ -75,7 +73,7 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
         Sanity.noneNull(object, dos);
 
         fields.forEach((clazz, field) -> {
-            Serializer<Object> serializer = this.serializer.getSerializer(((Class) clazz)); // TODO Remove rawtype here
+            Serializer<Object> serializer = BinarySerializer.getInstance().getSerializer(((Class) clazz)); // TODO Remove rawtype here
             if(serializer == null) {
                 throw new RuntimeException("Invalid type to serialize in "
                     + constructor.getDeclaringClass().getName());
