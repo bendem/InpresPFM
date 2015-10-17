@@ -1,18 +1,18 @@
 package be.hepl.benbear.protocol.tramap;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 public class InputLorryWithoutReservationResponsePacket {
 
     private final boolean ok;
     private final String reason;
-    private final List<ContainerPosition> containers;
+    private final ContainerPosition[] containers;
 
-    public InputLorryWithoutReservationResponsePacket(boolean ok, String reason, List<ContainerPosition> containers) {
+    public InputLorryWithoutReservationResponsePacket(boolean ok, String reason, ContainerPosition[] containers) {
         this.ok = ok;
         this.reason = reason;
-        this.containers = Collections.unmodifiableList(containers);
+        this.containers = containers;
     }
 
     public boolean isOk() {
@@ -24,7 +24,7 @@ public class InputLorryWithoutReservationResponsePacket {
     }
 
     public List<ContainerPosition> getContainers() {
-        return containers;
+        return Arrays.asList(containers);
     }
 
 }

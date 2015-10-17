@@ -35,6 +35,7 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
         return Arrays.stream(clazz.getDeclaredFields())
             .filter(f -> !Modifier.isTransient(f.getModifiers()))
             .filter(f -> !f.isSynthetic())
+            .peek(f -> f.setAccessible(true))
             .collect(Collectors.toMap(
                 Field::getType,
                 Function.identity(),

@@ -1,16 +1,16 @@
 package be.hepl.benbear.protocol.tramap;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 public class InputLorryWithoutReservationPacket {
 
     private final String license;
-    private final List<String> containerIds;
+    private final String[] containerIds;
 
-    public InputLorryWithoutReservationPacket(String license, List<String> containerIds) {
+    public InputLorryWithoutReservationPacket(String license, String[] containerIds) {
         this.license = license;
-        this.containerIds = Collections.unmodifiableList(containerIds);
+        this.containerIds = containerIds;
     }
 
     public String getLicense() {
@@ -18,7 +18,7 @@ public class InputLorryWithoutReservationPacket {
     }
 
     public List<String> getContainerIds() {
-        return containerIds;
+        return Arrays.asList(containerIds);
     }
 
 }

@@ -1,18 +1,18 @@
 package be.hepl.benbear.protocol.tramap;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 public class ListOperationsResponsePacket {
 
     private final boolean ok;
     private final String reason;
-    private final List<Movement> movements;
+    private final Movement[] movements;
 
-    public ListOperationsResponsePacket(boolean ok, String reason, List<Movement> movements) {
+    public ListOperationsResponsePacket(boolean ok, String reason, Movement[] movements) {
         this.ok = ok;
         this.reason = reason;
-        this.movements = Collections.unmodifiableList(movements);
+        this.movements = movements;
     }
 
     public boolean isOk() {
@@ -24,7 +24,7 @@ public class ListOperationsResponsePacket {
     }
 
     public List<Movement> getMovements() {
-        return movements;
+        return Arrays.asList(movements);
     }
 
 }
