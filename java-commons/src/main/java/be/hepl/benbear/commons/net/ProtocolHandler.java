@@ -33,7 +33,7 @@ public class ProtocolHandler {
 
         packetsById.put(id, packetClass);
         idsByClass.put(packetClass, id);
-        ObjectSerializer<T> objectSerializer = new ObjectSerializer<>(serializer, packetClass);
+        ObjectSerializer<T> objectSerializer = new ObjectSerializer<>(packetClass);
         serializer.registerSerializer(packetClass, objectSerializer, objectSerializer);
         return this;
     }

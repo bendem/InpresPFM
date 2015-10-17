@@ -73,11 +73,12 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
         Sanity.noneNull(object, dos);
 
         fields.forEach((clazz, field) -> {
-            Serializer<Object> serializer = BinarySerializer.getInstance().getSerializer(((Class) clazz)); // TODO Remove rawtype here
+            Serializer<Object> serializer = BinarySerializer.getInstance().getSerializer((Class) clazz); // TODO Remove rawtype here
             if(serializer == null) {
                 throw new RuntimeException("Invalid type to serialize in "
                     + constructor.getDeclaringClass().getName());
             }
+
             try {
                 serializer.serialize(field.get(object), dos);
             } catch(IllegalAccessException e) {
