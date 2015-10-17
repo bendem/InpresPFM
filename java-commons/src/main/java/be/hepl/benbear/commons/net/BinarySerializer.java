@@ -83,11 +83,19 @@ public class BinarySerializer {
     }
 
     public synchronized <T> Serializer<T> getSerializer(Class<T> clazz) {
-        return (Serializer<T>) serializers.get(clazz);
+        Serializer<T> serializer = (Serializer<T>) serializers.get(clazz);
+        if(serializer == null) {
+            // TODO @Exception Provide meaningful exceptions when no serializer
+        }
+        return serializer;
     }
 
     public synchronized <T> Deserializer<T> getDeserializer(Class<T> clazz) {
-        return (Deserializer<T>) deserializers.get(clazz);
+        Deserializer<T> deserializer = (Deserializer<T>) deserializers.get(clazz);
+        if(deserializer == null) {
+            // TODO @Exception Provide meaningful exceptions when no deserializer
+        }
+        return deserializer;
     }
 
     public <T> byte[] serialize(T object) throws IOException {
