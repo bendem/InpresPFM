@@ -17,20 +17,21 @@ public class ArraySerializer<T> implements Serializer<T>, Deserializer<T> {
 
         this.clazz = clazz;
 
+        // There must be another way, no idea tho
         String internalName;
         if(clazz.isPrimitive()) {
             if(clazz == long.class) {
-                // Not sure why, long is J
-                internalName = "J";
+                // Not sure why, long is J...
+                internalName = "[J";
             } else {
-                internalName = String.valueOf(Character.toUpperCase(clazz.getName().charAt(0)));
+                internalName = "[" + Character.toUpperCase(clazz.getName().charAt(0));
             }
         } else {
-            internalName = 'L' + clazz.getName() + ';';
+            internalName = "[L" + clazz.getName() + ';';
         }
 
         try {
-            arrayClass = (Class<T>) Class.forName('[' + internalName);
+            arrayClass = (Class<T>) Class.forName(internalName);
         } catch(ClassNotFoundException e) {
             throw new RuntimeException("Invalid array class for " + clazz + ": " + internalName, e);
         }
