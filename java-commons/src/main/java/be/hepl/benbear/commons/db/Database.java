@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,19 +60,23 @@ public class Database implements AutoCloseable {
     }
 
     // TODO Move that to its own class, maybe replace it with a reverse DBMapping
-    /* package */ <T> List<Tuple<String, Object>> getValues(T obj) {
+    /* package */ <T> LinkedHashMap<String, Object> getValues(T obj) {
         return Arrays.stream(obj.getClass().getDeclaredFields())
             .filter(f -> !f.isSynthetic())
             .filter(f -> !Modifier.isTransient(f.getModifiers()))
             .peek(f -> f.setAccessible(true))
-            .map(f -> {
-                try {
-                    return new Tuple<>(Mapping.transformName(f.getName()), f.get(obj));
-                } catch(IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .collect(Collectors.toList());
+            .collect(Collectors.toMap(
+                f -> Mapping.transformName(f.getName()),
+                f -> {
+                    try {
+                        return f.get(obj);
+                    } catch(IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                (a, b) -> a,
+                LinkedHashMap::new
+            ));
     }
 
     public <T> Table<T> table(Class<T> clazz) {

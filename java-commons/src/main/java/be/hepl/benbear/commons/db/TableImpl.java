@@ -1,11 +1,12 @@
 package be.hepl.benbear.commons.db;
 
-import be.hepl.benbear.commons.generics.Tuple;
-
+import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ public class TableImpl<T> implements Table<T> {
     private final String name;
     private final Mapping.DBToJavaMapping<T> mapper;
     private final Database db;
-    private final List<Tuple<String, Class<?>>> primaryKeys; // name, type
+    private final Map<String, Class<?>> primaryKeys; // name, type
 
     protected TableImpl(Class<T> clazz, Database db) {
         DBTable annotation = clazz.getAnnotation(DBTable.class);
@@ -25,25 +26,23 @@ public class TableImpl<T> implements Table<T> {
         }
 
         this.name = annotation.value();
-        this.primaryKeys = Collections.unmodifiableList(collectPrimaryKeys(clazz));
+        this.primaryKeys = Collections.unmodifiableMap(collectPrimaryKeys(clazz));
         this.mapper = Mapping.createDBToJavaMapping(clazz);
         this.db = db;
     }
 
-    private List<Tuple<String, Class<?>>> collectPrimaryKeys(Class<T> clazz) {
+    private LinkedHashMap<String, Class<?>> collectPrimaryKeys(Class<T> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
             .filter(f -> f.getAnnotation(PrimaryKey.class) != null)
-            .<Tuple<String, Class<?>>>map(f -> {
-                As as = f.getAnnotation(As.class);
-                String name;
-                if(as == null) {
-                    name = Mapping.transformName(f.getName());
-                } else {
-                    name = as.value();
-                }
-                return new Tuple<>(name, f.getType());
-            })
-            .collect(Collectors.toList());
+            .collect(Collectors.toMap(
+                f -> {
+                    As as;
+                    return (as = f.getAnnotation(As.class)) == null ? Mapping.transformName(f.getName()) : as.value();
+                },
+                Field::getType,
+                (a, b) -> a,
+                LinkedHashMap::new
+            ));
     }
 
     @Override
@@ -57,10 +56,16 @@ public class TableImpl<T> implements Table<T> {
             throw new IllegalArgumentException("Table has " + getIdCount() + ", got " + ids.length);
         }
 
-        DBPredicate predicate = DBPredicate.of(getIdFields().get(0).first, ids[0]);
-        for(int i = 1; i < ids.length; ++i) {
-            predicate = predicate.and(getIdFields().get(i).first, ids[i]);
+        DBPredicate predicate = null;
+        int i = 0;
+        for(String name : primaryKeys.keySet()) {
+            if(predicate == null) {
+                predicate = DBPredicate.of(name, ids[0]);
+            } else {
+                predicate = predicate.and(name, ids[++i]);
+            }
         }
+
         return findOne(predicate);
     }
 
@@ -103,22 +108,23 @@ public class TableImpl<T> implements Table<T> {
     }
 
     @Override
-    public List<Tuple<String, Class<?>>> getIdFields() {
+    public Map<String, Class<?>> getIdFields() {
         return primaryKeys;
     }
 
     @Override
     public CompletableFuture<Integer> insert(T obj) {
-        List<Tuple<String, Object>> v = db.getValues(obj);
-        String columns = v.stream().map(Tuple::getFirst).collect(Collectors.joining(", "));
+        LinkedHashMap<String, Object> v = db.getValues(obj);
+        String columns = v.keySet().stream().collect(Collectors.joining(", "));
         String values = Stream.generate(() -> "?").limit(v.size()).collect(Collectors.joining(", "));
 
         return db.writeOp(() -> {
             PreparedStatement stmt = db.connection.prepareStatement(
                 "insert into " + name + "(" + columns + ") values (" + values + ")");
 
-            for(int i = 0; i < v.size(); ++i) {
-                JDBCAdapter.set(stmt, i + 1, v.get(i).second);
+            int i = 0;
+            for(Object o : v.values()) {
+                JDBCAdapter.set(stmt, ++i, o);
             }
 
             return stmt;

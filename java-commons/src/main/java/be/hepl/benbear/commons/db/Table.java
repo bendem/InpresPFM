@@ -1,8 +1,6 @@
 package be.hepl.benbear.commons.db;
 
-import be.hepl.benbear.commons.generics.Tuple;
-
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -41,6 +39,15 @@ public interface Table<T> {
     CompletableFuture<Integer> insert(T obj);
 
     /**
+     * Updates an object in the database based on its primary key.
+     *
+     * @param obj the new object to update (the predicate will be based on the
+     *            object id)
+     * @return a future that'll container the number of affected lines
+     */
+    //CompletableFuture<Integer> update(T obj);
+
+    /**
      * Retrieves a Stream lazily populated with all the rows from the table
      * associated with this object.
      *
@@ -73,7 +80,10 @@ public interface Table<T> {
 
     /**
      * Gets the field names and types of the fields composing the primary key.
+     *
+     * The returned map is ordered based on the field order of the underlying
+     * object.
      */
-    List<Tuple<String, Class<?>>> getIdFields();
+    Map<String, Class<?>> getIdFields();
 
 }
