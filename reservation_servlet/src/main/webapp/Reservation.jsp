@@ -13,8 +13,14 @@
     <p>Place reserved : <%= session.getAttribute("positionx") %> - <%= session.getAttribute("positiony") %> </p>
     <p>Destination : <%= session.getAttribute("destination") %> </p>
 <%
+        session.removeAttribute("reservationid");
     } else {
-        response.sendRedirect("login.html");
+        Object logged = session.getAttribute("logged");
+        if(logged != null) {
+            response.sendRedirect("ServletLog");
+        } else {
+            response.sendRedirect("login.html");
+        }
     }
 %>
 </body>
