@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -57,6 +58,10 @@ public class Database implements AutoCloseable {
         TableImpl<T> table = new TableImpl<>(clazz, this);
         tables.put(clazz, table);
         return this;
+    }
+
+    public Set<String> registeredTables() {
+        return tables.values().stream().map(Table::getName).collect(Collectors.toSet());
     }
 
     // TODO Move that to its own class, maybe replace it with a reverse DBMapping
