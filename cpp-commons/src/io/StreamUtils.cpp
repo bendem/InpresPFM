@@ -19,8 +19,13 @@ template<> uint32_t StreamUtils::read<uint32_t>(istream& is) {
 }
 
 template<> uint64_t StreamUtils::read<uint64_t>(istream& is) {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     uint64_t x = read<uint32_t>(is);
     uint32_t y = read<uint32_t>(is);
+#else
+    uint32_t y = ntohl(read<uint32_t>(is));
+    uint64_t x = ntohl(read<uint32_t>(is));
+#endif
     return (x << 32) | y;
 }
 
@@ -99,8 +104,13 @@ template<> ostream& StreamUtils::write<uint32_t>(ostream& os, const uint32_t& i)
 }
 
 template<> ostream& StreamUtils::write<uint64_t>(ostream& os, const uint64_t& i) {
-    write(os, static_cast<uint32_t>(i & UINT32_MAX));
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     write(os, static_cast<uint32_t>(i >> 32));
+    write(os, static_cast<uint32_t>(i & UINT32_MAX));
+#else
+    write(os, htonl(static_cast<uint32_t>(i &  UINT32_MAX)));
+    write(os, htonl(static_cast<uint32_t>(i >> 32)));
+#endif
     return os;
 }
 
