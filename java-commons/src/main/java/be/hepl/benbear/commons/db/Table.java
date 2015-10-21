@@ -45,7 +45,7 @@ public interface Table<T> {
      *            object id)
      * @return a future that'll container the number of affected lines
      */
-    //CompletableFuture<Integer> update(T obj);
+    CompletableFuture<Integer> update(T obj);
 
     /**
      * Retrieves a Stream lazily populated with all the rows from the table

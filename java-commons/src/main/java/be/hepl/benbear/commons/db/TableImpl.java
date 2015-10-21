@@ -1,5 +1,7 @@
 package be.hepl.benbear.commons.db;
 
+import be.hepl.benbear.commons.generics.MappedMap;
+
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.util.Arrays;
@@ -17,7 +19,7 @@ public class TableImpl<T> implements Table<T> {
     private final String name;
     private final Mapping.DBToJavaMapping<T> mapper;
     private final Database db;
-    private final Map<String, Class<?>> primaryKeys; // name, type
+    private final Map<String, Field> primaryKeys; // name, field
 
     protected TableImpl(Class<T> clazz, Database db) {
         DBTable annotation = clazz.getAnnotation(DBTable.class);
@@ -31,7 +33,7 @@ public class TableImpl<T> implements Table<T> {
         this.db = db;
     }
 
-    private LinkedHashMap<String, Class<?>> collectPrimaryKeys(Class<T> clazz) {
+    private LinkedHashMap<String, Field> collectPrimaryKeys(Class<T> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
             .filter(f -> f.getAnnotation(PrimaryKey.class) != null)
             .collect(Collectors.toMap(
@@ -39,7 +41,7 @@ public class TableImpl<T> implements Table<T> {
                     As as;
                     return (as = f.getAnnotation(As.class)) == null ? Mapping.transformName(f.getName()) : as.value();
                 },
-                Field::getType,
+                f -> f,
                 (a, b) -> a,
                 LinkedHashMap::new
             ));
@@ -109,7 +111,9 @@ public class TableImpl<T> implements Table<T> {
 
     @Override
     public Map<String, Class<?>> getIdFields() {
-        return primaryKeys;
+        return new MappedMap<>(primaryKeys, Field::getType, t -> {
+            throw new UnsupportedOperationException();
+        });
     }
 
     @Override
@@ -124,6 +128,48 @@ public class TableImpl<T> implements Table<T> {
 
             int i = 0;
             for(Object o : v.values()) {
+                JDBCAdapter.set(stmt, ++i, o);
+            }
+
+            return stmt;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Integer> update(T obj) {
+        DBPredicate predicate = null;
+        for(Map.Entry<String, Field> entry : primaryKeys.entrySet()) {
+            Object value;
+            try {
+                value = entry.getValue().get(obj);
+            } catch(IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            if(predicate == null) {
+                predicate = DBPredicate.of(entry.getKey(), value);
+            } else {
+                predicate = predicate.and(entry.getKey(), value);
+            }
+        }
+
+        if(predicate == null) {
+            // TODO @Exception
+            throw new RuntimeException("Couldn't build a predicate to update " + name);
+        }
+
+        LinkedHashMap<String, Object> values = db.getValues(obj);
+        String sqlValues = values.keySet().stream()
+            .filter(name -> !primaryKeys.containsKey(name))
+            .map(name -> name + " = ?")
+            .collect(Collectors.joining(", "));
+
+        String query = "update " + name + " set " + sqlValues + predicate.toSql();
+
+        return db.writeOp(() -> {
+            PreparedStatement stmt = db.connection.prepareStatement(query);
+
+            int i = 0;
+            for(Object o : values.values()) {
                 JDBCAdapter.set(stmt, ++i, o);
             }
 
