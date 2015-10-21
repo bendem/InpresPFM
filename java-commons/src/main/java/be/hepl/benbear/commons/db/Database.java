@@ -54,7 +54,7 @@ public class Database implements AutoCloseable {
         return this;
     }
 
-    public <T> Database registerClass(Class<T> clazz) {
+    public <T> Database getRegisterClass(Class<T> clazz) {
         TableImpl<T> table = new TableImpl<>(clazz, this);
         tables.put(clazz, table);
         return this;

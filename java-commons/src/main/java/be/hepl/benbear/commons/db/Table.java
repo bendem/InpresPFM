@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-// TODO Join, sort, findOne
+// TODO Join, sort
 public interface Table<T> {
 
     /**
