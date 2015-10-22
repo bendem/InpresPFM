@@ -1,8 +1,21 @@
 package be.hepl.benbear.demojdbc;
 
+import be.hepl.benbear.commons.db.Database;
+import be.hepl.benbear.commons.db.Table;
+import be.hepl.benbear.commons.streams.UncheckedLambda;
+import be.hepl.benbear.trafficdb.*;
+
+import java.awt.Container;
 import java.awt.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 public class DemoGUI {
     private JTable tableData;
@@ -13,6 +26,36 @@ public class DemoGUI {
     private JButton buttonUpdate;
     private JPanel mainPanel;
 
+    private Database database;
+    private Table<?> currentTable;
+
+    public DemoGUI() {
+        database = new Database();
+        List<Class> listClass = Arrays.asList(Company.class, be.hepl.benbear.trafficdb.Container.class, Destination.class,
+            Movement.class, Parc.class, Reservation.class, Transporter.class, User.class);
+
+        listClass.forEach(database::registerClass);
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+        } catch(ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        database.connect("jdbc:oracle:thin:@178.32.41.4:8080:xe", "dbtraffic", "bleh");
+
+        comboBoxTables.setModel(new DefaultComboBoxModel((Class[])listClass.toArray()));
+
+        buttonOk.addActionListener(e -> {
+            currentTable = database.table((Class)comboBoxTables.getSelectedItem());
+            try {
+                updateSelection();
+            } catch (ExecutionException | InterruptedException e1) {
+                e1.printStackTrace();
+            }
+        });
+    }
+
     public static void main(String[] args) throws Exception {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         JFrame frame = new JFrame("DemoGUI");
@@ -20,6 +63,25 @@ public class DemoGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    public void updateSelection() throws ExecutionException, InterruptedException {
+        List<Field> listField = Arrays.stream(((Class)comboBoxTables.getSelectedItem()).getDeclaredFields())
+            .filter(f -> !f.isSynthetic())
+            .filter(f -> !Modifier.isTransient(f.getModifiers()))
+            .peek(f -> f.setAccessible(true))
+            .collect(Collectors.toList());
+
+        List<String> listName = listField.stream().map(Field::getName).collect(Collectors.toList());
+        tableData.setModel(new DefaultTableModel(currentTable.find().get().map(UncheckedLambda.function(o -> {
+            Object[] values = new Object[listField.size()];
+            int i = 0;
+            for (Field f : listField) {
+                values[i] = f.get(o);
+                i++;
+            }
+            return values;}, ex -> {throw new RuntimeException(ex);})).toArray(Object[][]::new)
+            , listName.toArray()));
     }
 
 
