@@ -39,7 +39,7 @@ public class InsertDialog<T> extends JDialog {
         realContent.setLayout(new GridLayout(fieldReflection.count(), 2));
 
         fieldReflection.getTypeMap().forEach((name, type) -> {
-            realContent.add(new Label(name));
+            realContent.add(new JLabel(name));
             Component component;
             if(type.equals(String.class)) {
                 component = new JTextField();
