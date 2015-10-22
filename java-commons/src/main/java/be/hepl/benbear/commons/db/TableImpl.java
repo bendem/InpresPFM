@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 public class TableImpl<T> implements Table<T> {
 
+    private final Class<T> clazz;
     private final String name;
     private final Mapping.DBToJavaMapping<T> mapper;
     private final Database db;
@@ -27,6 +28,7 @@ public class TableImpl<T> implements Table<T> {
             throw new IllegalArgumentException("Class '" + clazz.getName() + "' is not annotated with @" + DBTable.class.getName());
         }
 
+        this.clazz = clazz;
         this.name = annotation.value();
         this.primaryKeys = Collections.unmodifiableMap(collectPrimaryKeys(clazz));
         this.mapper = Mapping.createDBToJavaMapping(clazz);
@@ -50,6 +52,11 @@ public class TableImpl<T> implements Table<T> {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public Class<T> getTableClass() {
+        return clazz;
     }
 
     @Override

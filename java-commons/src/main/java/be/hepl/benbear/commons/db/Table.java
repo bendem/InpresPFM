@@ -16,6 +16,11 @@ public interface Table<T> {
     String getName();
 
     /**
+     * Gets the class of the java mapping.
+     */
+    Class<T> getTableClass();
+
+    /**
      * Retrieves a single row by id. The number of ids provided need to match
      * the value returned by getIdCount.
      *

@@ -57,7 +57,7 @@ import java.util.stream.Collectors;
             .filter(f -> !Modifier.isTransient(f.getModifiers()))
             .collect(Collectors.toList());
 
-        //Collect the types of the collected fields
+        // Collect the types of the collected fields
         Class<?>[] types = fields.stream().map(Field::getType).toArray(Class[]::new);
 
         // Get a constructor matching these types
