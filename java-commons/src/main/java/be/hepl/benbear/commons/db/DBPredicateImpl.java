@@ -68,12 +68,14 @@ public class DBPredicateImpl implements DBPredicate {
             return values(new ArrayList<>());
         }
 
-        return first.values();
+        return first.values(new ArrayList<>());
     }
 
     private List<Object> values(List<Object> list) {
-        if(value != null) {
-            list.add(value);
+        list.add(value);
+
+        if(next != null) {
+            next.values(list);
         }
 
         return list;

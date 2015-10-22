@@ -77,7 +77,7 @@ public class DemoGUI {
             }
         });
         buttonDelete.addActionListener(e -> {
-            Object[] ids = new Object[currentTable.getIdFields().size()];
+            Object[] ids = new Object[currentTable.getIdCount()];
             int index = tableData.getSelectedRow();
 
             for (int j = 0; j < ids.length; j++) {
@@ -104,6 +104,7 @@ public class DemoGUI {
         frame.setContentPane(demoGUI.mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
