@@ -2,12 +2,17 @@ package be.hepl.benbear.demojdbc;
 
 import be.hepl.benbear.commons.db.Table;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
+import org.jdatepicker.DateModel;
 import org.jdatepicker.JDateComponentFactory;
 import org.jdatepicker.JDatePicker;
 import org.jdatepicker.impl.JDatePickerImpl;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -22,6 +27,7 @@ import java.util.stream.Collectors;
 import javax.swing.*;
 
 public class UpdateDialog extends JDialog {
+
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -47,30 +53,33 @@ public class UpdateDialog extends JDialog {
 
         realContent.setLayout(new GridLayout(listField.size(), 2));
 
-        listField.forEach(UncheckedLambda.consumer(field -> {
-            Class c = field.getType();
-            realContent.add(new Label(field.getName()));
-            Component component;
-            if (c.equals(String.class)) {
-                component = new JTextField(field.get((table.getTableClass())obj));
-            } else if (c.equals(int.class)) {
-                component = new JSpinner();
-                ((JSpinner)component).setValue(field.get((table.getTableClass())obj));
-            } else {
-                component = (Component) new JDateComponentFactory().createJDatePicker();
-                ((JDatePicker)component).getModel().setValue(Calendar.getInstance().setTime((Date) field.get((table.getTableClass())obj)));
-            }
-            listClass.add(c);
-            listInput.add(component);
-            realContent.add(component);
-        }, ex -> {
-            throw new RuntimeException(ex)));
+        listField.forEach(
+            UncheckedLambda.consumer(field -> {
+                Class c = field.getType();
+                realContent.add(new Label(field.getName()));
+                Component component;
+                if (c.equals(String.class)) {
+                    component = new JTextField((String) field.get(obj));
+                } else if (c.equals(int.class)) {
+                    JSpinner spinner = new JSpinner();
+                    spinner.setValue(field.getInt(obj));
+                    component = spinner;
+                } else {
+                    JDatePicker jDatePicker = new JDateComponentFactory().createJDatePicker();
+                    component = (Component) jDatePicker;
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime((Date) field.get(obj));
+                    ((DateModel<Calendar>) jDatePicker.getModel()).setValue(calendar);
+                }
+                listClass.add(c);
+                listInput.add(component);
+                realContent.add(component);
+            }, ex -> {
+                throw new RuntimeException(ex);
+            })
+        );
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -87,11 +96,11 @@ public class UpdateDialog extends JDialog {
         });
 
 // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(
+            e -> onCancel(),
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+        );
     }
 
     private void onOK() {

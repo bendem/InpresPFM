@@ -7,8 +7,6 @@ import be.hepl.benbear.trafficdb.*;
 import be.hepl.benbear.trafficdb.Container;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.Field;
@@ -78,16 +76,14 @@ public class DemoGUI {
                 throw new RuntimeException(e1);
             }
         });
-        buttonDelete.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Object[] ids = new Object[currentTable.getIdFields().size()];
-                int index = tableData.getSelectedRow();
+        buttonDelete.addActionListener(e -> {
+            Object[] ids = new Object[currentTable.getIdFields().size()];
+            int index = tableData.getSelectedRow();
 
-                for (int j = 0; j < ids.length; j++) {
-                    ids[j] = tableData.getValueAt(index, j);
-                }
-                currentTable.delete(ids);
+            for (int j = 0; j < ids.length; j++) {
+                ids[j] = tableData.getValueAt(index, j);
             }
+            currentTable.deleteById(ids);
         });
     }
 
