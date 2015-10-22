@@ -6,7 +6,6 @@ import be.hepl.benbear.commons.streams.UncheckedLambda;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
     /**
      * Returns a method to convert a ResultSet to a java object.
      *
-     * @param clazz the class of the object to construct
+     * @param fieldReflection
      * @param <T> the type of the object
      * @return the constructed object
      */

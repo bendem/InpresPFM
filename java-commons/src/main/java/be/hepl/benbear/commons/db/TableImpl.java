@@ -114,7 +114,7 @@ public class TableImpl<T> implements Table<T> {
     @Override
     public CompletableFuture<Integer> insert(T obj) {
         Map<String, Object> v = fieldReflection.getValueMap(obj);
-        String columns = v.keySet().stream().collect(Collectors.joining(", "));
+        String columns = v.keySet().stream().map(Mapping::transformName).collect(Collectors.joining(", "));
         String values = Stream.generate(() -> "?").limit(v.size()).collect(Collectors.joining(", "));
         String query = "insert into " + name + "(" + columns + ") values (" + values + ")";
 
@@ -140,6 +140,7 @@ public class TableImpl<T> implements Table<T> {
 
         Map<String, Object> values = fieldReflection.getValueMap(obj);
         String sqlValues = values.keySet().stream()
+            .map(Mapping::transformName)
             .filter(name -> !primaryKeys.containsKey(name))
             .map(name -> name + " = ?")
             .collect(Collectors.joining(", "));
