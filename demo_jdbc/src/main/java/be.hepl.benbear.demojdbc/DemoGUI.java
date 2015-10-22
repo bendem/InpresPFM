@@ -87,6 +87,12 @@ public class DemoGUI {
                 ids[j] = tableData.getValueAt(index, j);
             }
             currentTable.deleteById(ids);
+
+            try {
+                updateSelection();
+            } catch (ExecutionException | InterruptedException e1) {
+                throw new RuntimeException(e1);
+            }
         });
 
         buttonUpdate.addActionListener(e -> {
