@@ -90,7 +90,7 @@ public final class FieldReflection<T> {
         ));
     }
 
-    public long count() {
+    public int count() {
         return fields.size();
     }
 
