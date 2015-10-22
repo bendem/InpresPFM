@@ -2,14 +2,11 @@ package be.hepl.benbear.commons.db;
 
 import be.hepl.benbear.commons.generics.Tuple;
 
-import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -62,26 +59,6 @@ public class Database implements AutoCloseable {
 
     public Set<String> getRegisteredTables() {
         return tables.values().stream().map(Table::getName).collect(Collectors.toSet());
-    }
-
-    // TODO Move that to its own class, maybe replace it with a reverse DBMapping
-    /* package */ <T> LinkedHashMap<String, Object> getValues(T obj) {
-        return Arrays.stream(obj.getClass().getDeclaredFields())
-            .filter(f -> !f.isSynthetic())
-            .filter(f -> !Modifier.isTransient(f.getModifiers()))
-            .peek(f -> f.setAccessible(true))
-            .collect(Collectors.toMap(
-                f -> Mapping.transformName(f.getName()),
-                f -> {
-                    try {
-                        return f.get(obj);
-                    } catch(IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                (a, b) -> a,
-                LinkedHashMap::new
-            ));
     }
 
     public <T> Table<T> table(Class<T> clazz) {

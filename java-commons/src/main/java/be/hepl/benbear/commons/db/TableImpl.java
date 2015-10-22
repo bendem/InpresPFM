@@ -1,6 +1,7 @@
 package be.hepl.benbear.commons.db;
 
 import be.hepl.benbear.commons.generics.MappedMap;
+import be.hepl.benbear.commons.reflection.FieldReflection;
 
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
@@ -17,6 +18,7 @@ public class TableImpl<T> implements Table<T> {
     private final Mapping.DBToJavaMapping<T> mapper;
     private final Database db;
     private final Map<String, Field> primaryKeys; // name, field
+    private final FieldReflection<T> fieldReflection;
 
     protected TableImpl(Class<T> clazz, Database db) {
         DBTable annotation = clazz.getAnnotation(DBTable.class);
@@ -26,15 +28,14 @@ public class TableImpl<T> implements Table<T> {
 
         this.clazz = clazz;
         this.name = annotation.value();
-        this.primaryKeys = Collections.unmodifiableMap(collectPrimaryKeys(clazz));
-        this.mapper = Mapping.createDBToJavaMapping(clazz);
+        this.fieldReflection = new FieldReflection<>(clazz, FieldReflection.NON_TRANSIENT, FieldReflection.NON_SYNTHETIC);
+        this.primaryKeys = Collections.unmodifiableMap(collectPrimaryKeys());
+        this.mapper = Mapping.createDBToJavaMapping(fieldReflection);
         this.db = db;
     }
 
-    private LinkedHashMap<String, Field> collectPrimaryKeys(Class<T> clazz) {
-        return Arrays.stream(clazz.getDeclaredFields())
-            .filter(f -> f.getAnnotation(PrimaryKey.class) != null)
-            .peek(f -> f.setAccessible(true))
+    private LinkedHashMap<String, Field> collectPrimaryKeys() {
+        return fieldReflection.getFields(f -> f.getAnnotation(PrimaryKey.class) != null)
             .collect(Collectors.toMap(
                 f -> {
                     As as;
@@ -85,8 +86,8 @@ public class TableImpl<T> implements Table<T> {
         String query = "select * from " + name + predicate.toSql();
         return db.readOp(() -> bind(
             db.connection.prepareStatement(query),
-            predicate.values())
-        ).thenApply(ResultSetAdapter.multiple(mapper, Throwable::printStackTrace)); // TODO Error handler arg
+            predicate.values()
+        )).thenApply(ResultSetAdapter.multiple(mapper, Throwable::printStackTrace)); // TODO Error handler arg
     }
 
     @Override
@@ -112,7 +113,7 @@ public class TableImpl<T> implements Table<T> {
 
     @Override
     public CompletableFuture<Integer> insert(T obj) {
-        LinkedHashMap<String, Object> v = db.getValues(obj);
+        Map<String, Object> v = fieldReflection.getValueMap(obj);
         String columns = v.keySet().stream().collect(Collectors.joining(", "));
         String values = Stream.generate(() -> "?").limit(v.size()).collect(Collectors.joining(", "));
         String query = "insert into " + name + "(" + columns + ") values (" + values + ")";
@@ -124,12 +125,7 @@ public class TableImpl<T> implements Table<T> {
     public CompletableFuture<Integer> update(T obj) {
         DBPredicate predicate = null;
         for(Map.Entry<String, Field> entry : primaryKeys.entrySet()) {
-            Object value;
-            try {
-                value = entry.getValue().get(obj);
-            } catch(IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+            Object value = FieldReflection.extractFunction(obj).apply(entry.getValue());
             if(predicate == null) {
                 predicate = DBPredicate.of(entry.getKey(), value);
             } else {
@@ -142,7 +138,7 @@ public class TableImpl<T> implements Table<T> {
             throw new RuntimeException("Couldn't build a predicate to update " + name);
         }
 
-        LinkedHashMap<String, Object> values = db.getValues(obj);
+        Map<String, Object> values = fieldReflection.getValueMap(obj);
         String sqlValues = values.keySet().stream()
             .filter(name -> !primaryKeys.containsKey(name))
             .map(name -> name + " = ?")

@@ -1,5 +1,6 @@
 package be.hepl.benbear.commons.db;
 
+import be.hepl.benbear.commons.reflection.FieldReflection;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 
 import java.lang.reflect.Constructor;
@@ -49,24 +50,17 @@ import java.util.stream.Collectors;
      * @param <T> the type of the object
      * @return the constructed object
      */
-    /* package */ static <T> DBToJavaMapping<T> createDBToJavaMapping(Class<T> clazz) {
-        // Collect the class fields
-        List<Field> fields = Arrays.stream(clazz.getDeclaredFields())
-            // Maybe we should only collect the fields with a specific annotation?
-            .filter(f -> !f.isSynthetic())
-            .filter(f -> !Modifier.isTransient(f.getModifiers()))
-            .collect(Collectors.toList());
-
-        // Collect the types of the collected fields
-        Class<?>[] types = fields.stream().map(Field::getType).toArray(Class[]::new);
+    /* package */ static <T> DBToJavaMapping<T> createDBToJavaMapping(FieldReflection<T> fieldReflection) {
+        List<Field> fields = fieldReflection.getFields().collect(Collectors.toList());
+        Class<?>[] types = fieldReflection.getTypes().toArray(Class[]::new);
 
         // Get a constructor matching these types
         Constructor<T> ctor;
         try {
-            ctor = clazz.getConstructor(types);
+            ctor = fieldReflection.getOwningClass().getConstructor(types);
         } catch(NoSuchMethodException e) {
             throw new RuntimeException(
-                "No constructor available to fill all the fields from " + clazz.getName()
+                "No constructor available to fill all the fields from " + fieldReflection.getOwningClass().getName()
                 + ". Prototype needs to match " + Arrays.toString(types), e);
         }
 
