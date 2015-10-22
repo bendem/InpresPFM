@@ -1,6 +1,7 @@
 package be.hepl.benbear.demojdbc;
 
 import be.hepl.benbear.commons.db.Table;
+import be.hepl.benbear.commons.reflection.FieldReflection;
 import org.jdatepicker.JDateComponentFactory;
 import org.jdatepicker.impl.JDatePickerImpl;
 
@@ -9,65 +10,51 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.swing.*;
 
-public class InsertDialog extends JDialog {
+public class InsertDialog<T> extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JPanel realContent;
-    private Table<?> table;
-    private List<Class> listClass;
-    private List<Component> listInput;
+    private final Table<T> table;
+    private final FieldReflection<T> fieldReflection;
+    private final List<Component> listInput;
 
-    public InsertDialog(Table<?> table) {
+    public InsertDialog(Table<T> table) {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
         this.table = table;
-        this.listClass = new ArrayList<>();
+        this.fieldReflection = new FieldReflection<>(table.getTableClass(), FieldReflection.NON_SYNTHETIC, FieldReflection.NON_TRANSIENT);
         this.listInput = new ArrayList<>();
 
-        List<Field> listField = Arrays.stream(table.getTableClass().getDeclaredFields())
-            .filter(f -> !f.isSynthetic())
-            .filter(f -> !Modifier.isTransient(f.getModifiers()))
-            .peek(f -> f.setAccessible(true))
-            .collect(Collectors.toList());
+        realContent.setLayout(new GridLayout(fieldReflection.count(), 2));
 
-        realContent.setLayout(new GridLayout(listField.size(), 2));
-
-        listField.forEach(field -> {
-            Class c = field.getType();
-            realContent.add(new Label(field.getName()));
+        fieldReflection.getTypeMap().forEach((name, type) -> {
+            realContent.add(new Label(name));
             Component component;
-            if (c.equals(String.class)) {
+            if(type.equals(String.class)) {
                 component = new JTextField();
-            } else if (c.equals(int.class)) {
+            } else if(type.equals(int.class)) {
                 component = new JSpinner();
             } else {
                 component = (Component) new JDateComponentFactory().createJDatePicker();
             }
-            listClass.add(c);
             listInput.add(component);
             realContent.add(component);
         });
 
         buttonOK.addActionListener(e -> onOK());
-
         buttonCancel.addActionListener(e -> onCancel());
 
-// call onCancel() when cross is clicked
+        // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -75,7 +62,7 @@ public class InsertDialog extends JDialog {
             }
         });
 
-// call onCancel() on ESCAPE
+        // call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(
             e -> onCancel(),
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
@@ -84,25 +71,20 @@ public class InsertDialog extends JDialog {
     }
 
     private void onOK() {
+        Constructor<T> constructor;
         try {
-            insertNewInstanceHelper(table);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            constructor = table
+                .getTableClass()
+                .getConstructor(fieldReflection.getTypes().toArray(Class<?>[]::new));
+        } catch(NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
-        dispose();
-    }
-
-    private <T> void insertNewInstanceHelper(Table<T> table) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Constructor<T> constructor = table
-            .getTableClass()
-            .getConstructor(listClass.toArray(new Class<?>[listClass.size()]));
 
         Object[] values = listInput.stream()
             .map(component -> {
-                Class<?> c = component.getClass();
-                if (c.equals(JTextField.class)) {
+                if (component instanceof JTextField) {
                     return ((JTextField) component).getText();
-                } else if (c.equals(JSpinner.class)) {
+                } else if (component instanceof JSpinner) {
                     return (int) ((JSpinner) component).getValue();
                 } else {
                     return new Date(((Calendar) ((JDatePickerImpl) component).getModel().getValue()).getTimeInMillis());
@@ -110,11 +92,15 @@ public class InsertDialog extends JDialog {
             })
             .toArray();
 
-        table.insert(constructor.newInstance(values));
+        try {
+            table.insert(constructor.newInstance(values));
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+        dispose();
     }
 
     private void onCancel() {
-// add your code here if necessary
         dispose();
     }
 

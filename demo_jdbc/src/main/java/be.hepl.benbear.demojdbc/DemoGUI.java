@@ -2,18 +2,13 @@ package be.hepl.benbear.demojdbc;
 
 import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.Table;
-import be.hepl.benbear.commons.streams.UncheckedLambda;
+import be.hepl.benbear.commons.reflection.FieldReflection;
 import be.hepl.benbear.trafficdb.*;
 import be.hepl.benbear.trafficdb.Container;
 
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -64,21 +59,23 @@ public class DemoGUI {
         buttonOk.addActionListener(e -> {
             currentTable = database.table((Class<?>) comboBoxTables.getSelectedItem());
             try {
-                updateSelection();
+                updateSelection(currentTable);
             } catch (ExecutionException | InterruptedException e1) {
                 e1.printStackTrace();
             }
         });
+
         buttonInsert.addActionListener(e -> {
-            InsertDialog dia = new InsertDialog(currentTable);
+            InsertDialog<?> dia = new InsertDialog<>(currentTable);
             dia.pack();
             dia.setVisible(true);
             try {
-                updateSelection();
+                updateSelection(currentTable);
             } catch (ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
+
         buttonDelete.addActionListener(e -> {
             Object[] ids = new Object[currentTable.getIdCount()];
             int index = tableData.getSelectedRow();
@@ -89,56 +86,30 @@ public class DemoGUI {
             currentTable.deleteById(ids);
 
             try {
-                updateSelection();
+                updateSelection(currentTable);
             } catch (ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
 
         buttonUpdate.addActionListener(e -> {
-
-            UpdateDialog dia = null;
-            try {
-                dia = new UpdateDialog(currentTable, updateNewInstanceHelper(currentTable, tableData.getSelectedRow()));
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e1) {
-                throw new RuntimeException(e1);
-            }
+            UpdateDialog<?> dia = new UpdateDialog<>(currentTable, collectRow(tableData.getSelectedRow()));
             dia.pack();
             dia.setVisible(true);
             try {
-                updateSelection();
+                updateSelection(currentTable);
             } catch (ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
     }
 
-    private <T> T updateNewInstanceHelper(Table<T> table, int index) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        List<Field> listField = Arrays.stream(table.getTableClass().getDeclaredFields())
-            .filter(f -> !f.isSynthetic())
-            .filter(f -> !Modifier.isTransient(f.getModifiers()))
-            .peek(f -> f.setAccessible(true))
-            .collect(Collectors.toList());
-
-        List<Class> listClass = new ArrayList<>();
-
-        listField.forEach(
-            UncheckedLambda.consumer(field -> listClass.add(field.getType()), ex -> {
-                throw new RuntimeException(ex);
-            })
-        );
-
+    private Object[] collectRow(int index) {
         Object[] values = new Object[tableData.getColumnCount()];
         for(int i = 0; i < tableData.getColumnCount(); i++) {
-            Object obj = tableData.getValueAt(index, i);
-            values[i] = obj;
+            values[i] = tableData.getValueAt(index, i);
         }
-
-        Constructor<T> constructor = table
-            .getTableClass()
-            .getConstructor(listClass.toArray(new Class<?>[listClass.size()]));
-
-        return constructor.newInstance(values);
+        return values;
     }
 
     public static void main(String[] args) throws Exception {
@@ -162,28 +133,16 @@ public class DemoGUI {
         frame.setVisible(true);
     }
 
-    public void updateSelection() throws ExecutionException, InterruptedException {
-        List<Field> listField = Arrays.stream(currentTable.getTableClass().getDeclaredFields())
-            .filter(f -> !f.isSynthetic())
-            .filter(f -> !Modifier.isTransient(f.getModifiers()))
-            .peek(f -> f.setAccessible(true))
-            .collect(Collectors.toList());
+    public <T> void updateSelection(Table<T> table) throws ExecutionException, InterruptedException {
+        FieldReflection<T> fieldReflection = new FieldReflection<>(
+            table.getTableClass(),
+            FieldReflection.NON_SYNTHETIC, FieldReflection.NON_TRANSIENT
+        );
 
-        List<String> columns = listField.stream()
-            .map(Field::getName)
-            .collect(Collectors.toList());
+        List<String> columns = fieldReflection.getNames().collect(Collectors.toList());
 
-        Object[][] data = currentTable.find().get()
-            .map(UncheckedLambda.function(o -> {
-                Object[] values = new Object[listField.size()];
-                int i = 0;
-                for (Field f : listField) {
-                    values[i++] = f.get(o);
-                }
-                return values;
-            }, ex -> {
-                throw new RuntimeException(ex);
-            }))
+        Object[][] data = table.find().get()
+            .map(o -> fieldReflection.getValues(o).toArray())
             .toArray(Object[][]::new);
 
         tableData.setModel(new DefaultTableModel(data, columns.toArray()));
