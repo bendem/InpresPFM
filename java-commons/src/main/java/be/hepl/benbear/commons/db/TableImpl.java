@@ -138,15 +138,22 @@ public class TableImpl<T> implements Table<T> {
             throw new RuntimeException("Couldn't build a predicate to update " + name);
         }
 
-        Map<String, Object> values = fieldReflection.getValueMap(obj);
-        String sqlValues = values.keySet().stream()
+        Map<String, Object> updateValues = fieldReflection.getValueMap(obj);
+        String sqlValues = updateValues.keySet().stream()
             .map(Mapping::transformName)
             .filter(name -> !primaryKeys.containsKey(name))
             .map(name -> name + " = ?")
             .collect(Collectors.joining(", "));
 
         String query = "update " + name + " set " + sqlValues + predicate.toSql();
-        return db.writeOp(() -> bind(db.connection.prepareStatement(query), values.values()));
+        List<Object> values = Stream.concat(
+            updateValues.entrySet().stream()
+                .filter(e -> !primaryKeys.containsKey(Mapping.transformName(e.getKey())))
+                .map(Map.Entry::getValue),
+            predicate.values().stream()
+        ).collect(Collectors.toList());
+
+        return db.writeOp(() -> bind(db.connection.prepareStatement(query), values));
     }
 
     @Override
