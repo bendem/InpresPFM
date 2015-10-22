@@ -56,12 +56,13 @@ public class DemoGUI {
         database.connect("jdbc:oracle:thin:@178.32.41.4:8080:xe", "dbtraffic", "bleh");
 
         comboBoxTables.setModel(new DefaultComboBoxModel<>(listClass.toArray(new Class<?>[listClass.size()])));
+        tableData.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         buttonOk.addActionListener(e -> {
             currentTable = database.table((Class<?>) comboBoxTables.getSelectedItem());
             try {
                 updateSelection();
-            } catch(ExecutionException | InterruptedException e1) {
+            } catch (ExecutionException | InterruptedException e1) {
                 e1.printStackTrace();
             }
         });
@@ -76,7 +77,7 @@ public class DemoGUI {
             public void windowClosed(WindowEvent e) {
                 try {
                     demoGUI.database.close();
-                } catch(Exception e1) {
+                } catch (Exception e1) {
                     e1.printStackTrace();
                 }
             }
@@ -102,7 +103,7 @@ public class DemoGUI {
             .map(UncheckedLambda.function(o -> {
                 Object[] values = new Object[listField.size()];
                 int i = 0;
-                for(Field f : listField) {
+                for (Field f : listField) {
                     values[i++] = f.get(o);
                 }
                 return values;
