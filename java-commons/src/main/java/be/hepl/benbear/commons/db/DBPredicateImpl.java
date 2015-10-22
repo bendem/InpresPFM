@@ -72,7 +72,9 @@ public class DBPredicateImpl implements DBPredicate {
     }
 
     private List<Object> values(List<Object> list) {
-        list.add(value);
+        if(value != null) {
+            list.add(value);
+        }
 
         if(next != null) {
             next.values(list);
