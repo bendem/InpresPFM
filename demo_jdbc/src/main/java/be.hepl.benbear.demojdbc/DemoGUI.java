@@ -68,6 +68,7 @@ public class DemoGUI {
         buttonInsert.addActionListener(e -> {
             InsertDialog<?> dia = new InsertDialog<>(currentTable);
             dia.pack();
+            dia.setLocationRelativeTo(null);
             dia.setVisible(true);
             try {
                 updateSelection(currentTable);
@@ -95,6 +96,7 @@ public class DemoGUI {
         buttonUpdate.addActionListener(e -> {
             UpdateDialog<?> dia = new UpdateDialog<>(currentTable, collectRow(tableData.getSelectedRow()));
             dia.pack();
+            dia.setLocationRelativeTo(null);
             dia.setVisible(true);
             try {
                 updateSelection(currentTable);

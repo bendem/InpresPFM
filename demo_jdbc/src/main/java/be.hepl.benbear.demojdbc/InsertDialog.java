@@ -14,6 +14,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.*;
 
@@ -82,9 +83,9 @@ public class InsertDialog<T> extends JDialog {
 
         Object[] values = listInput.stream()
             .map(component -> {
-                if (component instanceof JTextField) {
+                if(component instanceof JTextField) {
                     return ((JTextField) component).getText();
-                } else if (component instanceof JSpinner) {
+                } else if(component instanceof JSpinner) {
                     return (int) ((JSpinner) component).getValue();
                 } else {
                     return new Date(((Calendar) ((JDatePickerImpl) component).getModel().getValue()).getTimeInMillis());
@@ -93,9 +94,12 @@ public class InsertDialog<T> extends JDialog {
             .toArray();
 
         try {
-            table.insert(constructor.newInstance(values));
+            table.insert(constructor.newInstance(values)).get();
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
+        } catch(InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Insert error: " + e.getMessage());
         }
         dispose();
     }

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.*;
 
@@ -103,9 +104,12 @@ public class UpdateDialog<T> extends JDialog {
             .toArray();
 
         try {
-            table.update(constructor.newInstance(values));
+            table.update(constructor.newInstance(values)).get();
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
+        } catch(InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Update error: " + e.getMessage());
         }
         dispose();
     }
