@@ -9,8 +9,11 @@ import be.hepl.benbear.trafficdb.Container;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -85,6 +88,51 @@ public class DemoGUI {
             }
             currentTable.deleteById(ids);
         });
+
+        buttonUpdate.addActionListener(e -> {
+
+            UpdateDialog dia = null;
+            try {
+                dia = new UpdateDialog(currentTable, updateNewInstanceHelper(currentTable, tableData.getSelectedRow()));
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e1) {
+                throw new RuntimeException(e1);
+            }
+            dia.pack();
+            dia.setVisible(true);
+            try {
+                updateSelection();
+            } catch (ExecutionException | InterruptedException e1) {
+                throw new RuntimeException(e1);
+            }
+        });
+    }
+
+    private <T> T updateNewInstanceHelper(Table<T> table, int index) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        List<Field> listField = Arrays.stream(table.getTableClass().getDeclaredFields())
+            .filter(f -> !f.isSynthetic())
+            .filter(f -> !Modifier.isTransient(f.getModifiers()))
+            .peek(f -> f.setAccessible(true))
+            .collect(Collectors.toList());
+
+        List<Class> listClass = new ArrayList<>();
+
+        listField.forEach(
+            UncheckedLambda.consumer(field -> listClass.add(field.getType()), ex -> {
+                throw new RuntimeException(ex);
+            })
+        );
+
+        Object[] values = new Object[tableData.getColumnCount()];
+        for(int i = 0; i < tableData.getColumnCount(); i++) {
+            Object obj = tableData.getValueAt(index, i);
+            values[i] = obj;
+        }
+
+        Constructor<T> constructor = table
+            .getTableClass()
+            .getConstructor(listClass.toArray(new Class<?>[listClass.size()]));
+
+        return constructor.newInstance(values);
     }
 
     public static void main(String[] args) throws Exception {

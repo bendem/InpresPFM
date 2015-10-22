@@ -34,6 +34,7 @@ public class TableImpl<T> implements Table<T> {
     private LinkedHashMap<String, Field> collectPrimaryKeys(Class<T> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
             .filter(f -> f.getAnnotation(PrimaryKey.class) != null)
+            .peek(f -> f.setAccessible(true))
             .collect(Collectors.toMap(
                 f -> {
                     As as;

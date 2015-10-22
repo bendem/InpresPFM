@@ -86,7 +86,7 @@ public class InsertDialog extends JDialog {
     private void onOK() {
         try {
             insertNewInstanceHelper(table);
-        } catch(NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
         dispose();
@@ -100,12 +100,12 @@ public class InsertDialog extends JDialog {
         Object[] values = listInput.stream()
             .map(component -> {
                 Class<?> c = component.getClass();
-                if(c.equals(JTextField.class)) {
+                if (c.equals(JTextField.class)) {
                     return ((JTextField) component).getText();
-                } else if(c.equals(JSpinner.class)) {
+                } else if (c.equals(JSpinner.class)) {
                     return (int) ((JSpinner) component).getValue();
                 } else {
-                    return new Date(((Calendar)((JDatePickerImpl) component).getModel().getValue()).getTimeInMillis());
+                    return new Date(((Calendar) ((JDatePickerImpl) component).getModel().getValue()).getTimeInMillis());
                 }
             })
             .toArray();
