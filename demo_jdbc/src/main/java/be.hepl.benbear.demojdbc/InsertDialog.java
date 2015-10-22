@@ -5,8 +5,14 @@ import org.jdatepicker.JDateComponentFactory;
 import org.jdatepicker.impl.JDatePickerImpl;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -84,19 +90,33 @@ public class InsertDialog extends JDialog {
     }
 
     private void onOK() {
-        table.insert(table.getTableClass()
-            .getConstructor(listClass.toArray(new Class<?>[listClass.size()]))
-            .newInstance(listInput.stream().<Object>map(component -> {
+        try {
+            insertNewInstanceHelper(table);
+        } catch(NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        dispose();
+    }
+
+    private <T> void insertNewInstanceHelper(Table<T> table) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Constructor<T> constructor = table
+            .getTableClass()
+            .getConstructor(listClass.toArray(new Class<?>[listClass.size()]));
+
+        Object[] values = listInput.stream()
+            .map(component -> {
                 Class<?> c = component.getClass();
-                if (c.equals(JTextField.class)) {
+                if(c.equals(JTextField.class)) {
                     return ((JTextField) component).getText();
-                } else if (c.equals(JSpinner.class)) {
+                } else if(c.equals(JSpinner.class)) {
                     return (int) ((JSpinner) component).getValue();
                 } else {
                     return (Date) ((JDatePickerImpl) component).getModel().getValue();
                 }
-            }).toArray()));
-        dispose();
+            })
+            .toArray();
+
+        table.insert(constructor.newInstance(values));
     }
 
     private void onCancel() {
