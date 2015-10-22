@@ -27,12 +27,11 @@ public interface Table<T> {
      * Multiple ids can be provided so that you can use this method with tables
      * with composite primary keys.
      *
-     * @param handler a sql error handler
      * @param ids the id to match
      * @return a future that'll contain a mapped object if the id existed or
      *         nothing otherwise
      */
-    CompletableFuture<Optional<T>> byId(ErrorHandler handler, Object... ids);
+    CompletableFuture<Optional<T>> byId(Object... ids);
 
     /**
      * Inserts an object in the database.
@@ -51,6 +50,10 @@ public interface Table<T> {
      * @return a future that'll container the number of affected lines
      */
     CompletableFuture<Integer> update(T obj);
+
+    CompletableFuture<Integer> deleteById(Object...ids);
+
+    CompletableFuture<Integer> delete(DBPredicate predicate);
 
     /**
      * Retrieves a Stream lazily populated with all the rows from the table

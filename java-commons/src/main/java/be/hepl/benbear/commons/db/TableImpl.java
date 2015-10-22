@@ -4,12 +4,8 @@ import be.hepl.benbear.commons.generics.MappedMap;
 
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,7 +56,7 @@ public class TableImpl<T> implements Table<T> {
     }
 
     @Override
-    public CompletableFuture<Optional<T>> byId(ErrorHandler handler, Object... ids) {
+    public CompletableFuture<Optional<T>> byId(Object... ids) {
         if(ids.length == 0 || getIdCount() == 0 || ids.length != getIdCount()) {
             throw new IllegalArgumentException("Table has " + getIdCount() + ", got " + ids.length);
         }
@@ -85,30 +81,20 @@ public class TableImpl<T> implements Table<T> {
 
     @Override
     public CompletableFuture<Stream<T>> find(DBPredicate predicate) {
-        return db.readOp(() -> {
-            PreparedStatement stmt = db.connection.prepareStatement("select * from " + name + predicate.toSql());
-            List<Object> values = predicate.values();
-            for(int i = 0; i < values.size(); ++i) {
-                JDBCAdapter.set(stmt, i + 1, values.get(i));
-            }
-
-            return stmt;
-        }).thenApply(ResultSetAdapter.multiple(mapper, Throwable::printStackTrace)); // TODO Error handler arg
+        String query = "select * from " + name + predicate.toSql();
+        return db.readOp(() -> bind(
+            db.connection.prepareStatement(query),
+            predicate.values())
+        ).thenApply(ResultSetAdapter.multiple(mapper, Throwable::printStackTrace)); // TODO Error handler arg
     }
 
     @Override
     public CompletableFuture<Optional<T>> findOne(DBPredicate predicate) {
-        return db.readOp(() -> {
-            PreparedStatement stmt = db.connection.prepareStatement(
-                "select * from " + name + predicate.toSql());
-
-            List<Object> values = predicate.values();
-            for(int i = 0; i < values.size(); i++) {
-                JDBCAdapter.set(stmt, i + 1, values.get(i));
-            }
-
-            return stmt;
-        }).thenApply(ResultSetAdapter.unique(mapper, Throwable::printStackTrace));
+        String query = "select * from " + name + predicate.toSql();
+        return db.readOp(() -> bind(
+            db.connection.prepareStatement(query),
+            predicate.values()
+        )).thenApply(ResultSetAdapter.unique(mapper, Throwable::printStackTrace));
     }
 
     @Override
@@ -128,18 +114,9 @@ public class TableImpl<T> implements Table<T> {
         LinkedHashMap<String, Object> v = db.getValues(obj);
         String columns = v.keySet().stream().collect(Collectors.joining(", "));
         String values = Stream.generate(() -> "?").limit(v.size()).collect(Collectors.joining(", "));
+        String query = "insert into " + name + "(" + columns + ") values (" + values + ")";
 
-        return db.writeOp(() -> {
-            PreparedStatement stmt = db.connection.prepareStatement(
-                "insert into " + name + "(" + columns + ") values (" + values + ")");
-
-            int i = 0;
-            for(Object o : v.values()) {
-                JDBCAdapter.set(stmt, ++i, o);
-            }
-
-            return stmt;
-        });
+        return db.writeOp(() -> bind(db.connection.prepareStatement(query), v.values()));
     }
 
     @Override
@@ -171,17 +148,41 @@ public class TableImpl<T> implements Table<T> {
             .collect(Collectors.joining(", "));
 
         String query = "update " + name + " set " + sqlValues + predicate.toSql();
+        return db.writeOp(() -> bind(db.connection.prepareStatement(query), values.values()));
+    }
 
-        return db.writeOp(() -> {
-            PreparedStatement stmt = db.connection.prepareStatement(query);
+    @Override
+    public CompletableFuture<Integer> deleteById(Object... ids) {
+        if(ids.length == 0 || getIdCount() == 0 || ids.length != getIdCount()) {
+            throw new IllegalArgumentException("Table has " + getIdCount() + ", got " + ids.length);
+        }
 
-            int i = 0;
-            for(Object o : values.values()) {
-                JDBCAdapter.set(stmt, ++i, o);
+        DBPredicate predicate = null;
+        int i = 0;
+        for(String name : primaryKeys.keySet()) {
+            if(predicate == null) {
+                predicate = DBPredicate.of(name, ids[0]);
+            } else {
+                predicate = predicate.and(name, ids[++i]);
             }
+        }
 
-            return stmt;
-        });
+        return delete(predicate);
+    }
+
+    @Override
+    public CompletableFuture<Integer> delete(DBPredicate predicate) {
+        String query = "delete from " + name + predicate.toSql();
+        return db.writeOp(() -> bind(db.connection.prepareStatement(query), predicate.values()));
+    }
+
+    private PreparedStatement bind(PreparedStatement stmt, Collection<Object> objects) throws SQLException {
+        int i = 0;
+        for(Object o : objects) {
+            JDBCAdapter.set(stmt, ++i, o);
+        }
+
+        return stmt;
     }
 
 }
