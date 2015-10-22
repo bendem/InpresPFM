@@ -13,7 +13,8 @@ public class DemoGUI {
     private JButton buttonUpdate;
     private JPanel mainPanel;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         JFrame frame = new JFrame("DemoGUI");
         frame.setContentPane(new DemoGUI().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
