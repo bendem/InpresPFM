@@ -9,9 +9,7 @@ import be.hepl.benbear.trafficdb.User;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -34,7 +32,11 @@ public class LoginServlet extends HttpServlet {
         } catch(ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        database.connect(getInitParameter("jdbcConnection"), getInitParameter("jdbcUsername"), getInitParameter("jdbcPassword"));
+        database.connect(
+            getInitParameter("jdbcConnection"),
+            getInitParameter("jdbcUsername"),
+            getInitParameter("jdbcPassword")
+        );
     }
 
     public void destroy() {
@@ -45,7 +47,7 @@ public class LoginServlet extends HttpServlet {
         }
     }
 
-    protected void processRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, InterruptedException, ExecutionException, TimeoutException {
+    protected void processRequest(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getSession().getAttribute("logged") != null) {
             proceedToReservation(req, resp);
             return;
@@ -73,7 +75,7 @@ public class LoginServlet extends HttpServlet {
         proceedToReservation(req, resp);
     }
 
-    protected void proceedToReservation(HttpServletRequest req, HttpServletResponse resp) throws IOException, ExecutionException, InterruptedException {
+    protected void proceedToReservation(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         HttpSession sess = req.getSession();
         Object noSpace = sess.getAttribute("noSpace");
         PrintWriter out = resp.getWriter();
@@ -105,7 +107,7 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             processRequest(req, resp);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -114,7 +116,7 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             processRequest(req, resp);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

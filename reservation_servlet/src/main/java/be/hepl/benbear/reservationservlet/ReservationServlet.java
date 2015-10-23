@@ -84,7 +84,7 @@ public class ReservationServlet extends HttpServlet {
         session.setAttribute("positionx", x);
         session.setAttribute("positiony", y);
         session.setAttribute("datereservation", req.getParameter("dateArrival"));
-        session.setAttribute("destination", destinationTable.byId(Throwable::printStackTrace, req.getParameter("destination")).get().get().getCity());
+        session.setAttribute("destination", destinationTable.byId(req.getParameter("destination")).get().get().getCity());
 
         resp.sendRedirect("Reservation.jsp");
     }
