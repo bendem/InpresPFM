@@ -55,6 +55,9 @@ public class DemoGUI {
 
         comboBoxTables.setModel(new DefaultComboBoxModel<>(listClass.toArray(new Class<?>[listClass.size()])));
         tableData.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        buttonInsert.setEnabled(false);
+        buttonUpdate.setEnabled(false);
+        buttonDelete.setEnabled(false);
 
         buttonOk.addActionListener(e -> {
             currentTable = database.table((Class<?>) comboBoxTables.getSelectedItem());
@@ -63,6 +66,9 @@ public class DemoGUI {
             } catch (ExecutionException | InterruptedException e1) {
                 e1.printStackTrace();
             }
+            buttonInsert.setEnabled(true);
+            buttonUpdate.setEnabled(true);
+            buttonDelete.setEnabled(true);
         });
 
         buttonInsert.addActionListener(e -> {
