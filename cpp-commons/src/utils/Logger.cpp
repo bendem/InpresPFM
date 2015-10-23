@@ -7,6 +7,9 @@ void Logger::log(Logger::Level level, const std::string& msg, const std::string&
     std::tm* now = std::localtime(&time);
 
     std::string log_line(this->formatter(level, msg, file, line, func, now));
+
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lk(mutex);
     for(Handler handler : this->handlers) {
         handler(level, log_line);
     }
@@ -41,10 +44,24 @@ std::string Logger::levelToName(Level level) {
     throw std::logic_error("Invalid log level");
 }
 
-void Logger::consoleHandler(Level level, const std::string& log) {
-    static std::mutex mutex;
-    std::lock_guard<std::mutex> lk(mutex);
-    (level > Logger::Info ? std::cerr : std::cout) << log;
+Logger::Handler Logger::consoleHandler(uint8_t levels) {
+    return [levels](Level lvl, const std::string& log) {
+        if((levels & lvl) != lvl) {
+            return;
+        }
+        (lvl > Logger::Info ? std::cerr : std::cout) << log;
+    };
+}
+
+Logger::Handler Logger::fileHandler(const std::string& file, uint8_t levels) {
+    std::shared_ptr<std::ofstream> os(new std::ofstream(file, std::ios::app));
+    return [levels, os](Level lvl, const std::string& msg) {
+        if((levels & lvl) != lvl) {
+            return;
+        }
+        *os << msg;
+        os->flush();
+    };
 }
 
 std::string Logger::defaultFormatter(Level level, const std::string& msg, const std::string& file, int line, const std::string& func, const std::tm* time) {

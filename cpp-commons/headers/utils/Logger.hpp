@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <ctime>
+#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -18,17 +19,22 @@
 
 #define LOG LoggerStream(Logger::instance, Logger::Info, __FILE__, __LINE__, __FUNCTION__)
 
+class FileHandler;
+
 class Logger {
 
 public:
-    enum Level {
-        Debug, Info, Warning, Error
+    enum Level : uint8_t {
+        Debug   = 0x1,
+        Info    = 0x2,
+        Warning = 0x4,
+        Error   = 0x8,
     };
 
     using Handler = std::function<void(Level, const std::string&)>;
     using Formatter = std::function<std::string(Level, const std::string&, const std::string&, int, const std::string&, const std::tm*)>;
 
-    Logger() : formatter(&Logger::defaultFormatter), handlers(1, &Logger::consoleHandler) {}
+    Logger() : formatter(&Logger::defaultFormatter), handlers(1, Logger::consoleHandler()) {}
 
     void log(Level, const std::string&, const std::string& = "n/a", int = 0, const std::string& = "n/a") const;
 
@@ -40,7 +46,9 @@ public:
     static Logger instance;
 
     static std::string levelToName(Level);
-    static void consoleHandler(Level, const std::string&);
+    static Handler consoleHandler(uint8_t levels = -1);
+
+    static Handler fileHandler(const std::string& file, uint8_t levels = -1);
 
 private:
     Formatter formatter;
