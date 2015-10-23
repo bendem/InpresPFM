@@ -34,7 +34,7 @@ public class Main {
 
         // ------
         Table<Company> table = database.table(Company.class);
-        Optional<Company> comp = table.byId(Throwable::printStackTrace, 1).get(5, TimeUnit.SECONDS);
+        Optional<Company> comp = table.byId(1).get(5, TimeUnit.SECONDS);
         if(comp.isPresent()) {
             System.out.println(comp.get());
         }
