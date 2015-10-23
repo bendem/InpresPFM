@@ -38,7 +38,7 @@ public class UpdateDialog<T> extends JDialog {
 
         this.table = table;
         this.fieldReflection = new FieldReflection<>(table.getTableClass(), FieldReflection.NON_SYNTHETIC, FieldReflection.NON_TRANSIENT);
-        this.listInput = new ArrayList<>();
+        this.listInput = new ArrayList<>(fieldReflection.count());
 
         realContent.setLayout(new GridLayout(fieldReflection.count(), 2));
         int i = 0;
