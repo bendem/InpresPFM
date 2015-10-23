@@ -2,6 +2,12 @@
 #include "utils/ProgramProperties.hpp"
 
 int main(int argc, char** argv) {
+    Logger::instance
+        .clearHandlers()
+        .addHandler(Logger::consoleHandler(Logger::Warning | Logger::Error))
+        .addHandler(Logger::fileHandler("client-debug.log"))
+        .addHandler(Logger::fileHandler("client.log", Logger::Warning | Logger::Error));
+
     ProgramProperties props(argc, argv);
 
     if(props.has("h") || props.has("help")) {

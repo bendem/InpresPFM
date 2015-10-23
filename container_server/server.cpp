@@ -5,9 +5,11 @@ int main(int argc, char** argv) {
     // Logging setup
     std::cout << std::showbase << std::boolalpha;
     std::cerr << std::showbase << std::boolalpha;
-
-    // TODO Setup a file logger?
-    // TODO an argument parser?
+    Logger::instance
+        .clearHandlers()
+        .addHandler(Logger::consoleHandler(Logger::Warning | Logger::Error))
+        .addHandler(Logger::fileHandler("server-debug.log"))
+        .addHandler(Logger::fileHandler("server.log", Logger::Warning | Logger::Error));
 
     ProgramProperties props(argc, argv);
 
