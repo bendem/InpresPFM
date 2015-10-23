@@ -52,26 +52,21 @@ public class ReservationServlet extends HttpServlet {
         HttpSession session = req.getSession();
         Table<Parc> parcTable = database.table(Parc.class);
         Table<Reservation> reservationTable = database.table(Reservation.class);
-        Object logged = session.getAttribute("logged");
         String resId;
-        if (logged != null)  {
-            // TODO This would be faster db side
-            List<Reservation> reservations = reservationTable.find().get().collect(Collectors.toList());
-            Optional<Parc> qparc = parcTable.find(DBPredicate.of("container_id", null)).get()
-                .filter(p -> reservations.stream().noneMatch(r -> p.getX() == r.getX() && p.getY() == r.getY()))
-                .findFirst();
+        // TODO This would be faster db side
+        List<Reservation> reservations = reservationTable.find().get().collect(Collectors.toList());
+        Optional<Parc> qparc = parcTable.find(DBPredicate.of("container_id", null)).get()
+            .filter(p -> reservations.stream().noneMatch(r -> p.getX() == r.getX() && p.getY() == r.getY()))
+            .findFirst();
 
-            if(qparc.isPresent()) {
-                Parc parc = qparc.get();
-                resId = "R"+ Date.valueOf(req.getParameter("dateArrival"))+parc.getX()+parc.getY();
-                reservationTable.insert(new Reservation(parc.getX(), parc.getY(), Date.valueOf(req.getParameter("dateArrival")), req.getParameter("destination"), resId)).get();
-                sendConfirmation(req, resp, resId, parc.getX(), parc.getY());
-            } else {
-                session.setAttribute("noSpace", true);
-                resp.sendRedirect("ServletLog");
-            }
+        if(qparc.isPresent()) {
+            Parc parc = qparc.get();
+            resId = "R"+ Date.valueOf(req.getParameter("dateArrival"))+parc.getX()+parc.getY();
+            reservationTable.insert(new Reservation(parc.getX(), parc.getY(), Date.valueOf(req.getParameter("dateArrival")), req.getParameter("destination"), resId)).get();
+            sendConfirmation(req, resp, resId, parc.getX(), parc.getY());
         } else {
-            resp.sendRedirect("login.html");
+            session.setAttribute("noSpace", true);
+            resp.sendRedirect("ServletLog");
         }
     }
 

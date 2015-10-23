@@ -2,11 +2,7 @@
 <%
 Object resId = session.getAttribute("reservationid");
 if(resId == null) {
-    if(session.getAttribute("logged") != null) {
-        response.sendRedirect("ServletLog");
-    } else {
-        response.sendRedirect("login.html");
-    }
+    response.sendRedirect("ServletLog");
     return;
 }
 %>

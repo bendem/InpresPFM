@@ -61,4 +61,14 @@
         <welcome-file>login.html</welcome-file>
     </welcome-file-list>
 
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>be.hepl.benbear.reservationservlet.filters.AuthFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/ReservationServlet</url-pattern>
+    </filter-mapping>
+
 </web-app>
