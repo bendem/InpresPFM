@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BoatApp</string>
+    <string name="config_file">configFile</string>
+</resources>
