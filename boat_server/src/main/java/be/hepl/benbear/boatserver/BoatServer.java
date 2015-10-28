@@ -4,6 +4,8 @@ import be.hepl.benbear.accounting_db.Staff;
 import be.hepl.benbear.commons.db.DBPredicate;
 import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.SQLDatabase;
+import be.hepl.benbear.commons.db.Table;
+import be.hepl.benbear.commons.db.csv.CSVDatabase;
 import be.hepl.benbear.commons.net.Server;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 import be.hepl.benbear.iobrep.LoginPacket;
@@ -14,6 +16,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -22,10 +27,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
 
+    public static final String DATA_DIR = "data";
+
     private final Database accounting;
+    private final Database containers;
+    private final ReadWriteLock containersLock;
     private final Set<UUID> sessions;
 
     public BoatServer(int port, ExecutorService threadPool) {
@@ -46,6 +57,27 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         this.accounting = new SQLDatabase();
         this.accounting.registerClass(Staff.class);
         this.accounting.connect("jdbc:oracle:thin:@178.32.41.4:8080:xe", "accounting", "bleh");
+
+        if(!Files.isDirectory(Paths.get(DATA_DIR))) {
+            try {
+                Files.createDirectory(Paths.get(DATA_DIR));
+            } catch(IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        this.containers = new CSVDatabase();
+        this.containers.connect(DATA_DIR, null, null);
+        this.containers.registerClass(CSVContainer.class);
+        this.containersLock = new ReentrantReadWriteLock();
+        Table<CSVContainer> table = containers.table(CSVContainer.class);
+        table.insert(new CSVContainer(1, 2, "id", "destination", Instant.now()));
+        try {
+            CSVContainer c = table.findOne(DBPredicate.of("x", 1)).get().get();
+            System.out.println(String.valueOf(c.getX()) + ':' + c.getY() + ':' + c.getId() + ':' + c.getDestination() + ':' + c.getArrival());
+        } catch(InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
         this.sessions = new CopyOnWriteArraySet<>();
     }
 

@@ -1,6 +1,7 @@
 package be.hepl.benbear.commons.db.csv;
 
 import be.hepl.benbear.commons.db.AbstractDatabase;
+import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.Table;
 
 import java.nio.file.Path;
@@ -8,17 +9,33 @@ import java.nio.file.Paths;
 
 public class CSVDatabase extends AbstractDatabase {
 
-    /* package */ Path file;
+    /* package */ Path folder;
 
     @Override
-    public CSVDatabase connect(String path, String username, String password) {
-        file = Paths.get(path);
+    public <T> Database registerClass(Class<T> clazz) {
+        if(!isConnected()) {
+            throw new IllegalStateException("You need to call connect before registering classes");
+        }
+        return super.registerClass(clazz);
+    }
+
+    /**
+     * Sets the folder to find the csv files in.
+     *
+     * @param folder the path to the folder
+     * @param username ignored
+     * @param password ignored
+     * @return the Database instance
+     */
+    @Override
+    public CSVDatabase connect(String folder, String username, String password) {
+        this.folder = Paths.get(folder);
         return this;
     }
 
     @Override
     public boolean isConnected() {
-        return file != null;
+        return folder != null;
     }
 
     @Override
