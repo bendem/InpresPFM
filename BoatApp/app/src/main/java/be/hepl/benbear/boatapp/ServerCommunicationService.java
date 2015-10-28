@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +27,7 @@ public class ServerCommunicationService extends Service {
     Socket sock = null;
     ObjectInputStream ois = null;
     ObjectOutputStream oos = null;
+    UUID session;
     SharedPreferences settings;
     private final Queue<ResponsePacket> packetQueue = new ConcurrentLinkedQueue<>();
 
@@ -158,5 +160,13 @@ public class ServerCommunicationService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
+    }
+
+    public UUID getSession() {
+        return session;
+    }
+
+    public void setSession(UUID session) {
+        this.session = session;
     }
 }

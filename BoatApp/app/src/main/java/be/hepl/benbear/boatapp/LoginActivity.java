@@ -50,6 +50,7 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 if (scs.isEstablished()) {
                     EditText username = (EditText) findViewById(R.id.editTextUsername);
                     EditText password = (EditText) findViewById(R.id.editTextPassword);
@@ -82,6 +83,12 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
         super.onResume();
         Intent i = new Intent(this, ServerCommunicationService.class);
         bindService(i, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        scs.removeOnPacketReceptionListener(this);
     }
 
     @Override

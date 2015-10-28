@@ -1,6 +1,11 @@
 package be.hepl.benbear.boatapp;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -9,17 +14,33 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import be.hepl.benbear.iobrep.GetContainersResponsePacket;
+import be.hepl.benbear.iobrep.ResponsePacket;
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
+public class MainActivity extends AppCompatActivity implements PacketNotificationListener {
+    ServerCommunicationService scs = null;
+    boolean serviceConnected = false;
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            ServerCommunicationService.LocalBinder binder = (ServerCommunicationService.LocalBinder) service;
+            scs = binder.getService();
+            scs.addOnPacketReceptionListener(MainActivity.this);
+            serviceConnected = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            scs = null;
+            serviceConnected = false;
+        }
+    };
+
+    private LoadingFragment fragLoad = LoadingFragment.newInstance();
+    private UnloadingFragment fragUnload = UnloadingFragment.newInstance();
+
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
     /**
@@ -32,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Intent i = new Intent(this, ServerCommunicationService.class);
+        bindService(i, mConnection, Context.BIND_AUTO_CREATE);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
@@ -41,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
@@ -77,6 +100,26 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onPacketReception() {
+        ResponsePacket rp = scs.getPacket();
+
+        switch(rp.getId()) {
+            case GET_CONTAINERS_RESPONSE:
+                fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
+                break;
+            case CONTAINER_OUT_RESPONSE:
+                fragLoad.containerLoaded();
+                break;
+            case CONTAINER_OUT_END_RESPONSE:
+                fragLoad.clearContainerList();
+                break;
+            default:
+
+                break;
+        }
+    }
+
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -91,15 +134,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Fragment getItem(int position) {
             if (position == 0) {
-                return LoadingFragment.newInstance();
+                return fragLoad;
             } else {
-                return UnloadingFragment.newInstance();
+                return fragUnload;
             }
         }
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
             return 2;
         }
 

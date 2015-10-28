@@ -24,7 +24,8 @@
                 android:text="Boat Arrival"
                 android:id="@+id/buttonBoatArrival"
                 android:textSize="12dp"
-                android:layout_columnWeight="1"/>
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill_horizontal"/>
 
             <Button
                 android:layout_width="wrap_content"
@@ -32,7 +33,8 @@
                 android:text="Container arrival"
                 android:id="@+id/buttonContainerArrival"
                 android:textSize="12dp"
-                android:layout_columnWeight="1"/>
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill_horizontal"/>
 
             <Button
                 android:layout_width="wrap_content"
@@ -40,7 +42,8 @@
                 android:text="End container in"
                 android:id="@+id/buttonEndContainerIn"
                 android:textSize="12dp"
-                android:layout_columnWeight="1"/>
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill_horizontal"/>
         </GridLayout>
 
         <ListView
