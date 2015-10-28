@@ -1,6 +1,7 @@
 package be.hepl.benbear.demojdbc;
 
 import be.hepl.benbear.commons.db.Database;
+import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.commons.db.Table;
 import be.hepl.benbear.commons.reflection.FieldReflection;
 import be.hepl.benbear.trafficdb.*;
@@ -32,7 +33,7 @@ public class DemoGUI {
     public DemoGUI() {
         $$$setupUI$$$();
 
-        database = new Database();
+        database = new SQLDatabase();
         List<Class<?>> listClass = Arrays.asList(
             Company.class,
             Container.class,

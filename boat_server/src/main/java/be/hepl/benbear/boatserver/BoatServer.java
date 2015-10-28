@@ -3,6 +3,7 @@ package be.hepl.benbear.boatserver;
 import be.hepl.benbear.accounting_db.Staff;
 import be.hepl.benbear.commons.db.DBPredicate;
 import be.hepl.benbear.commons.db.Database;
+import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.commons.net.Server;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 import be.hepl.benbear.iobrep.LoginPacket;
@@ -42,7 +43,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
             throw new RuntimeException(e);
         }
 
-        this.accounting = new Database();
+        this.accounting = new SQLDatabase();
         this.accounting.registerClass(Staff.class);
         this.accounting.connect("jdbc:oracle:thin:@178.32.41.4:8080:xe", "accounting", "bleh");
         this.sessions = new CopyOnWriteArraySet<>();

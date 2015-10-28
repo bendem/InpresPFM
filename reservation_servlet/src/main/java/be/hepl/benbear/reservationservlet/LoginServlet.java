@@ -2,6 +2,7 @@ package be.hepl.benbear.reservationservlet;
 
 import be.hepl.benbear.commons.db.DBPredicate;
 import be.hepl.benbear.commons.db.Database;
+import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.commons.db.Table;
 import be.hepl.benbear.trafficdb.Destination;
 import be.hepl.benbear.trafficdb.User;
@@ -23,7 +24,7 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     public void init() {
-        database = new Database();
+        database = new SQLDatabase();
         database.registerClass(Destination.class);
         database.registerClass(User.class);
 

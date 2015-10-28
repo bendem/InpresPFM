@@ -1,6 +1,7 @@
 package be.hepl.benbear.reservationapp;
 
 import be.hepl.benbear.commons.db.Database;
+import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.commons.db.Table;
 import be.hepl.benbear.trafficdb.Company;
 import be.hepl.benbear.trafficdb.Container;
@@ -46,7 +47,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         // TODO Arg parsing
-        try(Database db = new Database()) {
+        try(Database db = new SQLDatabase()) {
             new Main(db);
         }
     }

@@ -1,116 +1,17 @@
 package be.hepl.benbear.commons.db;
 
-import be.hepl.benbear.commons.generics.Tuple;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
-// TODO Doc
-public class Database implements AutoCloseable {
+public interface Database extends AutoCloseable {
 
-    // I'm against this, a thread pool would make much more sense
-    // but they made me do it...
-    private final Tuple<Thread, DBRunnable<ResultSet>> readWorker;
-    private final Tuple<Thread, DBRunnable<Integer>> writeWorker;
-    private final Map<Class<?>, Table<?>> tables;
-    /* package */ Connection connection;
+    SQLDatabase connect(String jdbc, String username, String password);
 
-    // Someone told me this should be a bean, so there you go, empty constructor
-    public Database() {
-        DBRunnable<ResultSet> read = new DBRunnable<>();
-        readWorker = new Tuple<>(new Thread(read), read);
+    <T> SQLDatabase registerClass(Class<T> clazz);
 
-        DBRunnable<Integer> write = new DBRunnable<>();
-        writeWorker = new Tuple<>(new Thread(write), write);
+    Set<String> getRegisteredTables();
 
-        tables = new ConcurrentHashMap<>();
-    }
+    <T> Table<T> table(Class<T> clazz);
 
-    public Database connect(String jdbc, String username, String password) {
-        if(isConnected()) {
-            throw new IllegalStateException("Already connected");
-        }
-
-        try {
-            connection = DriverManager.getConnection(jdbc, username, password);
-        } catch(SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        readWorker.first.start();
-        writeWorker.first.start();
-
-        return this;
-    }
-
-    public <T> Database registerClass(Class<T> clazz) {
-        TableImpl<T> table = new TableImpl<>(clazz, this);
-        tables.put(clazz, table);
-        return this;
-    }
-
-    public Set<String> getRegisteredTables() {
-        return tables.values().stream().map(Table::getName).collect(Collectors.toSet());
-    }
-
-    public <T> Table<T> table(Class<T> clazz) {
-        Table<?> table = tables.get(clazz);
-        if(table == null) {
-            throw new IllegalArgumentException("Unknown mapping for " + clazz.getName());
-        }
-
-        return (Table<T>) table;
-    }
-
-    public boolean isConnected() {
-        try {
-            return connection != null && !connection.isClosed();
-        } catch(SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /* package */ CompletableFuture<ResultSet> readOp(DBOperationSupplier supplier) {
-        if(!isConnected()) {
-            throw new IllegalStateException("Not connected");
-        }
-
-        return readWorker.second.add(() -> supplier.supply().executeQuery());
-    }
-
-    /* package */ CompletableFuture<Integer> writeOp(DBOperationSupplier supplier) {
-        if(!isConnected()) {
-            throw new IllegalStateException("Not connected");
-        }
-
-        return writeWorker.second.add(() -> {
-            try(PreparedStatement stmt = supplier.supply()) {
-                return stmt.executeUpdate();
-            }
-        });
-    }
-
-    @Override
-    public void close() throws Exception {
-        if(!isConnected()) {
-            return;
-        }
-
-        readWorker.first.interrupt();
-        writeWorker.first.interrupt();
-
-        readWorker.first.join();
-        writeWorker.first.join();
-
-        connection.close();
-    }
+    boolean isConnected();
 
 }
