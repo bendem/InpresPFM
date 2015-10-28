@@ -14,7 +14,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
 
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -153,11 +152,12 @@ public class LoadingFragment extends Fragment {
         loadedContainerPosition = position;
     }
 
-    public void containerLoaded() {
-        list.remove(loadedContainerPosition);
+    public Container containerLoaded() {
+        Container cont = list.remove(loadedContainerPosition);
         adapter.notifyDataSetChanged();
         listview.setEnabled(true);
         // TODO Save in SQLite
+        return cont;
     }
 
     public void clearContainerList() {

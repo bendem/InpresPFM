@@ -169,7 +169,6 @@ public class UnloadingFragment extends Fragment {
     public void containerUnloaded(Container container) {
         list.add(container);
         adapter.notifyDataSetChanged();
-        // TODO Save in SQLite
     }
 
     public void clearContainerList() {

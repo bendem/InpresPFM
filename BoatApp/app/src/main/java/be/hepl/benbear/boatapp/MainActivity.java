@@ -16,6 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.sql.SQLException;
+import java.util.Calendar;
+
 import be.hepl.benbear.iobrep.Container;
 import be.hepl.benbear.iobrep.ContainerInResponsePacket;
 import be.hepl.benbear.iobrep.GetContainersResponsePacket;
@@ -23,6 +26,7 @@ import be.hepl.benbear.iobrep.ResponsePacket;
 
 public class MainActivity extends AppCompatActivity implements PacketNotificationListener {
     /*package*/ ServerCommunicationService scs = null;
+    private ContainerMoveDAO containerMoveDAO;
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -64,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        containerMoveDAO = new ContainerMoveDAO(this);
     }
 
 
@@ -103,7 +109,14 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
                 break;
             case CONTAINER_OUT_RESPONSE:
-                fragLoad.containerLoaded();
+                Container contOut = fragLoad.containerLoaded();
+                try {
+                    containerMoveDAO.open();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                containerMoveDAO.addContainerMove(contOut.getId(), contOut.getDestination(), Calendar.getInstance().getTime().getTime(), "OUT");
+                containerMoveDAO.close();
                 break;
             case CONTAINER_OUT_END_RESPONSE:
                 fragLoad.clearContainerList();
@@ -112,7 +125,15 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 Toast.makeText(this, "Boat arrival recorded", Toast.LENGTH_SHORT);
                 break;
             case CONTAINER_IN_RESPONSE:
-                fragUnload.containerUnloaded(((ContainerInResponsePacket)rp).getContainer());
+                Container contIn = ((ContainerInResponsePacket)rp).getContainer();
+                fragUnload.containerUnloaded(contIn);
+                try {
+                    containerMoveDAO.open();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                containerMoveDAO.addContainerMove(contIn.getId(), contIn.getDestination(), Calendar.getInstance().getTime().getTime(), "IN");
+                containerMoveDAO.close();
                 break;
             case CONTAINER_IN_END_RESPONSE:
                 fragUnload.clearContainerList();
