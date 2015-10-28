@@ -99,6 +99,11 @@ public interface DBPredicate {
     String toSql();
 
     /**
+     * Returns the fields corresponding to this query
+     */
+    List<String> fields();
+
+    /**
      * Returns the values to bind to this the generated sql predicate.
      */
     List<Object> values();

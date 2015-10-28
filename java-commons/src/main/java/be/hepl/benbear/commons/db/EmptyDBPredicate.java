@@ -25,6 +25,11 @@ import java.util.List;
     }
 
     @Override
+    public List<String> fields() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public List<Object> values() {
         return Collections.emptyList();
     }

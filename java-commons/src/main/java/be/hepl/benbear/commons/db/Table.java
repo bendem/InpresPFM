@@ -51,8 +51,24 @@ public interface Table<T> {
      */
     CompletableFuture<Integer> update(T obj);
 
+    /**
+     * Deletes a single row by its id. The number of ids provided need to match
+     * the value returned by getIdCount.
+     *
+     * Multiple ids can be provided so that you can use this method with tables
+     * with composite primary keys.
+     *
+     * @param ids the id to match
+     * @return a future that'll container the number of affected lines
+     */
     CompletableFuture<Integer> deleteById(Object...ids);
 
+    /**
+     * Deletes rows based on a predicate.
+     *
+     * @param predicate the predicate
+     * @return the amount of rows deleted
+     */
     CompletableFuture<Integer> delete(DBPredicate predicate);
 
     /**

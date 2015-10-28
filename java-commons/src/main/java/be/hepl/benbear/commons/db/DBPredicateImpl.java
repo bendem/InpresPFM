@@ -36,7 +36,7 @@ public class DBPredicateImpl implements DBPredicate {
 
     @Override
     public String toSql() {
-        if(this.first == this) {
+        if(first == this) {
             return toSql(new StringBuilder(" where ")).toString();
         }
 
@@ -49,7 +49,7 @@ public class DBPredicateImpl implements DBPredicate {
             .append(' ')
             .append(comparison)
             .append(' ')
-            .append(value == null ? "null" : "?");
+            .append("?");
 
         if(next != null) {
             builder
@@ -63,6 +63,25 @@ public class DBPredicateImpl implements DBPredicate {
     }
 
     @Override
+    public List<String> fields() {
+        if(first == this) {
+            return fields(new ArrayList<>());
+        }
+
+        return first.fields(new ArrayList<>());
+    }
+
+    private List<String> fields(List<String> list) {
+        list.add(field);
+
+        if(next != null) {
+            next.fields(list);
+        }
+
+        return list;
+    }
+
+    @Override
     public List<Object> values() {
         if(first == this) {
             return values(new ArrayList<>());
@@ -72,9 +91,7 @@ public class DBPredicateImpl implements DBPredicate {
     }
 
     private List<Object> values(List<Object> list) {
-        if(value != null) {
-            list.add(value);
-        }
+        list.add(value);
 
         if(next != null) {
             next.values(list);

@@ -29,7 +29,7 @@ public class SQLDatabase extends AbstractDatabase {
 
     @Override
     protected <T> Table<T> createTable(Class<T> clazz) {
-        return new TableImpl<>(clazz, this);
+        return new SQLTable<>(clazz, this);
     }
 
     @Override

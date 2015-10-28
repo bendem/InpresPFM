@@ -13,34 +13,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class TableImpl<T> extends AbstractTable<T> {
+public class SQLTable<T> extends AbstractTable<T> {
 
     private final Mapping.DBToJavaMapping<T> mapper;
     private final SQLDatabase db;
 
-    protected TableImpl(Class<T> clazz, SQLDatabase db) {
+    protected SQLTable(Class<T> clazz, SQLDatabase db) {
         super(clazz);
         this.mapper = Mapping.createDBToJavaMapping(fieldReflection);
         this.db = db;
-    }
-
-    @Override
-    public CompletableFuture<Optional<T>> byId(Object... ids) {
-        if(ids.length == 0 || getIdCount() == 0 || ids.length != getIdCount()) {
-            throw new IllegalArgumentException("Table has " + getIdCount() + ", got " + ids.length);
-        }
-
-        DBPredicate predicate = null;
-        int i = 0;
-        for(String name : primaryKeys.keySet()) {
-            if(predicate == null) {
-                predicate = DBPredicate.of(name, ids[0]);
-            } else {
-                predicate = predicate.and(name, ids[++i]);
-            }
-        }
-
-        return findOne(predicate);
     }
 
     @Override
@@ -104,25 +85,6 @@ public class TableImpl<T> extends AbstractTable<T> {
         ).collect(Collectors.toList());
 
         return db.writeOp(() -> bind(db.connection.prepareStatement(query), values));
-    }
-
-    @Override
-    public CompletableFuture<Integer> deleteById(Object... ids) {
-        if(ids.length == 0 || getIdCount() == 0 || ids.length != getIdCount()) {
-            throw new IllegalArgumentException("Table has " + getIdCount() + ", got " + ids.length);
-        }
-
-        DBPredicate predicate = null;
-        int i = 0;
-        for(String name : primaryKeys.keySet()) {
-            if(predicate == null) {
-                predicate = DBPredicate.of(name, ids[0]);
-            } else {
-                predicate = predicate.and(name, ids[++i]);
-            }
-        }
-
-        return delete(predicate);
     }
 
     @Override
