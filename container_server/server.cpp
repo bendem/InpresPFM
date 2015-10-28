@@ -2,16 +2,16 @@
 #include "utils/ProgramProperties.hpp"
 
 int main(int argc, char** argv) {
+    ProgramProperties props(argc, argv);
+
     // Logging setup
     std::cout << std::showbase << std::boolalpha;
     std::cerr << std::showbase << std::boolalpha;
     Logger::instance
         .clearHandlers()
-        .addHandler(Logger::consoleHandler(Logger::Warning | Logger::Error))
+        .addHandler(Logger::consoleHandler(props.has("v") ? -1 : Logger::Warning | Logger::Error))
         .addHandler(Logger::fileHandler("server-debug.log"))
         .addHandler(Logger::fileHandler("server.log", Logger::Warning | Logger::Error));
-
-    ProgramProperties props(argc, argv);
 
     if(props.has("h") || props.has("help")) {
         std::cout << "Usage: " << argv[0] << " --port=<port> --parc-file=<parc_file> --user-file<user_file>" << std::endl;
