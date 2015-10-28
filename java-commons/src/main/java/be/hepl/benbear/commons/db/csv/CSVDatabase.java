@@ -7,6 +7,9 @@ import be.hepl.benbear.commons.db.Table;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * This implementation of Database is not thread safe!
+ */
 public class CSVDatabase extends AbstractDatabase {
 
     /* package */ Path folder;
