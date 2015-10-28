@@ -1,7 +1,7 @@
 package be.hepl.benbear.protocol.tramap;
 
-import be.hepl.benbear.commons.net.BinarySerializer;
-import be.hepl.benbear.commons.net.ObjectSerializer;
+import be.hepl.benbear.commons.serialization.BinarySerializer;
+import be.hepl.benbear.commons.serialization.ObjectSerializer;
 
 public class Movement {
 
