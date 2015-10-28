@@ -24,14 +24,14 @@ import be.hepl.benbear.iobrep.ResponsePacket;
 
 public class ServerCommunicationService extends Service {
     private final IBinder mBinder = new LocalBinder();
-    Socket sock = null;
-    ObjectInputStream ois = null;
-    ObjectOutputStream oos = null;
-    UUID session;
-    SharedPreferences settings;
+    private Socket sock = null;
+    private ObjectInputStream ois = null;
+    private ObjectOutputStream oos = null;
+    private UUID session;
+    private SharedPreferences settings;
     private final Queue<ResponsePacket> packetQueue = new ConcurrentLinkedQueue<>();
 
-    ArrayList<PacketNotificationListener> listeners = new ArrayList<PacketNotificationListener> ();
+    private ArrayList<PacketNotificationListener> listeners = new ArrayList<PacketNotificationListener> ();
 
     public void addOnPacketReceptionListener(PacketNotificationListener listener) {
         this.listeners.add(listener);

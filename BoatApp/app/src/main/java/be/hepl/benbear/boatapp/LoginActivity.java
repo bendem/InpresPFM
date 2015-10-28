@@ -20,21 +20,18 @@ import be.hepl.benbear.iobrep.LoginPacket;
 import be.hepl.benbear.iobrep.ResponsePacket;
 
 public class LoginActivity extends AppCompatActivity implements PacketNotificationListener{
-    ServerCommunicationService scs = null;
-    boolean serviceConnected = false;
+    private ServerCommunicationService scs = null;
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             ServerCommunicationService.LocalBinder binder = (ServerCommunicationService.LocalBinder) service;
             scs = binder.getService();
             scs.addOnPacketReceptionListener(LoginActivity.this);
-            serviceConnected = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             scs = null;
-            serviceConnected = false;
         }
     };
 

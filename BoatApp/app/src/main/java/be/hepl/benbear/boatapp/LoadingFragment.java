@@ -43,10 +43,10 @@ import be.hepl.benbear.iobrep.GetContainersPacket;
 public class LoadingFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
-    final LinkedList<Container> list = new LinkedList<Container>();
-    ListView listview;
-    ContainerArrayAdapter adapter;
-    int loadedContainerPosition;
+    private final LinkedList<Container> list = new LinkedList<Container>();
+    private ListView listview;
+    private ContainerArrayAdapter adapter;
+    private int loadedContainerPosition;
 
 
 
@@ -142,7 +142,7 @@ public class LoadingFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 new AlertDialog.Builder(getActivity())
                         .setTitle("Load container")
-                        .setMessage("Do you want to load the container?")
+                        .setMessage("Do you want to load the container \""+ list.get(position).getId() +"\" ?")
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

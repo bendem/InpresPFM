@@ -20,21 +20,18 @@ import be.hepl.benbear.iobrep.GetContainersResponsePacket;
 import be.hepl.benbear.iobrep.ResponsePacket;
 
 public class MainActivity extends AppCompatActivity implements PacketNotificationListener {
-    ServerCommunicationService scs = null;
-    boolean serviceConnected = false;
+    /*package*/ ServerCommunicationService scs = null;
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             ServerCommunicationService.LocalBinder binder = (ServerCommunicationService.LocalBinder) service;
             scs = binder.getService();
             scs.addOnPacketReceptionListener(MainActivity.this);
-            serviceConnected = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             scs = null;
-            serviceConnected = false;
         }
     };
 
@@ -65,16 +62,6 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
     }
 
 
