@@ -1,0 +1,48 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="be.hepl.benbear.boatapp.LoadingFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:columnCount="2"
+            android:rowCount="1">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Get containers"
+                android:id="@+id/buttonGetContainers"
+                android:layout_row="0"
+                android:layout_column="0"
+                android:layout_columnWeight="1"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="End container out"
+                android:id="@+id/buttonEndContainerOut"
+                android:layout_row="0"
+                android:layout_column="1"
+                android:layout_columnWeight="1"/>
+        </GridLayout>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/listViewLoading"
+            android:layout_gravity="center_horizontal"
+            android:choiceMode="singleChoice"/>
+    </LinearLayout>
+</FrameLayout>

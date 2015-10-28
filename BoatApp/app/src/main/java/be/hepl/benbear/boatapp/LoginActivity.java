@@ -16,18 +16,25 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-public class LoginActivity extends AppCompatActivity{
-    private ServerCommunicationService scs;
+import be.hepl.benbear.iobrep.LoginPacket;
+import be.hepl.benbear.iobrep.ResponsePacket;
+
+public class LoginActivity extends AppCompatActivity implements PacketNotificationListener{
+    ServerCommunicationService scs = null;
+    boolean serviceConnected = false;
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             ServerCommunicationService.LocalBinder binder = (ServerCommunicationService.LocalBinder) service;
             scs = binder.getService();
+            scs.addOnPacketReceptionListener(LoginActivity.this);
+            serviceConnected = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            scs = null;
+            serviceConnected = false;
         }
     };
 
@@ -43,20 +50,30 @@ public class LoginActivity extends AppCompatActivity{
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText username = (EditText) findViewById(R.id.editTextUsername);
-                EditText password = (EditText) findViewById(R.id.editTextPassword);
-                try {
-                    sendLogin(username.getText().toString(), password.getText().toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (scs.isEstablished()) {
+                    EditText username = (EditText) findViewById(R.id.editTextUsername);
+                    EditText password = (EditText) findViewById(R.id.editTextPassword);
+                    try {
+                        sendLogin(username.getText().toString(), password.getText().toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this, "Can't reach the server", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+        scs.removeOnPacketReceptionListener(this);
         unbindService(mConnection);
     }
 
@@ -86,24 +103,32 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Toast.makeText(this,"Got results, doing stuff", Toast.LENGTH_LONG).show();
+        Toast.makeText(this,"Got result, re-create the connection accordingly", Toast.LENGTH_LONG).show();
 
         scs.establishConnection();
     }
 
     private void sendLogin(String username, String password) throws IOException {
-        boolean logged = true;
+        scs.writePacket(new LoginPacket(username, password));
+    }
 
+    @Override
+    public void onPacketReception() {
+        ResponsePacket rp = scs.getPacket();
 
-        // TODO Send login stuff
-        // scs.sendPacket(); or something
-        // TODO Receive confirmation or denial in "logged"
+        switch(rp.getId()) {
+            case LOGIN_RESPONSE:
+                if(rp.isOk()) {
+                    scs.removeOnPacketReceptionListener(this);
+                    startActivity(new Intent(this, MainActivity.class));
+                } else {
+                    Toast.makeText(this,"Bad login.", Toast.LENGTH_LONG).show();
+                }
+                break;
+            default:
 
-
-        if (logged) {
-            startActivity(new Intent(this, MainActivity.class));
-        } else {
-            Toast.makeText(this,"Bad login.", Toast.LENGTH_LONG).show();
+                break;
         }
+
     }
 }
