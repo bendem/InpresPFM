@@ -1,27 +1,20 @@
 package be.hepl.benbear.boatapp;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import java.sql.Date;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -62,11 +55,6 @@ public class LoadingFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        list.add(new Container(0, 0, "Container1", "Paris", Calendar.getInstance().getTime()));
-        list.add(new Container(0, 1, "Container2", "Rome", Calendar.getInstance().getTime()));
-        list.add(new Container(1, 0, "Container3", "Londres", Calendar.getInstance().getTime()));
-        list.add(new Container(1, 1, "Container4", "Bruxelles", Calendar.getInstance().getTime()));
     }
 
     @Override
@@ -77,8 +65,6 @@ public class LoadingFragment extends Fragment {
         adapter = new ContainerArrayAdapter(v.getContext(),
                 android.R.layout.simple_expandable_list_item_1, list);
         listview.setAdapter(adapter);
-
-        adapter.notifyDataSetChanged();
 
         // Get Container Click
         ((Button)v.findViewById(R.id.buttonGetContainers)).setOnClickListener(new View.OnClickListener() {
@@ -142,7 +128,7 @@ public class LoadingFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 new AlertDialog.Builder(getActivity())
                         .setTitle("Load container")
-                        .setMessage("Do you want to load the container \""+ list.get(position).getId() +"\" ?")
+                        .setMessage("Do you want to load the container \"" + list.get(position).getId() + "\" ?")
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -171,6 +157,7 @@ public class LoadingFragment extends Fragment {
         list.remove(loadedContainerPosition);
         adapter.notifyDataSetChanged();
         listview.setEnabled(true);
+        // TODO Save in SQLite
     }
 
     public void clearContainerList() {
@@ -213,24 +200,5 @@ public class LoadingFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
-    }
-
-    private class ContainerArrayAdapter extends ArrayAdapter<Container> {
-
-        HashMap<Container, Integer> mIdMap = new HashMap<>();
-
-        public ContainerArrayAdapter(Context context, int textViewResourceId,
-                                  List<Container> objects) {
-            super(context, textViewResourceId, objects);
-            for (int i = 0; i < objects.size(); ++i) {
-                mIdMap.put(objects.get(i), i);
-            }
-        }
-
-        @Override
-        public long getItemId(int position) {
-            Container item = getItem(position);
-            return mIdMap.get(item);
-        }
     }
 }

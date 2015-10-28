@@ -17,6 +17,7 @@ import android.widget.Toast;
 import java.io.IOException;
 
 import be.hepl.benbear.iobrep.LoginPacket;
+import be.hepl.benbear.iobrep.LoginResponsePacket;
 import be.hepl.benbear.iobrep.ResponsePacket;
 
 public class LoginActivity extends AppCompatActivity implements PacketNotificationListener{
@@ -124,9 +125,10 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
             case LOGIN_RESPONSE:
                 if(rp.isOk()) {
                     scs.removeOnPacketReceptionListener(this);
+                    scs.setSession(((LoginResponsePacket)rp).getSession());
                     startActivity(new Intent(this, MainActivity.class));
                 } else {
-                    Toast.makeText(this,"Bad login.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, rp.getReason(), Toast.LENGTH_LONG).show();
                 }
                 break;
             default:

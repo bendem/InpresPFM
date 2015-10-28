@@ -1,12 +1,24 @@
 package be.hepl.benbear.boatapp;
 
-import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+
+import java.util.Calendar;
+import java.util.LinkedList;
+
+import be.hepl.benbear.iobrep.BoatArrivedPacket;
+import be.hepl.benbear.iobrep.Container;
+import be.hepl.benbear.iobrep.ContainerInEndPacket;
+import be.hepl.benbear.iobrep.ContainerInPacket;
 
 
 /**
@@ -18,7 +30,12 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class UnloadingFragment extends Fragment {
+
     private OnFragmentInteractionListener mListener;
+    private final LinkedList<Container> list = new LinkedList<Container>();
+    private ListView listview;
+    private ContainerArrayAdapter adapter;
+    private int loadedContainerPosition;
 
     public static UnloadingFragment newInstance() {
         UnloadingFragment fragment = new UnloadingFragment();
@@ -36,10 +53,104 @@ public class UnloadingFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_unloading, container, false);
+        //((MainActivity)getActivity()).scs.isEstablished()
+        View v = inflater.inflate(R.layout.fragment_unloading, container, false);
+        listview = (ListView) v.findViewById(R.id.listViewUnloading);
+        adapter = new ContainerArrayAdapter(v.getContext(),
+                android.R.layout.simple_expandable_list_item_1, list);
+        listview.setAdapter(adapter);
+
+        // Boat Arrival Click
+        ((Button)v.findViewById(R.id.buttonBoatArrival)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final View inputView = inflater.inflate(R.layout.boatarrival_layout, container, false);
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("Boat arrival")
+                        .setView(inputView)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String id = ((EditText) inputView.findViewById(R.id.editTextBoatId)).getText().toString();
+                                String dest = ((EditText) inputView.findViewById(R.id.editTextDestination)).getText().toString();
+                                if (!"".equals(dest) && !"".equals(id)) {
+                                    try {
+                                        ((MainActivity) getActivity()).scs.writePacket(
+                                                new BoatArrivedPacket(((MainActivity) getActivity()).scs.getSession(), id, dest));
+                                    } catch (ProtocolException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        }).show();
+            }
+        });
+
+        // Container Arrival Click
+        ((Button)v.findViewById(R.id.buttonContainerArrival)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final View inputView = inflater.inflate(R.layout.containerin_layout, container, false);
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("Container arrival")
+                        .setView(inputView)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String id = ((EditText) inputView.findViewById(R.id.editTextContainerId)).getText().toString();
+                                String dest = ((EditText) inputView.findViewById(R.id.editTextContainerDestination)).getText().toString();
+                                if (!"".equals(dest) && !"".equals(id)) {
+                                    try {
+                                        ((MainActivity) getActivity()).scs.writePacket(
+                                                new ContainerInPacket(((MainActivity) getActivity()).scs.getSession(),
+                                                        new Container(-1, -1, id, dest, Calendar.getInstance().getTime())));
+                                    } catch (ProtocolException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        }).show();
+            }
+        });
+
+        // End Container In Click
+        ((Button) v.findViewById(R.id.buttonEndContainerIn)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("End unloading container")
+                        .setMessage("Do you want to stop unloading containers?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                try {
+                                    ((MainActivity) getActivity()).scs.writePacket(
+                                            new ContainerInEndPacket(((MainActivity) getActivity()).scs.getSession()));
+                                } catch (ProtocolException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            }
+        });
+
+        return v;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -53,6 +164,17 @@ public class UnloadingFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    public void containerUnloaded(Container container) {
+        list.add(container);
+        adapter.notifyDataSetChanged();
+        // TODO Save in SQLite
+    }
+
+    public void clearContainerList() {
+        list.clear();
+        adapter.notifyDataSetChanged();
     }
 
     /**

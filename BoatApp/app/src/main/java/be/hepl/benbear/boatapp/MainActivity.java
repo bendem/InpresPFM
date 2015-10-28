@@ -16,6 +16,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import be.hepl.benbear.iobrep.Container;
+import be.hepl.benbear.iobrep.ContainerInResponsePacket;
 import be.hepl.benbear.iobrep.GetContainersResponsePacket;
 import be.hepl.benbear.iobrep.ResponsePacket;
 
@@ -91,6 +93,11 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
     public void onPacketReception() {
         ResponsePacket rp = scs.getPacket();
 
+        if (!rp.isOk()) {
+            // Check the error
+            // Most likely return to Login Activity
+        }
+
         switch(rp.getId()) {
             case GET_CONTAINERS_RESPONSE:
                 fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
@@ -100,6 +107,15 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 break;
             case CONTAINER_OUT_END_RESPONSE:
                 fragLoad.clearContainerList();
+                break;
+            case BOAT_ARRIVED_RESPONSE:
+                Toast.makeText(this, "Boat arrival recorded", Toast.LENGTH_SHORT);
+                break;
+            case CONTAINER_IN_RESPONSE:
+                fragUnload.containerUnloaded(((ContainerInResponsePacket)rp).getContainer());
+                break;
+            case CONTAINER_IN_END_RESPONSE:
+                fragUnload.clearContainerList();
                 break;
             default:
 
