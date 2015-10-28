@@ -4,9 +4,9 @@ import java.util.Set;
 
 public interface Database extends AutoCloseable {
 
-    SQLDatabase connect(String jdbc, String username, String password);
+    Database connect(String jdbc, String username, String password);
 
-    <T> SQLDatabase registerClass(Class<T> clazz);
+    <T> Database registerClass(Class<T> clazz);
 
     Set<String> getRegisteredTables();
 
