@@ -1,6 +1,8 @@
-package be.hepl.benbear.commons.net;
+package be.hepl.benbear.commons.protocol;
 
 import be.hepl.benbear.commons.checking.Sanity;
+import be.hepl.benbear.commons.serialization.BinarySerializer;
+import be.hepl.benbear.commons.serialization.ObjectSerializer;
 
 import java.io.IOException;
 import java.io.InputStream;

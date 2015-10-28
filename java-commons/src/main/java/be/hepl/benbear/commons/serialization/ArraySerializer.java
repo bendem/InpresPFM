@@ -1,4 +1,4 @@
-package be.hepl.benbear.commons.net;
+package be.hepl.benbear.commons.serialization;
 
 import be.hepl.benbear.commons.checking.Sanity;
 

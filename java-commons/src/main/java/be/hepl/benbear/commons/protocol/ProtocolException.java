@@ -1,4 +1,4 @@
-package be.hepl.benbear.commons.net;
+package be.hepl.benbear.commons.protocol;
 
 import java.io.IOException;
 
