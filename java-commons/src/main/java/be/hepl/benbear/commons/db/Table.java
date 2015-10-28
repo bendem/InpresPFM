@@ -61,7 +61,9 @@ public interface Table<T> {
      *
      * @return a future that'll be populated with a lazy Stream
      */
-    CompletableFuture<Stream<T>> find();
+    default CompletableFuture<Stream<T>> find() {
+        return find(DBPredicate.empty());
+    }
 
     /**
      * Retrieves a Stream lazily populated with all the rows from the table

@@ -1,60 +1,27 @@
 package be.hepl.benbear.commons.db;
 
-import be.hepl.benbear.commons.generics.MappedMap;
 import be.hepl.benbear.commons.reflection.FieldReflection;
 
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class TableImpl<T> implements Table<T> {
+public class TableImpl<T> extends AbstractTable<T> {
 
-    private final Class<T> clazz;
-    private final String name;
     private final Mapping.DBToJavaMapping<T> mapper;
     private final SQLDatabase db;
-    private final Map<String, Field> primaryKeys; // name, field
-    private final FieldReflection<T> fieldReflection;
 
     protected TableImpl(Class<T> clazz, SQLDatabase db) {
-        DBTable annotation = clazz.getAnnotation(DBTable.class);
-        if(annotation == null) {
-            throw new IllegalArgumentException("Class '" + clazz.getName() + "' is not annotated with @" + DBTable.class.getName());
-        }
-
-        this.clazz = clazz;
-        this.name = annotation.value();
-        this.fieldReflection = new FieldReflection<>(clazz, FieldReflection.NON_TRANSIENT, FieldReflection.NON_SYNTHETIC);
-        this.primaryKeys = Collections.unmodifiableMap(collectPrimaryKeys());
+        super(clazz);
         this.mapper = Mapping.createDBToJavaMapping(fieldReflection);
         this.db = db;
-    }
-
-    private LinkedHashMap<String, Field> collectPrimaryKeys() {
-        return fieldReflection.getFields(f -> f.getAnnotation(PrimaryKey.class) != null)
-            .collect(Collectors.toMap(
-                f -> {
-                    As as;
-                    return (as = f.getAnnotation(As.class)) == null ? Mapping.transformName(f.getName()) : as.value();
-                },
-                f -> f,
-                (a, b) -> a,
-                LinkedHashMap::new
-            ));
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public Class<T> getTableClass() {
-        return clazz;
     }
 
     @Override
@@ -77,11 +44,6 @@ public class TableImpl<T> implements Table<T> {
     }
 
     @Override
-    public CompletableFuture<Stream<T>> find() {
-        return find(DBPredicate.empty());
-    }
-
-    @Override
     public CompletableFuture<Stream<T>> find(DBPredicate predicate) {
         String query = "select * from " + name + predicate.toSql();
         return db.readOp(() -> bind(
@@ -97,18 +59,6 @@ public class TableImpl<T> implements Table<T> {
             db.connection.prepareStatement(query),
             predicate.values()
         )).thenApply(ResultSetAdapter.unique(mapper, Throwable::printStackTrace));
-    }
-
-    @Override
-    public int getIdCount() {
-        return primaryKeys.size();
-    }
-
-    @Override
-    public Map<String, Class<?>> getIdFields() {
-        return new MappedMap<>(primaryKeys, Field::getType, t -> {
-            throw new UnsupportedOperationException();
-        });
     }
 
     @Override

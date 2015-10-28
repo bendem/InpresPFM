@@ -7,20 +7,15 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 // TODO Doc
-public class SQLDatabase implements Database {
+public class SQLDatabase extends AbstractDatabase {
 
     // I'm against this, a thread pool would make much more sense
     // but they made me do it...
     private final Tuple<Thread, DBRunnable<ResultSet>> readWorker;
     private final Tuple<Thread, DBRunnable<Integer>> writeWorker;
-    private final Map<Class<?>, Table<?>> tables;
     /* package */ Connection connection;
 
     // Someone told me this should be a bean, so there you go, empty constructor
@@ -30,8 +25,11 @@ public class SQLDatabase implements Database {
 
         DBRunnable<Integer> write = new DBRunnable<>();
         writeWorker = new Tuple<>(new Thread(write), write);
+    }
 
-        tables = new ConcurrentHashMap<>();
+    @Override
+    protected <T> Table<T> createTable(Class<T> clazz) {
+        return new TableImpl<>(clazz, this);
     }
 
     @Override
@@ -50,28 +48,6 @@ public class SQLDatabase implements Database {
         writeWorker.first.start();
 
         return this;
-    }
-
-    @Override
-    public <T> SQLDatabase registerClass(Class<T> clazz) {
-        TableImpl<T> table = new TableImpl<>(clazz, this);
-        tables.put(clazz, table);
-        return this;
-    }
-
-    @Override
-    public Set<String> getRegisteredTables() {
-        return tables.values().stream().map(Table::getName).collect(Collectors.toSet());
-    }
-
-    @Override
-    public <T> Table<T> table(Class<T> clazz) {
-        Table<?> table = tables.get(clazz);
-        if(table == null) {
-            throw new IllegalArgumentException("Unknown mapping for " + clazz.getName());
-        }
-
-        return (Table<T>) table;
     }
 
     @Override
