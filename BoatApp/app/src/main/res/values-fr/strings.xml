@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">BoatApp</string>
+    <string name="config_file">configFile</string>
     <string name="StringLogin">Identification</string>
     <string name="StringUsername">Nom d\'utilisateur</string>
     <string name="StringPassword">Mot de passe</string>
