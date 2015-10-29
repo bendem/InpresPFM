@@ -292,6 +292,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
             return;
         }
         UUID uuid = optUuid.get();
+        System.out.printf("Disconnecting %s from session %s%n", username, uuid);
         sessions.remove(uuid);
         containerLeaving.remove(uuid);
         containerIncoming.remove(uuid);
