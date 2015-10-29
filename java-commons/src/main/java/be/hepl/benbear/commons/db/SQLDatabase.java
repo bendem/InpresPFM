@@ -21,10 +21,10 @@ public class SQLDatabase extends AbstractDatabase {
     // Someone told me this should be a bean, so there you go, empty constructor
     public SQLDatabase() {
         DBRunnable<ResultSet> read = new DBRunnable<>();
-        readWorker = new Tuple<>(new Thread(read), read);
+        readWorker = new Tuple<>(new Thread(read, "database-read"), read);
 
         DBRunnable<Integer> write = new DBRunnable<>();
-        writeWorker = new Tuple<>(new Thread(write), write);
+        writeWorker = new Tuple<>(new Thread(write, "database-write"), write);
     }
 
     @Override
