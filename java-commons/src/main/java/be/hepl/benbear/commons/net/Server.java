@@ -147,7 +147,7 @@ public abstract class Server<In, Out> {
                     continue;
                 }
                 System.out.println("handling read");
-                assert connectionsToSelect.remove(key.channel());
+                connectionsToSelect.remove(key.channel());
                 it.remove();
 
                 SocketChannel channel = (SocketChannel) key.attachment();
