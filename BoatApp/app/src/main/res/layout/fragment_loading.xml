@@ -21,7 +21,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Get containers"
+                android:text="@string/StringGetContainer"
                 android:id="@+id/buttonGetContainers"
                 android:layout_row="0"
                 android:layout_column="0"
@@ -31,7 +31,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="End container out"
+                android:text="@string/StringEndContainerOut"
                 android:id="@+id/buttonEndContainerOut"
                 android:layout_row="0"
                 android:layout_column="1"

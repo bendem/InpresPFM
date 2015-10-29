@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Settings"
+            android:text="@string/StringSettings"
             android:id="@+id/textViewSettings" />
 
         <LinearLayout
@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Server IP"
+                android:text="@string/StringServerIp"
                 android:id="@+id/textViewServerIP" />
 
             <EditText
@@ -50,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Server Port"
+                android:text="@string/StringServerPort"
                 android:id="@+id/textViewPassword" />
 
             <EditText
@@ -66,7 +66,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"
+            android:text="@string/StringSave"
             android:id="@+id/buttonSave"
             android:layout_gravity="right" />
 

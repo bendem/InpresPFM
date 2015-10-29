@@ -21,7 +21,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Boat Arrival"
+                android:text="@string/StringBoatArrival"
                 android:id="@+id/buttonBoatArrival"
                 android:textSize="12dp"
                 android:layout_columnWeight="1"
@@ -30,7 +30,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Container arrival"
+                android:text="@string/StringContainerArrival"
                 android:id="@+id/buttonContainerArrival"
                 android:textSize="12dp"
                 android:layout_columnWeight="1"
@@ -39,7 +39,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="End container in"
+                android:text="@string/StringEndContainerIn"
                 android:id="@+id/buttonEndContainerIn"
                 android:textSize="12dp"
                 android:layout_columnWeight="1"

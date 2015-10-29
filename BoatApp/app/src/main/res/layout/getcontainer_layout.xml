@@ -13,7 +13,7 @@
     <Switch
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ordered containers"
+        android:text="@string/StringOrderedContainers"
         android:id="@+id/switchOrder"
         android:checked="false"
         android:padding="15dp"/>

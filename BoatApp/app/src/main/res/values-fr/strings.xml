@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="StringLogin">Identification</string>
+    <string name="StringUsername">Nom d\'utilisateur</string>
+    <string name="StringPassword">Mot de passe</string>
+    <string name="StringSignIn">Connexion</string>
+    <string name="StringSettings">Paramètres</string>
+    <string name="StringServerIp">IP du serveur</string>
+    <string name="StringServerPort">Port du serveur</string>
+    <string name="StringSave">Enregistrer</string>
+    <string name="StringBoatIdNumber">Numéro d\'identification du bateau</string>
+    <string name="StringNextDestination">Destination suivante</string>
+    <string name="StringContainerIdNumber">Numéro d\'identification du container</string>
+    <string name="StringDestination">Destination</string>
+    <string name="StringGetContainer">Obtenir containers</string>
+    <string name="StringEndContainerOut">Fin de chargement</string>
+    <string name="StringBoatArrival">Arrivée bateau</string>
+    <string name="StringContainerArrival">Arrivée container</string>
+    <string name="StringEndContainerIn">Fin de déchargement</string>
+    <string name="StringOrderedContainers">Containers ordonnés</string>
+</resources>

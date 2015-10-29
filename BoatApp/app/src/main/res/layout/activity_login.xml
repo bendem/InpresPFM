@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Login"
+            android:text="@string/StringLogin"
             android:id="@+id/textViewLogin" />
 
         <LinearLayout
@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Username"
+                android:text="@string/StringUsername"
                 android:id="@+id/textViewUsername" />
 
             <EditText
@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Password"
+                android:text="@string/StringPassword"
                 android:id="@+id/textViewPassword" />
 
             <EditText
@@ -64,7 +64,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sign In"
+            android:text="@string/StringSignIn"
             android:id="@+id/buttonSignIn"
             android:layout_gravity="right" />
 
