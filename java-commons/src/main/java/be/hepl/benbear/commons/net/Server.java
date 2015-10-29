@@ -146,6 +146,7 @@ public abstract class Server<In, Out> {
                         key, key.channel(), key.isAcceptable(), key.isConnectable(), key.isReadable(), key.isValid(), key.isWritable());
                     continue;
                 }
+
                 System.out.println("handling read");
                 connectionsToSelect.remove(key.channel());
                 it.remove();

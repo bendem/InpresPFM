@@ -104,7 +104,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         if(packet instanceof AuthenticatedPacket) {
             authenticatedPacket = (AuthenticatedPacket) packet;
             UUID session = authenticatedPacket.getSession();
-            if(!sessions.contains(session)) {
+            if(session == null || !sessions.contains(session)) {
                 System.out.printf("Received invalid session: %s%n", session);
                 os.writeObject(new InvalidSessionResponsePacket(authenticatedPacket));
                 return;
@@ -217,7 +217,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
                 }
             }
 
-            int count = 0;
+            int count;
             try {
                 count = containerTable.delete(predicate).get();
             } catch(InterruptedException e) {
