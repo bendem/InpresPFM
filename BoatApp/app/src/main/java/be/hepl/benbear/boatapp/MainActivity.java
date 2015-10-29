@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -106,7 +107,12 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
 
         switch(rp.getId()) {
             case GET_CONTAINERS_RESPONSE:
-                fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
+                if(((GetContainersResponsePacket)rp).getContainers() != null) {
+                    fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
+                } else {
+                    // TODO GIVE FEEDBACK
+                    Log.d("DEBUG GET", "No containers for that destination");
+                }
                 break;
             case CONTAINER_OUT_RESPONSE:
                 Container contOut = fragLoad.containerLoaded();
@@ -122,7 +128,8 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 fragLoad.clearContainerList();
                 break;
             case BOAT_ARRIVED_RESPONSE:
-                Toast.makeText(this, "Boat arrival recorded", Toast.LENGTH_SHORT);
+                // TODO GIVE FEEDBACK
+                Log.d("DEBUG ABOAT", "Boat arrived");
                 break;
             case CONTAINER_IN_RESPONSE:
                 Container contIn = ((ContainerInResponsePacket)rp).getContainer();

@@ -15,7 +15,8 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editTextBoatId"/>
+        android:id="@+id/editTextBoatId"
+        android:inputType="text"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -27,6 +28,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editTextDestination"/>
+        android:id="@+id/editTextDestination"
+        android:inputType="text"/>
 
 </LinearLayout>

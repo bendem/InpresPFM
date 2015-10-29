@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,7 +49,6 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 if (scs.isEstablished()) {
                     EditText username = (EditText) findViewById(R.id.editTextUsername);
                     EditText password = (EditText) findViewById(R.id.editTextPassword);
@@ -125,10 +125,13 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
             case LOGIN_RESPONSE:
                 if(rp.isOk()) {
                     scs.removeOnPacketReceptionListener(this);
-                    scs.setSession(((LoginResponsePacket)rp).getSession());
+                    scs.setSession(((LoginResponsePacket) rp).getSession());
+                    Log.d("DEBUG", "SESSION = " + ((LoginResponsePacket) rp).getSession());
+                    Log.d("DEBUG", "SESSIONSAVED = " + scs.getSession());
                     startActivity(new Intent(this, MainActivity.class));
                 } else {
-                    Toast.makeText(this, rp.getReason(), Toast.LENGTH_LONG).show();
+                    // TODO GIVE FEEDBACK
+                    Log.d("DEBUG", "Packet is not ok: " + rp.getReason());
                 }
                 break;
             default:

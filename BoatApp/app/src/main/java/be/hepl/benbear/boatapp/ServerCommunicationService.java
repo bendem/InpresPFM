@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+import be.hepl.benbear.iobrep.AuthenticatedPacket;
 import be.hepl.benbear.iobrep.Packet;
 import be.hepl.benbear.iobrep.ResponsePacket;
 
@@ -58,10 +60,15 @@ public class ServerCommunicationService extends Service {
                     if (sock != null) {
                         sock.close();
                     }
-
+                    Log.d("HUE", settings.getString("server_ip", "0.0.0.0")+ " " +settings.getInt("server_port", 30000));
                     sock = new Socket(InetAddress.getByName(settings.getString("server_ip", "0.0.0.0")), settings.getInt("server_port", 30000));
-                    ois = new ObjectInputStream(sock.getInputStream());
+                    Log.d("DEBUG SOCKET", "SOCK = " + sock.toString() + " IS CONNECTED? = " + sock.isConnected());
                     oos = new ObjectOutputStream(sock.getOutputStream());
+                    oos.flush();
+                    Log.d("DEBUG SOCKET", "OOS = " + oos.toString());
+                    ois = new ObjectInputStream(sock.getInputStream());
+                    Log.d("DEBUG SOCKET", "OIS = " + ois.toString());
+
                     startReadTask();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -123,6 +130,10 @@ public class ServerCommunicationService extends Service {
 
     public void writePacket(Packet p) throws ProtocolException {
         try {
+            Log.d("DEBUG WRITING", "Writing (" + p.getClass() + ") " + "on " + oos);
+            if(p instanceof AuthenticatedPacket){
+                Log.d("DEBUG WRITING", "With session (" + ((AuthenticatedPacket)p).getSession() +")");
+            }
             oos.writeObject(p);
         } catch (IOException e) {
             throw new ProtocolException("Network error", e);
@@ -130,7 +141,9 @@ public class ServerCommunicationService extends Service {
     }
 
     private void readPacket() throws ProtocolException {
-        packetQueue.add(readPacket(0));
+        ResponsePacket p = readPacket(0);
+        Log.d("DEBUG READING", "Reading packet of type: " + p.getClass());
+        packetQueue.add(p);
         for (PacketNotificationListener listener : listeners) {
             listener.onPacketReception();
         }
