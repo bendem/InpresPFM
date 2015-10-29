@@ -61,6 +61,7 @@ public class UnloadingFragment extends Fragment {
         adapter = new ContainerArrayAdapter(v.getContext(),
                 android.R.layout.simple_expandable_list_item_1, list);
         listview.setAdapter(adapter);
+        listview.setEnabled(false);
 
         // Boat Arrival Click
         ((Button)v.findViewById(R.id.buttonBoatArrival)).setOnClickListener(new View.OnClickListener() {
@@ -168,12 +169,22 @@ public class UnloadingFragment extends Fragment {
 
     public void containerUnloaded(Container container) {
         list.add(container);
-        adapter.notifyDataSetChanged();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     public void clearContainerList() {
         list.clear();
-        adapter.notifyDataSetChanged();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     /**
