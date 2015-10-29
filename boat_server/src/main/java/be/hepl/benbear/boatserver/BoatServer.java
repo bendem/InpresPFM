@@ -26,6 +26,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
 
@@ -179,8 +180,17 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         try {
             List<Container> containers;
             try {
-                containers = containerTable.find().get()
-                    .map(CSVContainer::toContainer)
+                Stream<Container> containerStream = containerTable
+                    .find(DBPredicate.of("destination", p.getDestination()))
+                    .get()
+                    .map(CSVContainer::toContainer);
+
+                if(p.getCriteria() == Criteria.FIRST) {
+                    containerStream = containerStream
+                        .sorted((c1, c2) -> c1.getArrival().compareTo(c2.getArrival()));
+                }
+
+                containers = containerStream
                     .collect(Collectors.toList());
             } catch(InterruptedException e) {
                 Thread.currentThread().interrupt();

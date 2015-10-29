@@ -251,6 +251,11 @@ public class CSVTable<T> extends AbstractTable<T> {
     }
 
     private boolean matches(String line, DBPredicate predicate) {
+        if(predicate.field() == null) {
+            // Empty predicate
+            return true;
+        }
+
         List<String> parts = CSVMapping.split(line);
         boolean result;
         String field;
