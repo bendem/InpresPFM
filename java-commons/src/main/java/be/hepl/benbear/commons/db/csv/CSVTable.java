@@ -63,6 +63,12 @@ public class CSVTable<T> extends AbstractTable<T> {
         }
 
         CompletableFuture<Optional<T>> future = new CompletableFuture<>();
+
+        if(Files.notExists(file)) {
+            future.complete(Optional.empty());
+            return future;
+        }
+
         Stream<String> lines;
         try {
             lines = Files.lines(file);
@@ -105,6 +111,12 @@ public class CSVTable<T> extends AbstractTable<T> {
     @Override
     public CompletableFuture<Integer> update(T obj) {
         CompletableFuture<Integer> future = new CompletableFuture<>();
+
+        if(Files.notExists(file)) {
+            future.complete(0);
+            return future;
+        }
+
         DBPredicate predicate = null;
         for(Map.Entry<String, Field> entry : primaryKeys.entrySet()) {
             Object value = FieldReflection.extractFunction(obj).apply(entry.getValue());
@@ -153,6 +165,11 @@ public class CSVTable<T> extends AbstractTable<T> {
     public CompletableFuture<Integer> delete(DBPredicate predicate) {
         CompletableFuture<Integer> future = new CompletableFuture<>();
 
+        if(Files.notExists(file)) {
+            future.complete(0);
+            return future;
+        }
+
         int count = 0;
         try(BufferedWriter w = Files.newBufferedWriter(file.resolveSibling(name + ".tmp"));
             BufferedReader r = Files.newBufferedReader(file)) {
@@ -185,6 +202,11 @@ public class CSVTable<T> extends AbstractTable<T> {
     public CompletableFuture<Stream<T>> find(DBPredicate predicate) {
         CompletableFuture<Stream<T>> future = new CompletableFuture<>();
 
+        if(Files.notExists(file)) {
+            future.complete(Stream.empty());
+            return future;
+        }
+
         Stream.Builder<String> builder = Stream.builder();
         try(BufferedReader r = Files.newBufferedReader(file)) {
             String line;
@@ -205,6 +227,7 @@ public class CSVTable<T> extends AbstractTable<T> {
     @Override
     public CompletableFuture<Optional<T>> findOne(DBPredicate predicate) {
         CompletableFuture<Optional<T>> future = new CompletableFuture<>();
+
         if(Files.notExists(file)) {
             future.complete(Optional.empty());
             return future;
