@@ -73,6 +73,11 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
         containerMoveDAO = new ContainerMoveDAO(this);
     }
 
+    @Override
+    public void onBackPressed() {
+        scs.removeOnPacketReceptionListener(this);
+        super.onBackPressed();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

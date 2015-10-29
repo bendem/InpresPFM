@@ -36,7 +36,9 @@ public class ServerCommunicationService extends Service {
     private ArrayList<PacketNotificationListener> listeners = new ArrayList<PacketNotificationListener> ();
 
     public void addOnPacketReceptionListener(PacketNotificationListener listener) {
-        this.listeners.add(listener);
+        if (!listeners.contains(listener)) {
+            this.listeners.add(listener);
+        }
     }
 
     public void removeOnPacketReceptionListener(PacketNotificationListener listener) {
