@@ -21,10 +21,10 @@ public class ContainerMoveSQLiteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table " + TABLE_CONTAINERS + "(" + COLUMN_ID + " integer primary key autoincrement "
+        db.execSQL("create table " + TABLE_CONTAINERS + "(" + COLUMN_ID + " integer primary key autoincrement, "
                         + COLUMN_CONT_ID + " text not null, "
-                        + COLUMN_CONT_DEST + " text not null "
-                        + COLUMN_DATE + " integer "
+                        + COLUMN_CONT_DEST + " text not null, "
+                        + COLUMN_DATE + " integer, "
                         + COLUMN_ACTION + " text not null);"
         );
     }
