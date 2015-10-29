@@ -154,7 +154,12 @@ public class LoadingFragment extends Fragment {
 
     public Container containerLoaded() {
         Container cont = list.remove(loadedContainerPosition);
-        adapter.notifyDataSetChanged();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
         listview.setEnabled(true);
         // TODO Save in SQLite
         return cont;
@@ -162,7 +167,12 @@ public class LoadingFragment extends Fragment {
 
     public void clearContainerList() {
         list.clear();
-        adapter.notifyDataSetChanged();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
         listview.setEnabled(false);
     }
 
@@ -170,7 +180,12 @@ public class LoadingFragment extends Fragment {
         for (Container container : listFill) {
             list.add(container);
         }
-        adapter.notifyDataSetChanged();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });;
         listview.setEnabled(true);
     }
 
