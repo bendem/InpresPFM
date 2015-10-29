@@ -19,7 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +36,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
     private final Database containers;
     private final ReadWriteLock containersLock;
     private final Table<CSVContainer> containerTable;
-    private final Set<UUID> sessions;
+    private final Map<UUID, String> sessions;
     private final Map<UUID, Set<String>> containerLeaving;
     private final Map<UUID, Set<Container>> containerIncoming;
     private final BufferedWriter boatWriter;
@@ -79,7 +78,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         this.containerTable = this.containers.table(CSVContainer.class);
         this.containersLock = new ReentrantReadWriteLock();
 
-        this.sessions = new CopyOnWriteArraySet<>();
+        this.sessions = new ConcurrentHashMap<>();
         this.containerLeaving = new ConcurrentHashMap<>();
         this.containerIncoming = new ConcurrentHashMap<>();
 
@@ -104,7 +103,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         if(packet instanceof AuthenticatedPacket) {
             authenticatedPacket = (AuthenticatedPacket) packet;
             UUID session = authenticatedPacket.getSession();
-            if(session == null || !sessions.contains(session)) {
+            if(session == null || !sessions.containsKey(session)) {
                 System.out.printf("Received invalid session: %s%n", session);
                 os.writeObject(new InvalidSessionResponsePacket(authenticatedPacket));
                 return;
@@ -165,9 +164,13 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
             return;
         }
 
+        if(sessions.containsValue(p.getUsername())) {
+            disconnect(p.getUsername());
+        }
+
         UUID session = UUID.randomUUID();
         System.out.printf("%s connected %s%n", p.getUsername(), session);
-        sessions.add(session);
+        sessions.put(session, p.getUsername());
         os.writeObject(new LoginResponsePacket(session, null));
     }
 
@@ -278,6 +281,20 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
             containersLock.writeLock().unlock();
         }
         os.writeObject(new ContainerInEndResponsePacket(null));
+    }
+
+    private void disconnect(String username) {
+        Optional<UUID> optUuid = sessions.entrySet().stream()
+            .filter(e -> e.getValue().equals(username))
+            .map(Map.Entry::getKey)
+            .findFirst();
+        if(!optUuid.isPresent()) {
+            return;
+        }
+        UUID uuid = optUuid.get();
+        sessions.remove(uuid);
+        containerLeaving.remove(uuid);
+        containerIncoming.remove(uuid);
     }
 
     @Override
