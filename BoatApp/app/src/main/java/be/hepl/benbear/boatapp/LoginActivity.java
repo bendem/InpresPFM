@@ -79,14 +79,11 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
     @Override
     protected void onResume() {
         super.onResume();
-        Intent i = new Intent(this, ServerCommunicationService.class);
-        bindService(i, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        scs.removeOnPacketReceptionListener(this);
     }
 
     @Override
@@ -108,12 +105,12 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Toast.makeText(this,"Got result, re-create the connection accordingly", Toast.LENGTH_LONG).show();
-
+        Log.d("DEBUG", "Settings sent results");
         scs.establishConnection();
     }
 
     private void sendLogin(String username, String password) throws IOException {
+        Log.d("DEBUG", "sendlogin(" + username + ", " + password + ")");
         scs.writePacket(new LoginPacket(username, password));
     }
 

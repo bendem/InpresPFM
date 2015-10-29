@@ -52,12 +52,16 @@ public class ServerCommunicationService extends Service {
 
     // TODO Check if connection was established
     public void establishConnection() {
-        Toast.makeText(this, "Connecting to server", Toast.LENGTH_LONG).show();
+        Log.d("DEBUG SOCKET CREA", "Before AsyncTask");
         new AsyncTask<Void, Integer, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
+                Log.d("DEBUG SOCKET CREA", "Before try");
                 try {
-                    if (sock != null) {
+                    Log.d("DEBUG SOCKET CREA", "Check for existing connection");
+                    if (isEstablished()) {
+                        oos.close();
+                        ois.close();
                         sock.close();
                     }
                     Log.d("HUE", settings.getString("server_ip", "0.0.0.0")+ " " +settings.getInt("server_port", 30000));
@@ -76,6 +80,9 @@ public class ServerCommunicationService extends Service {
                 return null;
             }
         }.execute();
+
+        Log.d("DEBUG SOCKET CREA", "After AsyncTask");
+
 
 
     }
