@@ -17,6 +17,7 @@ import java.io.ObjectOutputStream;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -84,7 +85,10 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         this.containerIncoming = new ConcurrentHashMap<>();
 
         try {
-            this.boatWriter = Files.newBufferedWriter(Paths.get(DATA_DIR).resolve("boats.csv"));
+            this.boatWriter = Files.newBufferedWriter(
+                Paths.get(DATA_DIR).resolve("boats.csv"),
+                StandardOpenOption.CREATE, StandardOpenOption.APPEND
+            );
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
