@@ -2,12 +2,9 @@ package be.hepl.benbear.commons.db;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DBPredicateImpl implements DBPredicate {
-
-    private enum Type {
-        AND, OR
-    }
 
     private final String field;
     private final Object value;
@@ -41,6 +38,26 @@ public class DBPredicateImpl implements DBPredicate {
         }
 
         return first.toSql();
+    }
+
+    @Override
+    public String field() {
+        return field;
+    }
+
+    @Override
+    public Object value() {
+        return value;
+    }
+
+    @Override
+    public Type type() {
+        return type;
+    }
+
+    @Override
+    public Optional<DBPredicate> next() {
+        return Optional.ofNullable(next);
     }
 
     private StringBuilder toSql(StringBuilder builder) {

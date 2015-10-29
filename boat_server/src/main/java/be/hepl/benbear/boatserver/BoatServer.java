@@ -8,20 +8,17 @@ import be.hepl.benbear.commons.db.Table;
 import be.hepl.benbear.commons.db.csv.CSVDatabase;
 import be.hepl.benbear.commons.net.Server;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
-import be.hepl.benbear.iobrep.LoginPacket;
-import be.hepl.benbear.iobrep.LoginResponsePacket;
-import be.hepl.benbear.iobrep.Packet;
+import be.hepl.benbear.iobrep.*;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,15 +26,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
 
     public static final String DATA_DIR = "data";
 
     private final Database accounting;
+    private final Table<Staff> accountTable;
     private final Database containers;
     private final ReadWriteLock containersLock;
+    private final Table<CSVContainer> containerTable;
     private final Set<UUID> sessions;
+    private final Map<UUID, Set<String>> containerLeaving;
+    private final Map<UUID, Set<Container>> containerIncoming;
+    private final BufferedWriter boatWriter;
 
     public BoatServer(int port, ExecutorService threadPool) {
         super(
@@ -56,6 +59,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
 
         this.accounting = new SQLDatabase();
         this.accounting.registerClass(Staff.class);
+        this.accountTable = this.accounting.table(Staff.class);
         this.accounting.connect("jdbc:oracle:thin:@178.32.41.4:8080:xe", "accounting", "bleh");
 
         if(!Files.isDirectory(Paths.get(DATA_DIR))) {
@@ -68,17 +72,18 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         this.containers = new CSVDatabase();
         this.containers.connect(DATA_DIR, null, null);
         this.containers.registerClass(CSVContainer.class);
+        this.containerTable = this.containers.table(CSVContainer.class);
         this.containersLock = new ReentrantReadWriteLock();
-        Table<CSVContainer> table = containers.table(CSVContainer.class);
-        table.insert(new CSVContainer(1, 2, "id", "destination", Instant.now()));
-        try {
-            CSVContainer c = table.findOne(DBPredicate.of("x", 1)).get().get();
-            System.out.println(String.valueOf(c.getX()) + ':' + c.getY() + ':' + c.getId() + ':' + c.getDestination() + ':' + c.getArrival());
-        } catch(InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
 
         this.sessions = new CopyOnWriteArraySet<>();
+        this.containerLeaving = new ConcurrentHashMap<>();
+        this.containerIncoming = new ConcurrentHashMap<>();
+
+        try {
+            this.boatWriter = Files.newBufferedWriter(Paths.get(DATA_DIR).resolve("boats.csv"));
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -90,52 +95,179 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
             return;
         }
 
-        switch(((Packet) o).getId()) {
+        Packet packet = (Packet) o;
+        if(packet instanceof AuthenticatedPacket) {
+            AuthenticatedPacket authenticatedPacket = (AuthenticatedPacket) packet;
+            UUID session = authenticatedPacket.getSession();
+            if(!sessions.contains(session)) {
+                os.writeObject(new InvalidSessionResponsePacket(authenticatedPacket));
+                return;
+            }
+        }
+
+        switch(packet.getId()) {
             case LOGIN:
                 handleLogin((LoginPacket) o, os);
                 break;
             case GET_CONTAINERS:
+                handleGetContainers((GetContainersPacket) o, os);
                 break;
             case CONTAINER_OUT:
+                handleContainerOut((ContainerOutPacket) o, os);
                 break;
             case CONTAINER_OUT_END:
+                handleContainerOutEnd((ContainerOutEndPacket) o, os);
                 break;
             case BOAT_ARRIVED:
+                handleBoatArrived((BoatArrivedPacket) o, os);
                 break;
             case CONTAINER_IN:
+                handleContainerIn((ContainerInPacket) o, os);
                 break;
             case CONTAINER_IN_END:
+                handleContainerInEnd((ContainerInEndPacket) o, os);
                 break;
             default:
-                System.err.println("unhandled packet: " + ((Packet) o).getId().name() + " (" + o.getClass().getName() + ")");
+                System.err.println("unhandled packet: " + packet.getId().name() + " (" + o.getClass().getName() + ")");
         }
         os.flush();
     }
 
-    private void handleLogin(LoginPacket packet, ObjectOutputStream os) throws IOException {
-        System.out.printf("%s:%s%n", packet.getUsername(), packet.getPassword());
+    private void handleLogin(LoginPacket p, ObjectOutputStream os) throws IOException {
+        System.out.printf("%s tried to connect%n", p.getUsername());
         Optional<Staff> user;
         try {
-            user = accounting
-                .table(Staff.class)
-                .findOne(DBPredicate.of("login", packet.getUsername()))
+            user = accountTable
+                .findOne(DBPredicate.of("login", p.getUsername()))
                 .get(5, TimeUnit.SECONDS);
         } catch(InterruptedException e) {
             Thread.currentThread().interrupt();
             return;
         } catch(ExecutionException | TimeoutException e) {
+            e.printStackTrace();
             os.writeObject(new LoginResponsePacket(null, "An error happened: " + e.getMessage()));
             return;
         }
 
-        if(!user.isPresent() || !user.get().getPassword().equals(packet.getPassword())) {
+        if(!user.isPresent() || !user.get().getPassword().equals(p.getPassword())) {
             os.writeObject(new LoginResponsePacket(null, "Unknown login or password"));
+            System.out.printf("%s failed to connect%n", p.getUsername());
             return;
         }
 
         UUID session = UUID.randomUUID();
+        System.out.printf("%s connected %s%n", p.getUsername(), session);
         sessions.add(session);
         os.writeObject(new LoginResponsePacket(session, null));
+    }
+
+    private void handleGetContainers(GetContainersPacket p, ObjectOutputStream os) throws IOException {
+        containersLock.readLock().lock();
+        try {
+            List<Container> containers;
+            try {
+                containers = containerTable.find().get()
+                    .map(CSVContainer::toContainer)
+                    .collect(Collectors.toList());
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch(ExecutionException e) {
+                os.writeObject(new GetContainersResponsePacket("An error happened: " + e.getMessage(), null));
+                return;
+            }
+            os.writeObject(new GetContainersResponsePacket(null, containers));
+        } finally {
+            containersLock.readLock().unlock();
+        }
+    }
+
+    private void handleContainerOut(ContainerOutPacket p, ObjectOutputStream os) throws IOException {
+        boolean added = containerLeaving
+            .computeIfAbsent(p.getSession(), k -> Collections.synchronizedSet(new HashSet<>()))
+            .add(p.getContainerId());
+        if(added) {
+            os.writeObject(new ContainerOutResponsePacket(p.getContainerId(), null));
+        } else {
+            os.writeObject(new ContainerOutResponsePacket(null, p.getContainerId() + " already out"));
+        }
+    }
+
+    private void handleContainerOutEnd(ContainerOutEndPacket p, ObjectOutputStream os) throws IOException {
+        containersLock.writeLock().lock();
+        try {
+            Set<String> ids = containerLeaving.get(p.getSession());
+            containerLeaving.remove(p.getSession());
+            DBPredicate predicate = null;
+            for(String id : ids) {
+                if(predicate == null) {
+                    predicate = DBPredicate.of("id", id);
+                } else {
+                    predicate = predicate.or("id", id);
+                }
+            }
+
+            int count = 0;
+            try {
+                count = containerTable.delete(predicate).get();
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch(ExecutionException e) {
+                e.printStackTrace();
+                os.writeObject(new ContainerOutEndResponsePacket("An error happened: " + e.getMessage()));
+                return;
+            }
+
+            System.out.printf("Removed %d containers%n", count);
+            os.writeObject(new ContainerOutEndResponsePacket(null));
+        } finally {
+            containersLock.writeLock().unlock();
+        }
+    }
+
+    private synchronized void handleBoatArrived(BoatArrivedPacket p, ObjectOutputStream os) throws IOException {
+        try {
+            boatWriter.write(p.getBoatId() + ';' + p.getDestination());
+            boatWriter.newLine();
+        } catch(IOException e) {
+            os.writeObject(new BoatArrivedResponsePacket("An error happened: " + e.getMessage()));
+            return;
+        }
+        os.writeObject(new BoatArrivedResponsePacket(null));
+    }
+
+    private void handleContainerIn(ContainerInPacket p, ObjectOutputStream os) throws IOException {
+        // TODO Search for a place in the next version
+        boolean added = containerIncoming
+            .computeIfAbsent(p.getSession(), k -> Collections.synchronizedSet(new HashSet<>()))
+            .add(p.getContainer());
+        if(added) {
+            os.writeObject(new ContainerInResponsePacket(null, p.getContainer()));
+        } else {
+            os.writeObject(new ContainerInResponsePacket("Container already stored: " + p.getContainer().getId(), null));
+        }
+    }
+
+    private void handleContainerInEnd(ContainerInEndPacket p, ObjectOutputStream os) throws IOException {
+        containersLock.writeLock().lock();
+        try {
+            Set<Container> containers = containerIncoming.get(p.getSession());
+            containerIncoming.remove(p.getSession());
+            for(Container container : containers) {
+                containerTable.insert(CSVContainer.fromContainer(container)).get();
+            }
+        } catch(InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        } catch(ExecutionException e) {
+            e.printStackTrace();
+            os.writeObject(new ContainerInEndResponsePacket("An error happened: " + e.getMessage()));
+            return;
+        } finally {
+            containersLock.writeLock().unlock();
+        }
+        os.writeObject(new ContainerInEndResponsePacket(null));
     }
 
     @Override

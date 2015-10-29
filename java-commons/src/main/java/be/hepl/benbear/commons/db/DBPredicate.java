@@ -1,11 +1,16 @@
 package be.hepl.benbear.commons.db;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Represents a sql predicate.
  */
 public interface DBPredicate {
+
+    enum Type {
+        AND, OR
+    }
 
     String DEFAULT_COMPARISON = "=";
     String NULL_COMPARISON = "is";
@@ -97,6 +102,14 @@ public interface DBPredicate {
      * @return the sql predicate
      */
     String toSql();
+
+    String field();
+
+    Object value();
+
+    Type type();
+
+    Optional<DBPredicate> next();
 
     /**
      * Returns the fields corresponding to this query

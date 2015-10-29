@@ -229,15 +229,28 @@ public class CSVTable<T> extends AbstractTable<T> {
 
     private boolean matches(String line, DBPredicate predicate) {
         List<String> parts = CSVMapping.split(line);
-        List<String> fields = predicate.fields();
-        List<Object> values = predicate.values();
+        boolean result;
+        String field;
+        Object value;
+        Optional<DBPredicate> next;
 
-        for(int i = 0; i < fields.size(); ++i) {
-            if(!parts.get(toFieldIndex(fields.get(i))).equals(values.get(i).toString())) {
-                return false;
+        field = predicate.field();
+        value = predicate.value();
+        result = parts.get(toFieldIndex(field)).equals(value.toString());
+        next = predicate.next();
+
+        while(next.isPresent()) {
+            field = predicate.field();
+            value = predicate.value();
+            if(next.get().type() == DBPredicate.Type.AND) {
+                result = result && parts.get(toFieldIndex(field)).equals(value.toString());
+            } else {
+                result = result || parts.get(toFieldIndex(field)).equals(value.toString());
             }
+            next = next.get().next();
         }
-        return true;
+
+        return result;
     }
 
     private int toFieldIndex(String name) {

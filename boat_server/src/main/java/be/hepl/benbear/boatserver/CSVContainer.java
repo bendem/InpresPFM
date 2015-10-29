@@ -1,7 +1,9 @@
 package be.hepl.benbear.boatserver;
 
 import be.hepl.benbear.commons.db.DBTable;
+import be.hepl.benbear.iobrep.Container;
 
+import java.sql.Date;
 import java.time.Instant;
 
 @DBTable("containers")
@@ -39,6 +41,20 @@ public class CSVContainer {
 
     public Instant getArrival() {
         return arrival;
+    }
+
+    public Container toContainer() {
+        return new Container(x, y, id, destination, Date.from(arrival));
+    }
+
+    public static CSVContainer fromContainer(Container container) {
+        return new CSVContainer(
+            container.getX(),
+            container.getY(),
+            container.getId(),
+            container.getDestination(),
+            container.getArrival().toInstant()
+        );
     }
 
 }
