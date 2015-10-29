@@ -14,7 +14,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -48,7 +48,11 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
             Thread::new,
             threadPool,
             UncheckedLambda.function(ObjectInputStream::new, Throwable::printStackTrace),
-            UncheckedLambda.function(ObjectOutputStream::new, Throwable::printStackTrace)
+            UncheckedLambda.function(os -> {
+                ObjectOutputStream oos = new ObjectOutputStream(os);
+                oos.flush();
+                return oos;
+            }, Throwable::printStackTrace)
         );
 
         try {
@@ -96,14 +100,20 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         }
 
         Packet packet = (Packet) o;
+        AuthenticatedPacket authenticatedPacket = null;
         if(packet instanceof AuthenticatedPacket) {
-            AuthenticatedPacket authenticatedPacket = (AuthenticatedPacket) packet;
+            authenticatedPacket = (AuthenticatedPacket) packet;
             UUID session = authenticatedPacket.getSession();
             if(!sessions.contains(session)) {
+                System.out.printf("Received invalid session: %s%n", session);
                 os.writeObject(new InvalidSessionResponsePacket(authenticatedPacket));
                 return;
             }
         }
+
+        System.out.printf("Handling packet %s from session %s%n",
+            packet.getClass().getName(),
+            authenticatedPacket == null ? null : authenticatedPacket.getSession());
 
         switch(packet.getId()) {
             case LOGIN:
@@ -271,8 +281,10 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
     }
 
     @Override
-    protected void onClose(Socket socket, Exception e) {
-        e.printStackTrace();
+    protected void onClose(SocketChannel channel, Exception e) {
+        if(e != null) {
+            e.printStackTrace();
+        }
     }
 
 }

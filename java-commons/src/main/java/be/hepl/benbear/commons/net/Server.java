@@ -1,23 +1,26 @@
 package be.hepl.benbear.commons.net;
 
-import be.hepl.benbear.commons.generics.Tuple3;
+import be.hepl.benbear.commons.generics.Tuple;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-
-import javax.net.ServerSocketFactory;
 
 public abstract class Server<In, Out> {
 
@@ -26,19 +29,21 @@ public abstract class Server<In, Out> {
     private final Thread acceptThread;
     private final Thread selectThread;
     private final ExecutorService threadPool;
-    private final ServerSocket socket;
+    private final ServerSocketChannel serverChannel;
     private final Selector selector;
     private final Function<InputStream, In> inputStreamMapping;
     private final Function<OutputStream, Out> outputStreamMapping;
     private final AtomicBoolean closed;
-    protected final List<Socket> connections;
+    protected final Map<SocketChannel, Tuple<In, Out>> connections;
+    protected final Set<SocketChannel> connectionsToSelect;
 
     public Server(int port, ThreadFactory threadFactory, ExecutorService threadPool, Function<InputStream, In> inputStreamMapping, Function<OutputStream, Out> outputStreamMapping) {
         this.threadPool = threadPool;
         this.acceptThread = threadFactory.newThread(this::accept);
         this.selectThread = threadFactory.newThread(this::select);
         try {
-            this.socket = ServerSocketFactory.getDefault().createServerSocket(port);
+            this.serverChannel = ServerSocketChannel.open();
+            this.serverChannel.bind(new InetSocketAddress(InetAddress.getLocalHost(), port));
             this.selector = Selector.open();
         } catch(IOException e) {
             throw new RuntimeException(e);
@@ -46,7 +51,8 @@ public abstract class Server<In, Out> {
         this.inputStreamMapping = inputStreamMapping;
         this.outputStreamMapping = outputStreamMapping;
         this.closed = new AtomicBoolean(false);
-        this.connections = new CopyOnWriteArrayList<>();
+        this.connections = new ConcurrentHashMap<>();
+        this.connectionsToSelect = new CopyOnWriteArraySet<>();
     }
 
     public void start() {
@@ -54,6 +60,7 @@ public abstract class Server<In, Out> {
             throw new RuntimeException("Thread already started");
         }
         acceptThread.start();
+        selectThread.start();
     }
 
     public void close() {
@@ -61,11 +68,11 @@ public abstract class Server<In, Out> {
             return;
         }
 
-        this.connections.forEach(
-            UncheckedLambda.consumer(Socket::close, Throwable::printStackTrace)
+        this.connections.keySet().forEach(
+            UncheckedLambda.consumer(SocketChannel::close, Throwable::printStackTrace)
         );
         try {
-            socket.close();
+            serverChannel.close();
         } catch(IOException e) {
             e.printStackTrace();
             acceptThread.interrupt();
@@ -90,72 +97,122 @@ public abstract class Server<In, Out> {
 
     private void accept() {
         while(!closed.get()) {
-            Socket socket = acceptConnection();
-            System.out.println("New connection from " + socket.getRemoteSocketAddress().toString());
-            registerConnection(socket);
+            SocketChannel socketChannel = acceptConnection();
+            System.out.println("New connection from " + socketChannel.socket().getRemoteSocketAddress().toString());
+            registerConnection(socketChannel);
         }
     }
 
     private void select() {
         while(!closed.get()) {
-            connections.forEach(s -> {
-                try {
-                    s.getChannel().register(
-                        selector,
-                        SelectionKey.OP_READ,
-                        new Tuple3<>(
-                            s,
-                            inputStreamMapping.apply(s.getInputStream()),
-                            outputStreamMapping.apply(s.getOutputStream())
-                        )
-                    );
-                } catch(IOException e) {
-                    connections.remove(s);
-                    onClose(s, e);
-                }
-            });
+            connectionsToSelect.stream()
+                .filter(channel -> !channel.isRegistered())
+                .forEach(channel -> {
+                    try {
+                        System.out.printf("Adding channel %s to selection%n", channel.socket().getRemoteSocketAddress());
+                        channel.configureBlocking(false);
+                        channel.register(selector, SelectionKey.OP_READ, channel);
+                    } catch(IOException e) {
+                        connections.remove(channel);
+                        try {
+                            channel.close();
+                        } catch(IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        onClose(channel, e);
+                    }
+                });
+
             int selected = 0;
+            System.out.println("Selecting");
             try {
                 selected = selector.select();
             } catch(IOException e) {
                 e.printStackTrace();
                 close();
             }
+            System.out.println("Selected");
             if(selected == 0) {
                 continue;
             }
+            System.out.println("had stuff");
 
-            selector.selectedKeys().stream()
-                .filter(SelectionKey::isReadable)
-                .forEach(selectionKey -> {
-                    Tuple3<Socket, In, Out> streams = (Tuple3<Socket, In, Out>) selectionKey.attachment();
-                    threadPool.submit(() -> {
+            Set<SelectionKey> selectionKeys = selector.selectedKeys();
+            Iterator<SelectionKey> it = selectionKeys.iterator();
+            while (it.hasNext()) {
+                SelectionKey key = it.next();
+                if(!key.isReadable()) {
+                    System.out.printf("%s is selected but not readable, what the hell? %s %s %s %s %s %s%n",
+                        key, key.channel(), key.isAcceptable(), key.isConnectable(), key.isReadable(), key.isValid(), key.isWritable());
+                    continue;
+                }
+                System.out.println("handling read");
+                assert connectionsToSelect.remove(key.channel());
+                it.remove();
+
+                SocketChannel channel = (SocketChannel) key.attachment();
+                Tuple<In, Out> streams = connections.get(channel);
+                key.cancel();
+                threadPool.submit(() -> {
+                    try {
+                        channel.configureBlocking(true);
+                        read(streams.first, streams.second);
+
+                        // Re-add to select once the packet is handled
+                        connectionsToSelect.add(channel);
+                        selector.wakeup();
+                    } catch(IOException e) {
                         try {
-                            read(streams.t2, streams.t3);
-                        } catch(IOException e) {
-                            try {
-                                streams.t1.close();
-                            } catch(IOException e1) {
-                                onClose(streams.t1, e1);
-                            }
-                            onClose(streams.t1, e);
+                            channel.close();
+                        } catch(IOException e1) {
+                            onClose(channel, e1);
+                            return;
                         }
-                    });
+                        onClose(channel, e);
+                    }
                 });
+            }
 
         }
     }
 
-    private void registerConnection(Socket socket) {
-        connections.add(socket);
+    private void registerConnection(SocketChannel s) {
+        Out os;
+        In is;
+        try {
+            os = outputStreamMapping.apply(s.socket().getOutputStream());
+            is = inputStreamMapping.apply(s.socket().getInputStream());
+        } catch(IOException e) {
+            try {
+                s.close();
+            } catch(IOException e1) {
+                e1.printStackTrace();
+            }
+            return;
+        }
+
+        if(os == null || is == null) {
+            connections.remove(s);
+            try {
+                s.close();
+            } catch(IOException e) {
+                onClose(s, e);
+                return;
+            }
+            onClose(s, null);
+            System.err.printf("Failed to construct in or out for %s", s.socket().getRemoteSocketAddress());
+            return;
+        }
+        connections.put(s, new Tuple<>(is, os));
+        connectionsToSelect.add(s);
         selector.wakeup();
     }
 
-    private Socket acceptConnection() {
+    private SocketChannel acceptConnection() {
         int tries = 0;
         for(;;) {
             try {
-                return socket.accept();
+                return serverChannel.accept();
             } catch(IOException e) {
                 if(tries++ > MAX_TRIES) {
                     throw new RuntimeException(e);
@@ -165,6 +222,6 @@ public abstract class Server<In, Out> {
     }
 
     protected abstract void read(In is, Out os) throws IOException;
-    protected abstract void onClose(Socket socket, Exception e);
+    protected abstract void onClose(SocketChannel channel, Exception e);
 
 }
