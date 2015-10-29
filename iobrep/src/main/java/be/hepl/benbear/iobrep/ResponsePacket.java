@@ -14,7 +14,7 @@ public abstract class ResponsePacket extends Packet {
     }
 
     public boolean isOk() {
-        return reason != null;
+        return reason == null;
     }
 
 }
