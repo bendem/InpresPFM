@@ -210,6 +210,10 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         containersLock.writeLock().lock();
         try {
             Set<String> ids = containerLeaving.get(p.getSession());
+            if(ids == null) {
+                os.writeObject(new ContainerOutEndResponsePacket("No containers to remove"));
+                return;
+            }
             containerLeaving.remove(p.getSession());
             DBPredicate predicate = null;
             for(String id : ids) {
