@@ -15,7 +15,10 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -31,14 +34,12 @@ public class ServerCommunicationService extends Service {
     private ObjectInputStream ois = null;
     private ObjectOutputStream oos = null;
     private SharedPreferences settings;
+    private ReadPacketTask readPacketTask = null;
     private final Queue<ResponsePacket> packetQueue = new ConcurrentLinkedQueue<>();
-
-    private ArrayList<PacketNotificationListener> listeners = new ArrayList<PacketNotificationListener> ();
+    private final Set<PacketNotificationListener> listeners = new HashSet<>();
 
     public void addOnPacketReceptionListener(PacketNotificationListener listener) {
-        if (!listeners.contains(listener)) {
-            this.listeners.add(listener);
-        }
+        this.listeners.add(listener);
     }
 
     public void removeOnPacketReceptionListener(PacketNotificationListener listener) {
@@ -55,6 +56,9 @@ public class ServerCommunicationService extends Service {
     // TODO Check if connection was established
     public void establishConnection() {
         Log.d("DEBUG SOCKET CREA", "Before AsyncTask");
+
+        onDestroy();
+
         new AsyncTask<Void, Integer, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
@@ -95,11 +99,17 @@ public class ServerCommunicationService extends Service {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+        }
+
+        if(readPacketTask != null) {
+            readPacketTask.stop();
         }
     }
 
     public void startReadTask() {
-        new ReadPacketTask().execute();
+        readPacketTask = new ReadPacketTask();
+        readPacketTask.execute();
     }
 
     public ResponsePacket getPacket() {
@@ -117,9 +127,18 @@ public class ServerCommunicationService extends Service {
     }
 
     private class ReadPacketTask extends AsyncTask<Void, Integer, Void> {
+
+        private volatile boolean stopped = false;
+
+        public void stop() {
+            stopped = true;
+            this.cancel(true);
+        }
+
         @Override
         protected Void doInBackground(Void... params) {
-            while(!Thread.interrupted()) {
+            while(!stopped) {
+                Log.d("BOAT SERVICE", "============================ reading =========");
                 try {
                     readPacket();
                 } catch (ProtocolException e) {
@@ -165,6 +184,7 @@ public class ServerCommunicationService extends Service {
                     TimeUnit.MILLISECONDS.sleep(tries * 500);
                 } catch (InterruptedException e1) {
                     Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
                 }
                 return readPacket(tries + 1);
             }
@@ -178,8 +198,7 @@ public class ServerCommunicationService extends Service {
     }
 
     public UUID getSession() {
-        SharedPreferences prefs = getSharedPreferences(getString(R.string.config_file), 0);
-        String session = prefs.getString("session", null);
+        String session = settings.getString("session", null);
         if(session == null) {
             return null;
         }
@@ -187,8 +206,7 @@ public class ServerCommunicationService extends Service {
     }
 
     public void setSession(UUID session) {
-        SharedPreferences prefs = getSharedPreferences(getString(R.string.config_file), 0);
-        SharedPreferences.Editor editor = prefs.edit();
+        SharedPreferences.Editor editor = settings.edit();
         if(session == null) {
             editor.remove("session");
         } else {
