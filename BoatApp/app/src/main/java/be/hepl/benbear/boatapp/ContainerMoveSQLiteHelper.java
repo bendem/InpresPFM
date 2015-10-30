@@ -15,6 +15,11 @@ public class ContainerMoveSQLiteHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "containermove.db";
     private static final int DB_VERSION = 1;
 
+    enum MoveType{
+        IN,
+        OUT
+    }
+
     public ContainerMoveSQLiteHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
@@ -24,7 +29,7 @@ public class ContainerMoveSQLiteHelper extends SQLiteOpenHelper {
         db.execSQL("create table " + TABLE_CONTAINERS + "(" + COLUMN_ID + " integer primary key autoincrement, "
                         + COLUMN_CONT_ID + " text not null, "
                         + COLUMN_CONT_DEST + " text not null, "
-                        + COLUMN_DATE + " integer, "
+                        + COLUMN_DATE + " date, "
                         + COLUMN_ACTION + " text not null);"
         );
     }

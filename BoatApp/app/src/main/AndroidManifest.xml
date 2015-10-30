@@ -31,6 +31,11 @@
 
         <activity android:name=".SettingsActivity" >
         </activity>
+        <activity
+            android:name=".GraphActivity"
+            android:label="@string/title_activity_graph"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
     </application>
 
 </manifest>

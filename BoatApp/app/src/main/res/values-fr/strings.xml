@@ -20,4 +20,5 @@
     <string name="StringContainerArrival">Arrivée container</string>
     <string name="StringEndContainerIn">Fin de déchargement</string>
     <string name="StringOrderedContainers">Containers ordonnés</string>
+    <string name="StringGraph">Graphs</string>
 </resources>

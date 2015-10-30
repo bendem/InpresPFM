@@ -15,9 +15,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import be.hepl.benbear.iobrep.Container;
@@ -47,9 +49,6 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
 
     @Override
@@ -88,13 +87,13 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_graphs) {
+            startActivity(new Intent(this, GraphActivity.class));
+            return true;
+        } else if (id == R.id.action_fill) {
+            fillWithDummyData();
             return true;
         }
 
@@ -126,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                containerMoveDAO.addContainerMove(contOut.getId(), contOut.getDestination(), Calendar.getInstance().getTime().getTime(), "OUT");
+                containerMoveDAO.addContainerMove(contOut.getId(), contOut.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.OUT);
                 containerMoveDAO.close();
                 break;
             case CONTAINER_OUT_END_RESPONSE:
@@ -144,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                containerMoveDAO.addContainerMove(contIn.getId(), contIn.getDestination(), Calendar.getInstance().getTime().getTime(), "IN");
+                containerMoveDAO.addContainerMove(contIn.getId(), contIn.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.IN);
                 containerMoveDAO.close();
                 break;
             case CONTAINER_IN_END_RESPONSE:
@@ -153,6 +152,31 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
             default:
 
                 break;
+        }
+    }
+
+    private void fillWithDummyData() {
+        try {
+            containerMoveDAO.open();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("y-M-d");
+            containerMoveDAO.addContainerMove("Container1", "Paris", sdf.parse("2015-10-20"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container2", "Rome", sdf.parse("2015-10-21"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container3", "Londres", sdf.parse("2015-10-21"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container4", "Paris", sdf.parse("2015-10-22"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container1", "Paris", sdf.parse("2015-10-22"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container2", "Rome", sdf.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container3", "Londres", sdf.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container5", "Paris", sdf.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container6", "Rome", sdf.parse("2015-10-24"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container4", "Paris", sdf.parse("2015-10-25"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container5", "Paris", sdf.parse("2015-10-25"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container7", "Londres", sdf.parse("2015-10-26"), ContainerMoveSQLiteHelper.MoveType.IN);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 

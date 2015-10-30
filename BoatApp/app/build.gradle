@@ -21,6 +21,10 @@ android {
 
 repositories {
     mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://repository-achartengine.forge.cloudbees.com/snapshot/"
+    }
 }
 
 dependencies {
@@ -28,4 +32,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.0.1'
     compile 'com.android.support:design:23.0.1'
     compile 'be.hepl.benbear:iobrep:1.0-SNAPSHOT'
+    compile 'org.achartengine:achartengine:1.2.0'
 }

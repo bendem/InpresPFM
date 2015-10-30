@@ -158,10 +158,9 @@ public class LoadingFragment extends Fragment {
             @Override
             public void run() {
                 adapter.notifyDataSetChanged();
+                listview.setEnabled(true);
             }
         });
-        listview.setEnabled(true);
-        // TODO Save in SQLite
         return cont;
     }
 
@@ -171,9 +170,9 @@ public class LoadingFragment extends Fragment {
             @Override
             public void run() {
                 adapter.notifyDataSetChanged();
+                listview.setEnabled(false);
             }
         });
-        listview.setEnabled(false);
     }
 
     public void fillContainerList(List<Container> listFill) {
@@ -189,7 +188,6 @@ public class LoadingFragment extends Fragment {
         listview.setEnabled(true);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
