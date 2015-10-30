@@ -2,14 +2,12 @@ package be.hepl.benbear.boatapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
@@ -24,23 +22,12 @@ import be.hepl.benbear.iobrep.Criteria;
 import be.hepl.benbear.iobrep.GetContainersPacket;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link LoadingFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link LoadingFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class LoadingFragment extends Fragment {
 
-    private OnFragmentInteractionListener mListener;
-    private final LinkedList<Container> list = new LinkedList<Container>();
+    private final LinkedList<Container> list = new LinkedList<>();
     private ListView listview;
     private ContainerArrayAdapter adapter;
     private int loadedContainerPosition;
-
-
 
     public static LoadingFragment newInstance() {
         LoadingFragment fragment = new LoadingFragment();
@@ -58,7 +45,6 @@ public class LoadingFragment extends Fragment {
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
-        //((MainActivity)getActivity()).scs.isEstablished()
         View v = inflater.inflate(R.layout.fragment_loading, container, false);
         listview = (ListView) v.findViewById(R.id.listViewLoading);
         adapter = new ContainerArrayAdapter(v.getContext(),
@@ -66,7 +52,7 @@ public class LoadingFragment extends Fragment {
         listview.setAdapter(adapter);
 
         // Get Container Click
-        ((Button)v.findViewById(R.id.buttonGetContainers)).setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.buttonGetContainers).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final View inputView = inflater.inflate(R.layout.getcontainer_layout, container, false);
@@ -99,7 +85,7 @@ public class LoadingFragment extends Fragment {
         });
 
         // End Container Out Click
-        ((Button) v.findViewById(R.id.buttonEndContainerOut)).setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.buttonEndContainerOut).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new AlertDialog.Builder(getActivity())
@@ -186,32 +172,5 @@ public class LoadingFragment extends Fragment {
             }
         });;
         listview.setEnabled(true);
-    }
-
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
     }
 }
