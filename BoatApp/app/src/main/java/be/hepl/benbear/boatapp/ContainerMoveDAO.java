@@ -46,8 +46,8 @@ public class ContainerMoveDAO {
         database.insert(ContainerMoveSQLiteHelper.TABLE_CONTAINERS, null, values);
     }
 
-    public Map<Date, Long> getCountMoveDay(ContainerMoveSQLiteHelper.MoveType type) {
-        Map<Date, Long> result = new HashMap<>();
+    public Map<Date, Integer> getCountMoveDay(ContainerMoveSQLiteHelper.MoveType type) {
+        Map<Date, Integer> result = new HashMap<>();
 
         Cursor c = database.rawQuery("select date(" + ContainerMoveSQLiteHelper.COLUMN_DATE +"), count(*) from " + ContainerMoveSQLiteHelper.TABLE_CONTAINERS +
                 " where " + ContainerMoveSQLiteHelper.COLUMN_ACTION + " = '" + type.toString() +
@@ -56,7 +56,7 @@ public class ContainerMoveDAO {
         c.moveToFirst();
         while(!c.isAfterLast()) {
             try {
-                result.put(DATE_FORMAT.parse(c.getString(0)), c.getLong(1));
+                result.put(DATE_FORMAT.parse(c.getString(0)), c.getInt(1));
             } catch (ParseException e) {
                 e.printStackTrace();
             }

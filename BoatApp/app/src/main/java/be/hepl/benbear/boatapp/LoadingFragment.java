@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
@@ -71,6 +72,7 @@ public class LoadingFragment extends Fragment {
                                     } catch (ProtocolException e) {
                                         e.printStackTrace();
                                     }
+                                    getActivity().findViewById(R.id.buttonGetContainers).setEnabled(false);
                                 }
                             }
                         })
@@ -84,7 +86,9 @@ public class LoadingFragment extends Fragment {
         });
 
         // End Container Out Click
-        v.findViewById(R.id.buttonEndContainerOut).setOnClickListener(new View.OnClickListener() {
+        final View b = v.findViewById(R.id.buttonEndContainerOut);
+        b.setEnabled(false);
+        b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new AlertDialog.Builder(getActivity())
@@ -103,6 +107,7 @@ public class LoadingFragment extends Fragment {
                         })
                         .setNegativeButton("No", null)
                         .show();
+                getActivity().findViewById(R.id.buttonGetContainers).setEnabled(false);
             }
         });
 

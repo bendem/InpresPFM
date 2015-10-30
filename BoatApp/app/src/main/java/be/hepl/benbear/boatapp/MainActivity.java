@@ -111,6 +111,12 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 if (rp.isOk()) {
                     if(((GetContainersResponsePacket) rp).getContainers() != null) {
                         fragLoad.fillContainerList(((GetContainersResponsePacket) rp).getContainers());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                findViewById(R.id.buttonEndContainerOut).setEnabled(true);
+                            }
+                        });
                     } else {
                         runOnUiThread(new Runnable() {
                             @Override
@@ -125,7 +131,18 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                         Log.i("LOG", "No containers for that destination");
                     }
                 } else {
-                    Log.i("LOG", rp.getReason());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            findViewById(R.id.buttonGetContainers).setEnabled(true);
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(rp.getReason())
+                                    .setPositiveButton("Ok", null)
+                                    .show();
+                            Log.i("LOG", rp.getReason());
+                        }
+                    });
                 }
                 break;
             case CONTAINER_OUT_RESPONSE:
@@ -154,21 +171,23 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 }
                 break;
             case CONTAINER_OUT_END_RESPONSE:
-                if (rp.isOk()) {
-                    fragLoad.clearContainerList();
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                fragLoad.clearContainerList();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        findViewById(R.id.buttonEndContainerOut).setEnabled(false);
+                        findViewById(R.id.buttonGetContainers).setEnabled(true);
+                        if (!rp.isOk()) {
                             new AlertDialog.Builder(MainActivity.this)
                                     .setTitle("Error")
                                     .setMessage(rp.getReason())
                                     .setPositiveButton("Ok", null)
                                     .show();
+                            Log.i("LOG", rp.getReason());
                         }
-                    });
-                    Log.i("LOG", rp.getReason());
-                }
+                    }
+                });
+
                 break;
             case BOAT_ARRIVED_RESPONSE:
                 if (rp.isOk()) {
