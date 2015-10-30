@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ContainerMoveDAO {
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("y-M-d");
     private SQLiteDatabase database;
     private ContainerMoveSQLiteHelper dbHelper;
 
@@ -37,10 +38,9 @@ public class ContainerMoveDAO {
 
     public void addContainerMove(String containerId, String containerDest, Date date, ContainerMoveSQLiteHelper.MoveType action) {
         ContentValues values = new ContentValues();
-        SimpleDateFormat sdf = new SimpleDateFormat("y-M-d");
         values.put(ContainerMoveSQLiteHelper.COLUMN_CONT_ID, containerId);
         values.put(ContainerMoveSQLiteHelper.COLUMN_CONT_DEST, containerDest);
-        values.put(ContainerMoveSQLiteHelper.COLUMN_DATE, sdf.format(date));
+        values.put(ContainerMoveSQLiteHelper.COLUMN_DATE, DATE_FORMAT.format(date));
         values.put(ContainerMoveSQLiteHelper.COLUMN_ACTION, action.toString());
 
         database.insert(ContainerMoveSQLiteHelper.TABLE_CONTAINERS, null, values);
@@ -48,7 +48,6 @@ public class ContainerMoveDAO {
 
     public Map<Date, Long> getCountMoveDay(ContainerMoveSQLiteHelper.MoveType type) {
         Map<Date, Long> result = new HashMap<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("y-M-d");
 
         Cursor c = database.rawQuery("select date(" + ContainerMoveSQLiteHelper.COLUMN_DATE +"), count(*) from " + ContainerMoveSQLiteHelper.TABLE_CONTAINERS +
                 " where " + ContainerMoveSQLiteHelper.COLUMN_ACTION + " = '" + type.toString() +
@@ -57,12 +56,13 @@ public class ContainerMoveDAO {
         c.moveToFirst();
         while(!c.isAfterLast()) {
             try {
-                result.put((Date) sdf.parse(c.getString(0)), c.getLong(1));
+                result.put(DATE_FORMAT.parse(c.getString(0)), c.getLong(1));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
             c.moveToNext();
         }
+        c.close();
 
         return result;
     }
@@ -85,6 +85,7 @@ public class ContainerMoveDAO {
                 c.moveToNext();
             }
         }
+        c.close();
 
         return result;
     }

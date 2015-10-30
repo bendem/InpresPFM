@@ -25,6 +25,7 @@ import be.hepl.benbear.iobrep.Packet;
 import be.hepl.benbear.iobrep.ResponsePacket;
 
 public class ServerCommunicationService extends Service {
+
     private final IBinder mBinder = new LocalBinder();
     private Socket sock = null;
     private ObjectInputStream ois = null;
@@ -84,9 +85,6 @@ public class ServerCommunicationService extends Service {
         }.execute();
 
         Log.d("DEBUG SOCKET CREA", "After AsyncTask");
-
-
-
     }
 
     @Override
@@ -116,21 +114,17 @@ public class ServerCommunicationService extends Service {
     }
 
     public boolean isEstablished() {
-        if(sock != null) {
-            return true;
-        }
-        return false;
+        return sock != null;
     }
 
     private class ReadPacketTask extends AsyncTask<Void, Integer, Void> {
-
         @Override
         protected Void doInBackground(Void... params) {
             while(!Thread.interrupted()) {
                 try {
                     readPacket();
                 } catch (ProtocolException e) {
-
+                    e.printStackTrace();
                 }
             }
             return null;

@@ -28,6 +28,9 @@ import be.hepl.benbear.iobrep.GetContainersResponsePacket;
 import be.hepl.benbear.iobrep.ResponsePacket;
 
 public class MainActivity extends AppCompatActivity implements PacketNotificationListener {
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("y-M-d");
+
     /*package*/ ServerCommunicationService scs = null;
     private ContainerMoveDAO containerMoveDAO;
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -59,8 +62,7 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
         Intent i = new Intent(this, ServerCommunicationService.class);
         bindService(i, mConnection, Context.BIND_AUTO_CREATE);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -107,8 +109,8 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
         switch(rp.getId()) {
             case GET_CONTAINERS_RESPONSE:
                 if (rp.isOk()) {
-                    if(((GetContainersResponsePacket)rp).getContainers() != null) {
-                        fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
+                    if(((GetContainersResponsePacket) rp).getContainers() != null) {
+                        fragLoad.fillContainerList(((GetContainersResponsePacket) rp).getContainers());
                     } else {
                         runOnUiThread(new Runnable() {
                             @Override
@@ -133,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                         containerMoveDAO.open();
                     } catch (SQLException e) {
                         e.printStackTrace();
+                        return;
                     }
                     containerMoveDAO.addContainerMove(contOut.getId(), contOut.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.OUT);
                     containerMoveDAO.close();
@@ -196,10 +199,11 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 break;
             case CONTAINER_IN_RESPONSE:
                 if (rp.isOk()) {
-                    Container contIn = ((ContainerInResponsePacket)rp).getContainer();
+                    Container contIn = ((ContainerInResponsePacket) rp).getContainer();
                     fragUnload.containerUnloaded(contIn);
                     try {
                         containerMoveDAO.open();
+                        return;
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -250,21 +254,21 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
             containerMoveDAO.open();
         } catch (SQLException e) {
             e.printStackTrace();
+            return;
         }
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("y-M-d");
-            containerMoveDAO.addContainerMove("Container1", "Paris", sdf.parse("2015-10-20"), ContainerMoveSQLiteHelper.MoveType.IN);
-            containerMoveDAO.addContainerMove("Container2", "Rome", sdf.parse("2015-10-21"), ContainerMoveSQLiteHelper.MoveType.IN);
-            containerMoveDAO.addContainerMove("Container3", "Londres", sdf.parse("2015-10-21"), ContainerMoveSQLiteHelper.MoveType.IN);
-            containerMoveDAO.addContainerMove("Container4", "Paris", sdf.parse("2015-10-22"), ContainerMoveSQLiteHelper.MoveType.IN);
-            containerMoveDAO.addContainerMove("Container1", "Paris", sdf.parse("2015-10-22"), ContainerMoveSQLiteHelper.MoveType.OUT);
-            containerMoveDAO.addContainerMove("Container2", "Rome", sdf.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.OUT);
-            containerMoveDAO.addContainerMove("Container3", "Londres", sdf.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.OUT);
-            containerMoveDAO.addContainerMove("Container5", "Paris", sdf.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.IN);
-            containerMoveDAO.addContainerMove("Container6", "Rome", sdf.parse("2015-10-24"), ContainerMoveSQLiteHelper.MoveType.IN);
-            containerMoveDAO.addContainerMove("Container4", "Paris", sdf.parse("2015-10-25"), ContainerMoveSQLiteHelper.MoveType.OUT);
-            containerMoveDAO.addContainerMove("Container5", "Paris", sdf.parse("2015-10-25"), ContainerMoveSQLiteHelper.MoveType.OUT);
-            containerMoveDAO.addContainerMove("Container7", "Londres", sdf.parse("2015-10-26"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container1", "Paris", DATE_FORMAT.parse("2015-10-20"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container2", "Rome", DATE_FORMAT.parse("2015-10-21"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container3", "Londres", DATE_FORMAT.parse("2015-10-21"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container4", "Paris", DATE_FORMAT.parse("2015-10-22"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container1", "Paris", DATE_FORMAT.parse("2015-10-22"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container2", "Rome", DATE_FORMAT.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container3", "Londres", DATE_FORMAT.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container5", "Paris", DATE_FORMAT.parse("2015-10-23"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container6", "Rome", DATE_FORMAT.parse("2015-10-24"), ContainerMoveSQLiteHelper.MoveType.IN);
+            containerMoveDAO.addContainerMove("Container4", "Paris", DATE_FORMAT.parse("2015-10-25"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container5", "Paris", DATE_FORMAT.parse("2015-10-25"), ContainerMoveSQLiteHelper.MoveType.OUT);
+            containerMoveDAO.addContainerMove("Container7", "Londres", DATE_FORMAT.parse("2015-10-26"), ContainerMoveSQLiteHelper.MoveType.IN);
         } catch (ParseException e) {
             e.printStackTrace();
         }

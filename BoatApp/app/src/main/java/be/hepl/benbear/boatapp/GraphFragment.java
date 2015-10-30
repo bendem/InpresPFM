@@ -28,8 +28,7 @@ public class GraphFragment extends Fragment {
     private ContainerMoveDAO containerMoveDAO;
 
     public static GraphFragment newInstance() {
-        GraphFragment fragment = new GraphFragment();
-        return fragment;
+        return new GraphFragment();
     }
 
     public GraphFragment() {
@@ -45,7 +44,7 @@ public class GraphFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_graph_hist_day, container, false);
-        layoutGraph = ((FrameLayout)view.findViewById(R.id.layoutGraph));
+        layoutGraph = ((FrameLayout) view.findViewById(R.id.layoutGraph));
         setUpGraph();
         return view;
     }
@@ -55,6 +54,7 @@ public class GraphFragment extends Fragment {
             containerMoveDAO.open();
         } catch (SQLException e) {
             e.printStackTrace();
+            return;
         }
         Map<Date, Long> dataGraph11 = containerMoveDAO.getCountMoveDay(ContainerMoveSQLiteHelper.MoveType.IN);
         Map<Date, Long> dataGraph12 = containerMoveDAO.getCountMoveDay(ContainerMoveSQLiteHelper.MoveType.OUT);

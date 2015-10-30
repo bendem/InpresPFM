@@ -9,9 +9,10 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class SettingsActivity extends AppCompatActivity {
-    SharedPreferences settings;
-    EditText ip;
-    EditText port;
+
+    private SharedPreferences settings;
+    private EditText ip;
+    private EditText port;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

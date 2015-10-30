@@ -30,8 +30,7 @@ public class LoadingFragment extends Fragment {
     private int loadedContainerPosition;
 
     public static LoadingFragment newInstance() {
-        LoadingFragment fragment = new LoadingFragment();
-        return fragment;
+        return new LoadingFragment();
     }
 
     public LoadingFragment() {
