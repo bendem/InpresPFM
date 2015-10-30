@@ -1,5 +1,6 @@
 package be.hepl.benbear.boatapp;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -116,18 +117,26 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
 
     @Override
     public void onPacketReception() {
-        ResponsePacket rp = scs.getPacket();
+        final ResponsePacket rp = scs.getPacket();
 
         switch(rp.getId()) {
             case LOGIN_RESPONSE:
                 if(rp.isOk()) {
                     scs.removeOnPacketReceptionListener(this);
                     scs.setSession(((LoginResponsePacket) rp).getSession());
-                    Log.d("DEBUG", "SESSION = " + ((LoginResponsePacket) rp).getSession());
-                    Log.d("DEBUG", "SESSIONSAVED = " + scs.getSession());
                     startActivity(new Intent(this, MainActivity.class));
                 } else {
-                    // TODO GIVE FEEDBACK
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(LoginActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(rp.getReason())
+                                    .setPositiveButton("Ok", null)
+                                    .show();
+                        }
+                    });
+
                     Log.d("DEBUG", "Packet is not ok: " + rp.getReason());
                 }
                 break;

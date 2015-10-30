@@ -1,5 +1,6 @@
 package be.hepl.benbear.boatapp;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -101,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
 
     @Override
     public void onPacketReception() {
-        ResponsePacket rp = scs.getPacket();
+        final ResponsePacket rp = scs.getPacket();
 
         switch(rp.getId()) {
             case GET_CONTAINERS_RESPONSE:
@@ -109,7 +110,16 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                     if(((GetContainersResponsePacket)rp).getContainers() != null) {
                         fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
                     } else {
-                        // TODO GIVE FEEDBACK
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                new AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("Error")
+                                        .setMessage(rp.getReason())
+                                        .setPositiveButton("Ok", null)
+                                        .show();
+                            }
+                        });
                         Log.i("LOG", "No containers for that destination");
                     }
                 } else {
@@ -127,6 +137,16 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                     containerMoveDAO.addContainerMove(contOut.getId(), contOut.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.OUT);
                     containerMoveDAO.close();
                 } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(rp.getReason())
+                                    .setPositiveButton("Ok", null)
+                                    .show();
+                        }
+                    });
                     Log.i("LOG", rp.getReason());
                 }
                 break;
@@ -134,14 +154,43 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 if (rp.isOk()) {
                     fragLoad.clearContainerList();
                 } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(rp.getReason())
+                                    .setPositiveButton("Ok", null)
+                                    .show();
+                        }
+                    });
                     Log.i("LOG", rp.getReason());
                 }
                 break;
             case BOAT_ARRIVED_RESPONSE:
                 if (rp.isOk()) {
-                    // TODO GIVE FEEDBACK
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Info")
+                                    .setMessage("Boat recorded")
+                                    .setPositiveButton("Ok", null)
+                                    .show();
+                        }
+                    });
                     Log.i("DEBUG ABOAT", "Boat arrived");
                 } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(rp.getReason())
+                                    .setPositiveButton("Ok", null)
+                                    .show();
+                        }
+                    });
                     Log.i("LOG", rp.getReason());
                 }
                 break;
@@ -157,6 +206,16 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                     containerMoveDAO.addContainerMove(contIn.getId(), contIn.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.IN);
                     containerMoveDAO.close();
                 } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(rp.getReason())
+                                    .setPositiveButton("Ok", null)
+                                    .show();
+                        }
+                    });
                     Log.i("LOG", rp.getReason());
                 }
                 break;
@@ -164,6 +223,16 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
                 if (rp.isOk()) {
                     fragUnload.clearContainerList();
                 } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(rp.getReason())
+                                    .setPositiveButton("Ok", null)
+                                    .show();
+                        }
+                    });
                     Log.i("LOG", rp.getReason());
                 }
                 break;
