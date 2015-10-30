@@ -11,6 +11,7 @@ import be.hepl.benbear.commons.streams.UncheckedLambda;
 import be.hepl.benbear.iobrep.*;
 
 import java.io.BufferedWriter;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -41,6 +42,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
     private final Map<UUID, String> sessions;
     private final Map<UUID, Set<String>> containerLeaving;
     private final Map<UUID, Set<Container>> containerIncoming;
+    private final Map<UUID, String> lockedDestinations;
     private final BufferedWriter boatWriter;
 
     public BoatServer(int port, ExecutorService threadPool) {
@@ -83,6 +85,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         this.sessions = new ConcurrentHashMap<>();
         this.containerLeaving = new ConcurrentHashMap<>();
         this.containerIncoming = new ConcurrentHashMap<>();
+        this.lockedDestinations = new ConcurrentHashMap<>();
 
         try {
             this.boatWriter = Files.newBufferedWriter(
@@ -182,6 +185,10 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
     private void handleGetContainers(GetContainersPacket p, ObjectOutputStream os) throws IOException {
         containersLock.readLock().lock();
         try {
+            if(lockedDestinations.containsValue(p.getDestination())) {
+                os.writeObject(new GetContainersResponsePacket("A boat is already loading containers for that destination", null));
+                return;
+            }
             List<Container> containers;
             try {
                 Stream<Container> containerStream = containerTable
@@ -203,6 +210,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
                 os.writeObject(new GetContainersResponsePacket("An error happened: " + e.getMessage(), null));
                 return;
             }
+            lockedDestinations.put(p.getSession(), p.getDestination());
             os.writeObject(new GetContainersResponsePacket(null, containers));
         } finally {
             containersLock.readLock().unlock();
@@ -229,6 +237,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
                 return;
             }
             containerLeaving.remove(p.getSession());
+            lockedDestinations.remove(p.getSession());
             DBPredicate predicate = null;
             for(String id : ids) {
                 if(predicate == null) {
@@ -314,11 +323,12 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         sessions.remove(uuid);
         containerLeaving.remove(uuid);
         containerIncoming.remove(uuid);
+        lockedDestinations.remove(uuid);
     }
 
     @Override
     protected void onClose(SocketChannel channel, Exception e) {
-        if(e != null) {
+        if(e != null && !(e instanceof EOFException)) {
             e.printStackTrace();
         }
     }
