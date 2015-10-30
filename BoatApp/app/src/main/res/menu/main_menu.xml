@@ -10,4 +10,8 @@
           android:title="FillData"
           android:orderInCategory="100"
           app:showAsAction="ifRoom"/>
+    <item android:id="@+id/action_logout"
+          android:title="Logout"
+          android:orderInCategory="100"
+          app:showAsAction="ifRoom"/>
 </menu>

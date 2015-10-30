@@ -30,7 +30,6 @@ public class ServerCommunicationService extends Service {
     private Socket sock = null;
     private ObjectInputStream ois = null;
     private ObjectOutputStream oos = null;
-    private UUID session;
     private SharedPreferences settings;
     private final Queue<ResponsePacket> packetQueue = new ConcurrentLinkedQueue<>();
 
@@ -179,10 +178,22 @@ public class ServerCommunicationService extends Service {
     }
 
     public UUID getSession() {
-        return session;
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.config_file), 0);
+        String session = prefs.getString("session", null);
+        if(session == null) {
+            return null;
+        }
+        return UUID.fromString(session);
     }
 
     public void setSession(UUID session) {
-        this.session = session;
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.config_file), 0);
+        SharedPreferences.Editor editor = prefs.edit();
+        if(session == null) {
+            editor.remove("session");
+        } else {
+            editor.putString("session", session.toString());
+        }
+        editor.commit();
     }
 }

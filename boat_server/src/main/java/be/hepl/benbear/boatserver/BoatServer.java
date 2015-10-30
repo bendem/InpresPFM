@@ -123,6 +123,9 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
             authenticatedPacket == null ? null : authenticatedPacket.getSession());
 
         switch(packet.getId()) {
+            case LOGOUT:
+                disconnect(((LogoutPacket) packet).getSession());
+                return;
             case LOGIN:
                 handleLogin((LoginPacket) o, os);
                 break;
@@ -320,12 +323,16 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         if(!optUuid.isPresent()) {
             return;
         }
-        UUID uuid = optUuid.get();
-        System.out.printf("Disconnecting %s from session %s%n", username, uuid);
-        sessions.remove(uuid);
-        containerLeaving.remove(uuid);
-        containerIncoming.remove(uuid);
-        lockedDestinations.remove(uuid);
+
+        disconnect(optUuid.get());
+    }
+
+    private void disconnect(UUID session) {
+        System.out.printf("Disconnecting from session %s%n", session);
+        sessions.remove(session);
+        containerLeaving.remove(session);
+        containerIncoming.remove(session);
+        lockedDestinations.remove(session);
     }
 
     @Override

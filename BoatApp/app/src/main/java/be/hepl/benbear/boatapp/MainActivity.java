@@ -25,6 +25,7 @@ import java.util.Calendar;
 import be.hepl.benbear.iobrep.Container;
 import be.hepl.benbear.iobrep.ContainerInResponsePacket;
 import be.hepl.benbear.iobrep.GetContainersResponsePacket;
+import be.hepl.benbear.iobrep.LogoutPacket;
 import be.hepl.benbear.iobrep.ResponsePacket;
 
 public class MainActivity extends AppCompatActivity implements PacketNotificationListener {
@@ -75,6 +76,14 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if(scs != null) {
+            scs.addOnPacketReceptionListener(this);
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         scs.removeOnPacketReceptionListener(this);
         super.onBackPressed();
@@ -96,6 +105,16 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
             return true;
         } else if (id == R.id.action_fill) {
             fillWithDummyData();
+            return true;
+        } else if (id == R.id.action_logout) {
+            try {
+                scs.writePacket(new LogoutPacket(scs.getSession()));
+                scs.setSession(null);
+            } catch(ProtocolException e) {
+                e.printStackTrace();
+            }
+            scs.removeOnPacketReceptionListener(this);
+            startActivity(new Intent(this, LoginActivity.class));
             return true;
         }
 
