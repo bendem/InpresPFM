@@ -17,7 +17,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.UUID;
 
+import be.hepl.benbear.iobrep.CheckSessionValidPacket;
 import be.hepl.benbear.iobrep.LoginPacket;
 import be.hepl.benbear.iobrep.LoginResponsePacket;
 import be.hepl.benbear.iobrep.ResponsePacket;
@@ -30,6 +32,15 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
             ServerCommunicationService.LocalBinder binder = (ServerCommunicationService.LocalBinder) service;
             scs = binder.getService();
             scs.addOnPacketReceptionListener(LoginActivity.this);
+
+            UUID session = scs.getSession();
+            if (session != null) {
+                try {
+                    scs.writePacket(new CheckSessionValidPacket(session));
+                } catch (ProtocolException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         @Override
@@ -63,11 +74,6 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
                 }
             }
         });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 
     @Override
@@ -138,6 +144,12 @@ public class LoginActivity extends AppCompatActivity implements PacketNotificati
                     });
 
                     Log.d("DEBUG", "Packet is not ok: " + rp.getReason());
+                }
+                break;
+            case CHECK_VALID_SESSION_RESPONSE:
+                if(rp.isOk()) {
+                    scs.removeOnPacketReceptionListener(this);
+                    startActivity(new Intent(this, MainActivity.class));
                 }
                 break;
             default:
