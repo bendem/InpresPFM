@@ -199,8 +199,8 @@ public class CSVTable<T> extends AbstractTable<T> {
                     ++count;
                 } else {
                     w.write(line);
+                    w.newLine();
                 }
-                w.newLine();
             }
         } catch(IOException e) {
             future.completeExceptionally(e);
