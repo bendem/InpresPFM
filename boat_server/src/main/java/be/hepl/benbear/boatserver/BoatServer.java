@@ -123,6 +123,9 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
             authenticatedPacket == null ? null : authenticatedPacket.getSession());
 
         switch(packet.getId()) {
+            case CHECK_VALID_SESSION:
+                handleCheckValidSession(((CheckSessionValidPacket) packet).getSession(), os);
+                break;
             case LOGOUT:
                 disconnect(((LogoutPacket) packet).getSession());
                 return;
@@ -151,6 +154,14 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
                 System.err.println("unhandled packet: " + packet.getId().name() + " (" + o.getClass().getName() + ")");
         }
         os.flush();
+    }
+
+    private void handleCheckValidSession(UUID session, ObjectOutputStream os) throws IOException {
+        if(sessions.containsKey(session)) {
+            os.writeObject(new CheckSessionValidResponsePacket(null));
+        } else {
+            os.writeObject(new CheckSessionValidResponsePacket("Invalid session"));
+        }
     }
 
     private void handleLogin(LoginPacket p, ObjectOutputStream os) throws IOException {
