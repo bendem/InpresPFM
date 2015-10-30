@@ -243,7 +243,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
                 if(predicate == null) {
                     predicate = DBPredicate.of("id", id);
                 } else {
-                    predicate = predicate.or("id", id);
+                    predicate.or("id", id);
                 }
             }
 
