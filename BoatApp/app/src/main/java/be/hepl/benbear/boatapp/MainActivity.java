@@ -103,53 +103,75 @@ public class MainActivity extends AppCompatActivity implements PacketNotificatio
     public void onPacketReception() {
         ResponsePacket rp = scs.getPacket();
 
-        if (!rp.isOk()) {
-            // Check the error
-            // Most likely return to Login Activity
-        }
-
         switch(rp.getId()) {
             case GET_CONTAINERS_RESPONSE:
-                if(((GetContainersResponsePacket)rp).getContainers() != null) {
-                    fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
+                if (rp.isOk()) {
+                    if(((GetContainersResponsePacket)rp).getContainers() != null) {
+                        fragLoad.fillContainerList(((GetContainersResponsePacket)rp).getContainers());
+                    } else {
+                        // TODO GIVE FEEDBACK
+                        Log.i("LOG", "No containers for that destination");
+                    }
                 } else {
-                    // TODO GIVE FEEDBACK
-                    Log.d("DEBUG GET", "No containers for that destination");
+                    Log.i("LOG", rp.getReason());
                 }
                 break;
             case CONTAINER_OUT_RESPONSE:
-                Container contOut = fragLoad.containerLoaded();
-                try {
-                    containerMoveDAO.open();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                if (rp.isOk()) {
+                    Container contOut = fragLoad.containerLoaded();
+                    try {
+                        containerMoveDAO.open();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    containerMoveDAO.addContainerMove(contOut.getId(), contOut.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.OUT);
+                    containerMoveDAO.close();
+                } else {
+                    Log.i("LOG", rp.getReason());
                 }
-                containerMoveDAO.addContainerMove(contOut.getId(), contOut.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.OUT);
-                containerMoveDAO.close();
                 break;
             case CONTAINER_OUT_END_RESPONSE:
-                fragLoad.clearContainerList();
+                if (rp.isOk()) {
+                    fragLoad.clearContainerList();
+                } else {
+                    Log.i("LOG", rp.getReason());
+                }
                 break;
             case BOAT_ARRIVED_RESPONSE:
-                // TODO GIVE FEEDBACK
-                Log.d("DEBUG ABOAT", "Boat arrived");
+                if (rp.isOk()) {
+                    // TODO GIVE FEEDBACK
+                    Log.i("DEBUG ABOAT", "Boat arrived");
+                } else {
+                    Log.i("LOG", rp.getReason());
+                }
                 break;
             case CONTAINER_IN_RESPONSE:
-                Container contIn = ((ContainerInResponsePacket)rp).getContainer();
-                fragUnload.containerUnloaded(contIn);
-                try {
-                    containerMoveDAO.open();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                if (rp.isOk()) {
+                    Container contIn = ((ContainerInResponsePacket)rp).getContainer();
+                    fragUnload.containerUnloaded(contIn);
+                    try {
+                        containerMoveDAO.open();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    containerMoveDAO.addContainerMove(contIn.getId(), contIn.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.IN);
+                    containerMoveDAO.close();
+                } else {
+                    Log.i("LOG", rp.getReason());
                 }
-                containerMoveDAO.addContainerMove(contIn.getId(), contIn.getDestination(), Calendar.getInstance().getTime(), ContainerMoveSQLiteHelper.MoveType.IN);
-                containerMoveDAO.close();
                 break;
             case CONTAINER_IN_END_RESPONSE:
-                fragUnload.clearContainerList();
+                if (rp.isOk()) {
+                    fragUnload.clearContainerList();
+                } else {
+                    Log.i("LOG", rp.getReason());
+                }
                 break;
+            case INVALID_SESSION_RESPONSE:
+                Log.i("LOG", rp.getReason());
+                scs.setSession(null);
+                startActivity(new Intent(this, LoginActivity.class));
             default:
-
                 break;
         }
     }
