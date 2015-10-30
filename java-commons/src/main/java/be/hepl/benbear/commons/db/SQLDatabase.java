@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 // TODO Doc
 public class SQLDatabase extends AbstractDatabase {
@@ -75,6 +76,18 @@ public class SQLDatabase extends AbstractDatabase {
         return writeWorker.second.add(() -> {
             try(PreparedStatement stmt = supplier.supply()) {
                 return stmt.executeUpdate();
+            }
+        });
+    }
+
+    protected CompletableFuture<Integer> writeBatchOp(DBOperationSupplier supplier) {
+        if(!isConnected()) {
+            throw new IllegalStateException("Not connected");
+        }
+
+        return writeWorker.second.add(() -> {
+            try(PreparedStatement stmt = supplier.supply()) {
+                return IntStream.of(stmt.executeBatch()).sum();
             }
         });
     }

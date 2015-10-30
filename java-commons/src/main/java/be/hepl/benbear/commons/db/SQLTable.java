@@ -53,6 +53,33 @@ public class SQLTable<T> extends AbstractTable<T> {
     }
 
     @Override
+    public CompletableFuture<Integer> insert(Collection<T> obj) {
+        Map<String, Class<?>> typeMap = fieldReflection.getTypeMap();
+        String columns = typeMap.keySet().stream()
+            .map(Mapping::transformName)
+            .collect(Collectors.joining(", "));
+        String valuePlaceholder = Stream
+            .generate(() -> "?")
+            .limit(typeMap.size())
+            .collect(Collectors.joining(", "));
+        String query = "insert into " + name + "(" + columns + ") values (" + valuePlaceholder + ")";
+
+        List<List<Object>> values = obj.stream()
+            .map(fieldReflection::getValues)
+            .map(s -> s.collect(Collectors.toList()))
+            .collect(Collectors.toList());
+
+        return db.writeBatchOp(() -> {
+            PreparedStatement stmt = db.connection.prepareStatement(query);
+            for(List<Object> o : values) {
+                bind(stmt, o);
+                stmt.addBatch();
+            }
+            return stmt;
+        });
+    }
+
+    @Override
     public CompletableFuture<Integer> update(T obj) {
         DBPredicate predicate = null;
         for(Map.Entry<String, Field> entry : primaryKeys.entrySet()) {

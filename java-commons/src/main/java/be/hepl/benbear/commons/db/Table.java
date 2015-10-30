@@ -1,5 +1,6 @@
 package be.hepl.benbear.commons.db;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -41,6 +42,14 @@ public interface Table<T> {
      *         this case)
      */
     CompletableFuture<Integer> insert(T obj);
+
+    /**
+     * Inserts multiple object in the database
+     *
+     * @param iterable a collection of objects to insert
+     * @return the total amount of inserted objects
+     */
+    CompletableFuture<Integer> insert(Collection<T> iterable);
 
     /**
      * Updates an object in the database based on its primary key.

@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -105,6 +106,25 @@ public class CSVTable<T> extends AbstractTable<T> {
         }
 
         future.complete(1);
+        return future;
+    }
+
+    @Override
+    public CompletableFuture<Integer> insert(Collection<T> collection) {
+        CompletableFuture<Integer> future = new CompletableFuture<>();
+        int count = 0;
+        try(BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            for(T obj : collection) {
+                writer.write(toCSV.apply(obj));
+                writer.newLine();
+                ++count;
+            }
+        } catch(IOException e) {
+            future.completeExceptionally(e);
+            return future;
+        }
+
+        future.complete(count);
         return future;
     }
 
