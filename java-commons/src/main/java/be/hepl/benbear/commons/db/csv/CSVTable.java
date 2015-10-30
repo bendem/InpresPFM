@@ -288,14 +288,15 @@ public class CSVTable<T> extends AbstractTable<T> {
         next = predicate.next();
 
         while(next.isPresent()) {
+            predicate = next.get();
+            next = predicate.next();
             field = predicate.field();
             value = predicate.value();
-            if(next.get().type() == DBPredicate.Type.AND) {
+            if(predicate.type() == DBPredicate.Type.AND) {
                 result = result && parts.get(toFieldIndex(field)).equals(value.toString());
             } else {
                 result = result || parts.get(toFieldIndex(field)).equals(value.toString());
             }
-            next = next.get().next();
         }
 
         return result;

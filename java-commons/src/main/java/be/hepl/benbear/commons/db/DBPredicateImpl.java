@@ -23,11 +23,17 @@ public class DBPredicateImpl implements DBPredicate {
 
     @Override
     public DBPredicate and(String field, Object value, String comparison) {
+        if(next != null) {
+            return next.and(field, value, comparison);
+        }
         return next = new DBPredicateImpl(field, value, comparison, Type.AND, first);
     }
 
     @Override
     public DBPredicate or(String field, Object value, String comparison) {
+        if(next != null) {
+            return next.or(field, value, comparison);
+        }
         return next = new DBPredicateImpl(field, value, comparison, Type.OR, first);
     }
 
