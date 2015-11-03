@@ -3,9 +3,9 @@ package be.hepl.benbear.pfmcop;
 public class LoginPacket {
 
     private final String username;
-    private final char[] digest;
+    private final byte digest;
 
-    public LoginPacket(String username, char[] digest) {
+    public LoginPacket(String username, byte digest) {
         this.username = username;
         this.digest = digest;
     }
@@ -14,7 +14,7 @@ public class LoginPacket {
         return username;
     }
 
-    public char[] getDigest() {
+    public byte getDigest() {
         return digest;
     }
 
