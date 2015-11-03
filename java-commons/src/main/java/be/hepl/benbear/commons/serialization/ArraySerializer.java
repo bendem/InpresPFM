@@ -43,22 +43,32 @@ public class ArraySerializer<T> implements Serializer<T>, Deserializer<T> {
 
     @Override
     public T deserialize(ByteBuffer bb) {
-        int length = bb.getInt();
-        Object array = Array.newInstance(clazz, length);
+        int length = bb.getInt(); // TODO Check for length < 0?
+        if(length < 0) {
+            throw new SerializationException("Array of negative size: " + length);
+        }
+
+        T array = (T) Array.newInstance(clazz, length);
+
+        if(length == 0) {
+            return array;
+        }
+
         Deserializer<?> deserializer = BinarySerializer.getInstance().getDeserializer(clazz);
         for(int i = 0; i < length; ++i) {
             Array.set(array, i, deserializer.deserialize(bb));
         }
-        return (T) array;
+        return array;
     }
 
     @Override
     public void serialize(T obj, DataOutputStream dos) throws IOException {
         int length = Array.getLength(obj);
         dos.writeInt(length);
-        Serializer serializer = (Serializer) BinarySerializer.getInstance().getSerializer(clazz);
+        Serializer serializer = BinarySerializer.getInstance().getSerializer(clazz);
         for(int i = 0; i < length; ++i) {
             serializer.serialize(Array.get(obj, i), dos);
         }
     }
+
 }
