@@ -1,28 +1,30 @@
 #include "threading/ThreadPool.hpp"
 
-ThreadPool::ThreadPool(unsigned int count, std::function<void()> startup) : closed(false) {
+ThreadPool::ThreadPool(unsigned int count, std::function<void()> startup) : threads(count), closed(false) {
     for(unsigned int i = 0; i < count; ++i) {
-        this->threads.emplace_back(std::thread([this, &startup] {
+        this->threads[i] = std::thread([this, &startup] {
             startup();
             while(!this->closed) {
-                std::unique_lock<std::mutex> lock(this->tasksMutex);
-                if(this->tasks.empty()) {
-                    this->tasksCondVar.wait(lock);
-                }
+                std::function<void()> task;
+                {
+                    std::unique_lock<std::mutex> lock(this->tasksMutex);
+                    if(this->tasks.empty()) {
+                        this->tasksCondVar.wait(lock);
+                    }
 
-                if(this->tasks.empty()) {
-                    // Closing the pool
-                    continue;
-                }
+                    if(this->tasks.empty()) {
+                        // Closing the pool
+                        continue;
+                    }
 
-                std::function<void()> task = this->tasks.front();
-                this->tasks.pop();
-                lock.unlock();
+                    task = this->tasks.front();
+                    this->tasks.pop();
+                }
 
                 task();
             }
             LOG << Logger::Debug << "Thread from thread pool closed";
-        }));
+        });
     }
 }
 
