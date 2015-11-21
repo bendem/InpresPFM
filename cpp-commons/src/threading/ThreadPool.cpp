@@ -1,11 +1,11 @@
 #include "threading/ThreadPool.hpp"
 
-ThreadPool::ThreadPool(unsigned int count, std::function<void()> startup) : threads(count), closed(false) {
+ThreadPool::ThreadPool(unsigned int count, Task startup) : threads(count), closed(false) {
     for(unsigned int i = 0; i < count; ++i) {
         this->threads[i] = std::thread([this, &startup] {
             startup();
             while(!this->closed) {
-                std::function<void()> task;
+                Task task;
                 {
                     std::unique_lock<std::mutex> lock(this->tasksMutex);
                     if(this->tasks.empty()) {
@@ -28,7 +28,7 @@ ThreadPool::ThreadPool(unsigned int count, std::function<void()> startup) : thre
     }
 }
 
-ThreadPool& ThreadPool::submit(std::function<void()> task) {
+ThreadPool& ThreadPool::submit(Task task) {
     if(this->closed) {
         return *this;
     }

@@ -12,19 +12,20 @@
 class ThreadPool {
 
 public:
-    ThreadPool(unsigned int count, std::function<void()> startup = []{});
+    typedef std::function<void()> Task;
+    ThreadPool(unsigned int count, Task startup = []{});
     ThreadPool(const ThreadPool&) = delete;
     ThreadPool(ThreadPool&&) = delete;
     ~ThreadPool() { this->close(); }
 
-    ThreadPool& submit(std::function<void()>);
+    ThreadPool& submit(Task);
     void close();
 
     ThreadPool& operator=(const ThreadPool&) = delete;
 
 private:
     std::vector<std::thread> threads;
-    std::queue<std::function<void()>> tasks;
+    std::queue<Task> tasks;
     std::atomic_bool closed;
     std::condition_variable tasksCondVar;
     std::mutex tasksMutex;
