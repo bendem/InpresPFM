@@ -1,7 +1,7 @@
 package be.hepl.benbear.trafficserver;
 
-import be.hepl.benbear.commons.net.BinarySerializer;
-import be.hepl.benbear.commons.net.ProtocolHandler;
+import be.hepl.benbear.commons.serialization.BinarySerializer;
+import be.hepl.benbear.commons.protocol.ProtocolHandler;
 import be.hepl.benbear.protocol.tramap.InputLorryPacket;
 import be.hepl.benbear.protocol.tramap.PacketId;
 
