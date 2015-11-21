@@ -1,0 +1,17 @@
+.root {
+    -fx-font-size: 14pt;
+}
+
+.error {
+    -fx-text-fill: darkred;
+    -fx-focus-color: red;
+}
+
+.matching {
+    -fx-background-color: #aea;
+    -fx-text-fill: darkgreen;
+}
+
+:selected.matching {
+    -fx-background-color: #7e7;
+}

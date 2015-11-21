@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<VBox spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.chatclient.ChatController">
+    <children>
+        <ListView fx:id="chatList" maxHeight="1.7976931348623157E308" minHeight="200.0" minWidth="-Infinity" VBox.vgrow="ALWAYS" />
+        <HBox minHeight="-Infinity" minWidth="-Infinity" spacing="5.0" VBox.vgrow="NEVER">
+            <children>
+                <TextField fx:id="inputField" disable="true" minWidth="-Infinity" promptText="Enter your message here." HBox.hgrow="ALWAYS" />
+                <Button fx:id="answerButton" disable="true" mnemonicParsing="false" text="Answer" />
+                <Button fx:id="eventButton" disable="true" mnemonicParsing="false" text="Event" />
+                <Button fx:id="questionButton" defaultButton="true" disable="true" maxHeight="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" text="Question" />
+            </children>
+        </HBox>
+    </children>
+    <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+    </padding>
+</VBox>
