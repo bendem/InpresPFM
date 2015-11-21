@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox minHeight="300.0" minWidth="350.0" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.LoginController">
+    <children>
+        <GridPane hgap="20.0" vgap="15.0" VBox.vgrow="NEVER">
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="-Infinity" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints fillHeight="false" minHeight="-Infinity" vgrow="NEVER" />
+                <RowConstraints fillHeight="false" minHeight="-Infinity" vgrow="NEVER" />
+                <RowConstraints fillHeight="false" minHeight="-Infinity" vgrow="NEVER" />
+                <RowConstraints fillHeight="false" minHeight="-Infinity" vgrow="NEVER" />
+            </rowConstraints>
+            <children>
+                <Label maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" text="Login" GridPane.columnIndex="1">
+                    <font>
+                        <Font size="19.0" />
+                    </font>
+                </Label>
+                <Label text="Username" GridPane.rowIndex="1" />
+                <Label text="Password" GridPane.rowIndex="2" />
+                <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Button fx:id="loginButton" alignment="CENTER_RIGHT" defaultButton="true" mnemonicParsing="false" text="Login" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            </children>
+        </GridPane>
+        <Label fx:id="errorLabel" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" minHeight="-Infinity" styleClass="error" VBox.vgrow="ALWAYS" />
+    </children>
+    <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+    </padding>
+</VBox>

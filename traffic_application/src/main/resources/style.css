@@ -1,0 +1,8 @@
+.root {
+    -fx-font-size: 12pt;
+}
+
+.error {
+    -fx-text-fill: darkred;
+    -fx-focus-color: red;
+}

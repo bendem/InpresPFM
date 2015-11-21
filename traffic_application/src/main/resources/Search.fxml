@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.SearchController">
+   <children>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Label text="Start period">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Label>
+            <DatePicker fx:id="startDatePicker" />
+         </children>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+      </HBox>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Label text="End period">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Label>
+            <DatePicker fx:id="endDatePicker" />
+         </children>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+      </HBox>
+      <HBox>
+         <children>
+            <Label text="Criteria">
+               <HBox.margin>
+                  <Insets right="5.0" />
+               </HBox.margin>
+            </Label>
+            <TextField fx:id="criteriaTextField" />
+         </children>
+      </HBox>
+      <RadioButton fx:id="companyRadio" mnemonicParsing="false" selected="true" text="Company">
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+         <toggleGroup>
+            <ToggleGroup fx:id="typeSearch" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="destinationRadio" mnemonicParsing="false" text="Destination" toggleGroup="$typeSearch">
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+      </RadioButton>
+      <Button fx:id="searchButton" mnemonicParsing="false" text="Search" textAlignment="RIGHT">
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+      </Button>
+   </children>
+   <padding>
+      <Insets bottom="7.0" left="10.0" right="10.0" top="7.0" />
+   </padding>
+</VBox>

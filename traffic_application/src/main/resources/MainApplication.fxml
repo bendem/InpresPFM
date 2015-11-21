@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="350.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.MainController">
+   <children>
+      <Label text="Application_Traffic" />
+      <Button fx:id="truckResButton" mnemonicParsing="false" prefWidth="250.0" text="Truck with reservation" />
+      <Button fx:id="truckNoResButton" mnemonicParsing="false" prefWidth="250.0" text="Truck without reservation" />
+      <Button fx:id="listButton" mnemonicParsing="false" prefWidth="250.0" text="List movements" />
+      <Button fx:id="loginButton" mnemonicParsing="false" prefWidth="250.0" text="Login" />
+   </children>
+</VBox>
