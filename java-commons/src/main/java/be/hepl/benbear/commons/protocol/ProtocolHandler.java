@@ -16,31 +16,28 @@ public class ProtocolHandler {
 
     private static final byte FRAME_END = 0x42;
 
-    private final Map<Byte, Class<?>> packetsById;
-    private final Map<Class<?>, Byte> idsByClass;
+    private final Map<Byte, Class<? extends Packet>> packetsById;
     private final BinarySerializer serializer;
 
     public ProtocolHandler() {
         packetsById = new HashMap<>();
-        idsByClass = new HashMap<>();
         serializer = BinarySerializer.getInstance();
     }
 
-    public synchronized <T> ProtocolHandler registerPacket(byte id, Class<T> packetClass) {
+    public synchronized <T extends Packet> ProtocolHandler registerPacket(byte id, Class<T> packetClass) {
         Sanity.noneNull(packetClass);
 
-        if(packetsById.containsKey(id) || idsByClass.containsKey(packetClass)) {
+        if(packetsById.containsKey(id)) {
             throw new IllegalStateException("A packet with id = " + id + " or class = " + packetClass.getName() + " is already registered");
         }
 
         packetsById.put(id, packetClass);
-        idsByClass.put(packetClass, id);
         ObjectSerializer<T> objectSerializer = new ObjectSerializer<>(packetClass);
         serializer.registerSerializer(packetClass, objectSerializer, objectSerializer);
         return this;
     }
 
-    public <T> T read(InputStream is) throws IOException {
+    public <T extends Packet> T read(InputStream is) throws IOException {
         Sanity.noneNull(is);
 
         byte[] b = accumulate(is, 3);
@@ -60,7 +57,7 @@ public class ProtocolHandler {
         return serializer.deserialize(packetClass, bb);
     }
 
-    public <T> T readSpecific(InputStream is, Class<T> packetClass) throws IOException {
+    public <T extends Packet> T readSpecific(InputStream is, Class<T> packetClass) throws IOException {
         Sanity.noneNull(is, packetClass);
 
         T read;
@@ -70,11 +67,11 @@ public class ProtocolHandler {
         return read;
     }
 
-    public <T> ProtocolHandler write(OutputStream os, T packet) throws IOException {
+    public <T extends Packet> ProtocolHandler write(OutputStream os, T packet) throws IOException {
         Sanity.noneNull(os, packet);
 
         byte[] bytes = serializer.serialize(packet);
-        os.write(idsByClass.get(packet.getClass()));
+        os.write(packet.getId());
         os.write(bytes.length & 0xff);
         os.write(bytes.length >> 8 & 0xff);
         os.write(bytes);
