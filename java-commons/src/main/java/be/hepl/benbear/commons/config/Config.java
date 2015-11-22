@@ -57,6 +57,7 @@ public class Config {
     private Config load() throws IOException {
         Map<String, String> collected = Files.lines(path)
             .map(String::trim)
+            .filter(l -> !l.isEmpty())
             .filter(l -> !l.startsWith("#"))
             .filter(l -> !l.startsWith(";"))
             .filter(l -> !l.startsWith("//"))
@@ -72,8 +73,8 @@ public class Config {
                 return new String[]{l.substring(0, i), l.substring(i + 1)};
             })
             .collect(Collectors.toMap(
-                p -> p[0],
-                p -> p[1],
+                p -> p[0].trim(),
+                p -> p[1].trim(),
                 (a, b) -> b
             ));
         data.putAll(collected);
