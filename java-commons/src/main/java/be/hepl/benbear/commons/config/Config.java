@@ -20,19 +20,25 @@ public class Config {
         if(Files.isRegularFile(DEFAULT_PATH)) {
             return DEFAULT_PATH;
         }
-        throw new RuntimeException(String.format("Config not found either at '%s' or at '%s'", path, DEFAULT_PATH));
+        return null;
     }
 
-    private final Path path;
     private final Map<String, String> data;
 
-    public Config(Path path) {
-        this.path = checkPath(path);
+    public Config() {
         this.data = new ConcurrentHashMap<>();
-        try {
-            load();
-        } catch(IOException e) {
-            throw new RuntimeException("Failed to load configuration at '" + this.path + "'");
+    }
+
+    public Config(String path) throws IOException {
+        this(path == null ? null : Paths.get(path));
+    }
+
+    public Config(Path path) throws IOException {
+        path = checkPath(path);
+        this.data = new ConcurrentHashMap<>();
+
+        if(path != null) {
+            load(path);
         }
     }
 
@@ -54,7 +60,14 @@ public class Config {
         return Optional.ofNullable(data.get(name));
     }
 
-    private Config load() throws IOException {
+    public Config load(String path) throws IOException {
+        if(path != null) {
+            load(Paths.get(path));
+        }
+        return this;
+    }
+
+    public Config load(Path path) throws IOException {
         Map<String, String> collected = Files.lines(path)
             .map(String::trim)
             .filter(l -> !l.isEmpty())
