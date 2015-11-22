@@ -33,6 +33,13 @@ public class LoginController implements Initializable {
                 onLogin();
             }
         });
+        Platform.runLater(() -> {
+            // Prevent closing the login window
+            app.getStage(this).setOnCloseRequest(e -> {
+                e.consume();
+                app.close();
+            });
+        });
     }
 
     /**

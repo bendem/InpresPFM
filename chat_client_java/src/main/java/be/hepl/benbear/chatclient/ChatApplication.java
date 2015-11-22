@@ -110,6 +110,14 @@ public class ChatApplication extends Application {
         threadPool.shutdown();
     }
 
+    public void close() {
+        stages.values().stream()
+            .map(WeakReference::get)
+            .filter(s -> s != null)
+            .forEach(Stage::close);
+        mainStage.close();
+    }
+
     public <T> T open(String fxml, String title, boolean modal) throws IOException {
         return open(fxml, title, modal, false);
     }
