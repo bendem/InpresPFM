@@ -1,6 +1,7 @@
 package be.hepl.benbear.commons.net;
 
 import be.hepl.benbear.commons.generics.Tuple;
+import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 
 import java.io.IOException;
@@ -96,9 +97,11 @@ public abstract class Server<In, Out> {
     }
 
     private void accept() {
+        Log.i("Starting accepting on %s", UncheckedLambda.supplier(serverChannel::getLocalAddress).get());
+
         while(!closed.get()) {
             SocketChannel socketChannel = acceptConnection();
-            System.out.println("New connection from " + socketChannel.socket().getRemoteSocketAddress().toString());
+            Log.i("New connection from " + socketChannel.socket().getRemoteSocketAddress().toString());
             registerConnection(socketChannel);
         }
     }
@@ -109,7 +112,7 @@ public abstract class Server<In, Out> {
                 .filter(channel -> !channel.isRegistered())
                 .forEach(channel -> {
                     try {
-                        System.out.printf("Adding channel %s to selection%n", channel.socket().getRemoteSocketAddress());
+                        Log.d("Adding channel %s to selection", channel.socket().getRemoteSocketAddress());
                         channel.configureBlocking(false);
                         channel.register(selector, SelectionKey.OP_READ, channel);
                     } catch(IOException e) {
@@ -124,30 +127,31 @@ public abstract class Server<In, Out> {
                 });
 
             int selected = 0;
-            System.out.println("Selecting");
+            Log.d("Selecting");
             try {
                 selected = selector.select();
             } catch(IOException e) {
                 e.printStackTrace();
                 close();
             }
-            System.out.println("Selected");
+            Log.d("Selected");
             if(selected == 0) {
                 continue;
             }
-            System.out.println("had stuff");
+            Log.d("Actually selected");
 
             Set<SelectionKey> selectionKeys = selector.selectedKeys();
             Iterator<SelectionKey> it = selectionKeys.iterator();
             while (it.hasNext()) {
                 SelectionKey key = it.next();
                 if(!key.isReadable()) {
-                    System.out.printf("%s is selected but not readable, what the hell? %s %s %s %s %s %s%n",
-                        key, key.channel(), key.isAcceptable(), key.isConnectable(), key.isReadable(), key.isValid(), key.isWritable());
+                    Log.w("%s is selected but not readable, what the hell? %s %s %s %s %s %s",
+                        key, key.channel(), key.isAcceptable(), key.isConnectable(), key.isReadable(),
+                        key.isValid(), key.isWritable());
                     continue;
                 }
 
-                System.out.println("handling read");
+                Log.d("handling read");
                 connectionsToSelect.remove(key.channel());
                 it.remove();
 
@@ -201,7 +205,7 @@ public abstract class Server<In, Out> {
                 return;
             }
             onClose(s, null);
-            System.err.printf("Failed to construct in or out for %s", s.socket().getRemoteSocketAddress());
+            Log.w("Failed to construct in or out for %s", s.socket().getRemoteSocketAddress());
             return;
         }
         connections.put(s, new Tuple<>(is, os));

@@ -1,6 +1,7 @@
 package be.hepl.benbear.commons.protocol;
 
 import be.hepl.benbear.commons.checking.Sanity;
+import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.serialization.BinarySerializer;
 import be.hepl.benbear.commons.serialization.ObjectSerializer;
 
@@ -41,14 +42,16 @@ public class ProtocolHandler {
         Sanity.noneNull(is);
 
         byte[] b = accumulate(is, 3);
+        int len = b[1] << 8 | b[2];
+
+        Log.d("Received packet %d of length %d", b[0], len);
+
         Class<T> packetClass = (Class<T>) packetsById.get(b[0]);
         if(packetClass == null) {
             throw new ProtocolException("No mapping for packet id " + b[0]);
         }
 
-        int len = b[1] << 8 | b[2];
         byte[] bytes = accumulate(is, len + 1);
-
         if(bytes[bytes.length - 1] != FRAME_END) {
             throw new ProtocolException("Invalid frame end");
         }
@@ -61,7 +64,6 @@ public class ProtocolHandler {
         Sanity.noneNull(is, packetClass);
 
         T read;
-
         while((read = read(is)).getClass() != packetClass);
 
         return read;
@@ -69,6 +71,8 @@ public class ProtocolHandler {
 
     public <T extends Packet> ProtocolHandler write(OutputStream os, T packet) throws IOException {
         Sanity.noneNull(os, packet);
+
+        Log.d("Writing packet %d", packet.getId());
 
         byte[] bytes = serializer.serialize(packet);
         os.write(packet.getId());
