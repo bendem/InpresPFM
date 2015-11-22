@@ -31,7 +31,9 @@ public final class FieldReflection<T> {
     @SafeVarargs
     public FieldReflection(Class<T> clazz, Predicate<? super Field>... predicates) {
         this.clazz = clazz;
-        this.fields = filter(Arrays.stream(clazz.getDeclaredFields()), predicates).collect(Collectors.toList());
+        this.fields = filter(Arrays.stream(clazz.getDeclaredFields()), predicates)
+            .filter(f -> !Modifier.isStatic(f.getModifiers()))
+            .collect(Collectors.toList());
         fields.forEach(f -> f.setAccessible(true));
     }
 
