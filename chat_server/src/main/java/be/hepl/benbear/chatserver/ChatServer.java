@@ -45,8 +45,8 @@ public class ChatServer extends Server<DataInputStream, DataOutputStream> {
             config.getString("jdbc.accounting.password").get());
 
         protocolHandler = new ProtocolHandler();
-        protocolHandler.registerPacket((byte) 1, LoginPacket.class);
-        protocolHandler.registerPacket((byte) 2, LoginResponsePacket.class);
+        protocolHandler.registerPacket(LoginPacket.ID, LoginPacket.class);
+        protocolHandler.registerPacket(LoginResponsePacket.ID, LoginResponsePacket.class);
     }
 
     @Override

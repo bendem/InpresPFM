@@ -1,6 +1,10 @@
 package be.hepl.benbear.pfmcop;
 
-public class LoginResponsePacket {
+import be.hepl.benbear.commons.protocol.Packet;
+
+public class LoginResponsePacket implements Packet {
+
+    public static final byte ID = 2;
 
     private final String host;
     private final int port;
@@ -10,6 +14,11 @@ public class LoginResponsePacket {
         this.port = port;
     }
 
+    @Override
+    public byte getId() {
+        return ID;
+    }
+
     public String getHost() {
         return host;
     }
@@ -17,5 +26,4 @@ public class LoginResponsePacket {
     public int getPort() {
         return port;
     }
-
 }

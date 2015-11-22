@@ -1,6 +1,10 @@
 package be.hepl.benbear.pfmcop;
 
-public class LoginPacket {
+import be.hepl.benbear.commons.protocol.Packet;
+
+public class LoginPacket implements Packet {
+
+    public static final byte ID = 1;
 
     public static byte digest(String password) {
         int sum = 0;
@@ -11,9 +15,18 @@ public class LoginPacket {
     private final String username;
     private final byte digest;
 
+    public LoginPacket(String username, String password) {
+        this(username, digest(password));
+    }
+
     public LoginPacket(String username, byte digest) {
         this.username = username;
         this.digest = digest;
+    }
+
+    @Override
+    public byte getId() {
+        return ID;
     }
 
     public String getUsername() {
@@ -23,5 +36,4 @@ public class LoginPacket {
     public byte getDigest() {
         return digest;
     }
-
 }
