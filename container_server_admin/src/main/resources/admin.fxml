@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.containerserveradmin.AdminController">
+    <children>
+        <ListView fx:id="ipList" focusTraversable="false" VBox.vgrow="ALWAYS" />
+        <Button fx:id="refreshButton" alignment="CENTER" disable="true" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" text="Refresh" VBox.vgrow="NEVER" />
+        <HBox maxWidth="1.7976931348623157E308" spacing="5.0" VBox.vgrow="NEVER">
+            <children>
+                <TextField fx:id="timeField" disable="true" promptText="Time before shutdown" text="0" HBox.hgrow="ALWAYS" />
+                <Button fx:id="stopButton" alignment="CENTER" disable="true" text="Stop the server" HBox.hgrow="SOMETIMES" />
+            </children>
+        </HBox>
+        <Button fx:id="pauseButton" alignment="CENTER" disable="true" maxWidth="1.7976931348623157E308" text="Pause / Resume the server" />
+    </children>
+    <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+    </padding>
+</VBox>
