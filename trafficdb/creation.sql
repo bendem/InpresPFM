@@ -14,7 +14,7 @@ end;
 
 create table companies (
     company_id number constraint pk_companies primary key not null,
-    name       varchar2(63) not null,
+    name       varchar2(63) unique not null,
     mail       varchar2(63),
     phone      varchar2(63),
     address    varchar2(63)
@@ -38,24 +38,8 @@ create table containers (
 create table parcs (
     x            number(4, 0) not null,
     y            number(4, 0) not null,
-    container_id varchar2(63) constraint fk_parcs_container_id references containers(container_id) not null,
+    container_id varchar2(63) constraint fk_parcs_container_id references containers(container_id),
     constraint pk_parcs primary key (x, y)
-);
-
-create table reservations (
-    date_arrival date not null,
-    x number(4,0) not null,
-    y number(4,0) not null,
-    destination_id number not null,
-    reservation_id varchar2(22),
-    constraint fk_reservations_parcs foreign key (x,y) references parcs(x,y),
-    constraint pk_reservations primary key (x, y, date_arrival)
-);
-
-create table transporters (
-    transporter_id varchar2(63) constraint pk_transporters primary key not null,
-    company_id     number       constraint fk_transporters_company_id references companies(company_id) not null,
-    info           varchar2(127)
 );
 
 create table destinations (
@@ -73,6 +57,37 @@ for each row begin
     select destination_seq.nextval into :new.destination_id from dual;
 end;
 /
+
+create table reservations (
+    reservation_id varchar2(50) primary key,
+    date_arrival date not null,
+    destination_id number references destinations(destination_id) not null,
+    company_id number references companies(company_id)
+);
+
+create sequence reservations_seq;
+create or replace trigger reservation_autoinc
+before insert on reservations
+for each row begin
+    select :new.reservation_id || reservations_seq.nextval into :new.reservation_id from dual;
+end;
+/
+
+create table reservations_containers (
+    reservation_id varchar2(50),
+    x number(4,0) not null,
+    y number(4,0) not null,
+    container_id varchar2(63) references containers(container_id) not null,
+    constraint fk_reservations_parcs foreign key (x,y) references parcs(x,y),
+    constraint pk_reservations_containers primary key (reservation_id, x, y)
+);
+
+create table transporters (
+    transporter_id varchar2(63) constraint pk_transporters primary key not null,
+    company_id     number       constraint fk_transporters_company_id references companies(company_id) not null,
+    info           varchar2(127)
+);
+
 
 create table movements (
     movement_id        number       constraint pk_movements primary key not null,
@@ -92,6 +107,9 @@ before insert on movements
 for each row begin
     select movement_seq.nextval into :new.movement_id from dual;
 end;
+
+create or replace view free_empl as select x, y from parcs where (x,y) not in (select x,y from reservations_containers);
+create or replace view movements_light as select movement_id, container_id, name, city, date_arrival, date_departure from movements natural join destinations natural join companies;
 /
 
 exit

@@ -9,28 +9,14 @@ import java.sql.Date;
 public class Reservation {
 
     @PrimaryKey
-    private final int x;
-    @PrimaryKey
-    private final int y;
-    @PrimaryKey
-    private final Date dateArrival;
     private final String destinationId;
     private final String reservationId;
+    private final Date dateArrival;
 
-    public Reservation(int x, int y, Date dateArrival, String destinationId, String reservationId) {
-        this.x = x;
-        this.y = y;
-        this.dateArrival = dateArrival;
-        this.destinationId = destinationId;
+    public Reservation(String reservationId, String destinationId, Date dateArrival) {
         this.reservationId = reservationId;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+        this.destinationId = destinationId;
+        this.dateArrival = dateArrival;
     }
 
     public Date getDateArrival() {

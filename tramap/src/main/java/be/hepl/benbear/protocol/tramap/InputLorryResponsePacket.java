@@ -2,13 +2,35 @@ package be.hepl.benbear.protocol.tramap;
 
 import be.hepl.benbear.commons.protocol.Packet;
 
-public class InputLorryResponsePacket extends InputResultPacket implements Packet {
+import java.util.Arrays;
+import java.util.List;
+
+public class InputLorryResponsePacket implements Packet, InputResultPacket {
 
     public static final byte ID = 2;
+    private final boolean ok;
+    private final String reason;
+    private final ContainerPosition[] containers;
 
     public InputLorryResponsePacket(boolean ok, String reason, ContainerPosition[] containers) {
-        super(ok, reason, containers);
+        this.ok = ok;
+        this.reason = reason;
+        this.containers = containers;
     }
+
+    public boolean isOk() {
+        return ok;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public List<ContainerPosition> getContainers() {
+        return Arrays.asList(containers);
+    }
+
+
 
     @Override
     public byte getId() {

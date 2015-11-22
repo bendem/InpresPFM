@@ -21,6 +21,7 @@ dependencies {
     shadow 'be.hepl.benbear:tramap:1.0-SNAPSHOT'
     shadow 'be.hepl.benbear:trafficdb:1.0-SNAPSHOT'
     shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
+    shadow fileTree(dir: '../libs', include: '*.jar') // Also include the oracle driver
 }
 
 jar {

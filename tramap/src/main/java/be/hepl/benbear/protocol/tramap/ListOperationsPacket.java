@@ -10,40 +10,36 @@ public class ListOperationsPacket implements Packet {
 
     public enum Type {
         Society, Destination;
-    }
-    private final Instant start;
 
-    private final Instant end;
-    private final String society;
-    private final String destination;
-    public ListOperationsPacket(Instant start, Instant end, String str, Type type) {
+    }
+
+    private final long start;
+    private final long end;
+    private final String criteria;
+    private final String type;
+
+    public ListOperationsPacket(long start, long end, String str, String type) {
         this.start = start;
         this.end = end;
-
-        if(type == Type.Society) {
-            this.society = str;
-            this.destination = "";
-        } else {
-            this.society = "";
-            this.destination = str;
-        }
+        this.criteria = str;
+        this.type = type;
     }
-
-    public Instant getStart() {
+    public long getStart() {
         return start;
     }
 
-    public Instant getEnd() {
+    public long getEnd() {
         return end;
     }
 
-    public String getSociety() {
-        return society;
+    public String getCriteria() {
+        return criteria;
     }
 
-    public String getDestination() {
-        return destination;
+    public String getType() {
+        return type;
     }
+
 
     @Override
     public byte getId() {

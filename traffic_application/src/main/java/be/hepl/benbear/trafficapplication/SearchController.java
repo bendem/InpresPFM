@@ -55,8 +55,8 @@ public class SearchController implements Initializable {
         //Todo send List_Operation packet
 
         try {
-            app.write(new ListOperationsPacket(startInstant, endInstant, criteriaTextField.getText(),
-                typeSearch.getSelectedToggle() == companyRadio ? ListOperationsPacket.Type.Society : ListOperationsPacket.Type.Destination));
+            app.write(new ListOperationsPacket(startInstant.getEpochSecond(), endInstant.getEpochSecond(), criteriaTextField.getText(),
+                typeSearch.getSelectedToggle() == companyRadio ? ListOperationsPacket.Type.Society.toString() : ListOperationsPacket.Type.Destination.toString()));
         } catch (IOException e) {
             e.printStackTrace();
         }

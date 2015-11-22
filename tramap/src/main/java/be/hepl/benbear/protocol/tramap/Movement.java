@@ -3,6 +3,8 @@ package be.hepl.benbear.protocol.tramap;
 import be.hepl.benbear.commons.serialization.BinarySerializer;
 import be.hepl.benbear.commons.serialization.ObjectSerializer;
 
+import java.time.Instant;
+
 public class Movement {
 
     static {
@@ -14,13 +16,20 @@ public class Movement {
         );
     }
 
-    // TODO No idea what should go here
+    private final int movementId;
     private final String containerId;
     private final String destination;
+    private final String company_name;
+    private final Instant dateArrival;
+    private final Instant dateDeparture;
 
-    public Movement(String containerId, String destination) {
+    public Movement(int movementId, String containerId, String destination, String company_name, Instant dateArrival, Instant dateDeparture) {
+        this.movementId = movementId;
         this.containerId = containerId;
         this.destination = destination;
+        this.company_name = company_name;
+        this.dateArrival = dateArrival;
+        this.dateDeparture = dateDeparture;
     }
 
     public String getContainerId() {
@@ -31,4 +40,19 @@ public class Movement {
         return destination;
     }
 
+    public String getCompany_name() {
+        return company_name;
+    }
+
+    public Instant getDateArrival() {
+        return dateArrival;
+    }
+
+    public Instant getDateDeparture() {
+        return dateDeparture;
+    }
+
+    public int getMovementId() {
+        return movementId;
+    }
 }

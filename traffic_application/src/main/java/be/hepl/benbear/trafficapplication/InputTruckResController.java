@@ -47,7 +47,7 @@ public class InputTruckResController implements Initializable {
         }
 
         try {
-            app.write(new InputLorryPacket(reservationTextField.getText(), ((String[])containerListView.getItems().toArray())));
+            app.write(new InputLorryPacket(reservationTextField.getText(), containerListView.getItems().stream().toArray(String[]::new)));
         } catch (IOException e) {
             e.printStackTrace();
         }

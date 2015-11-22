@@ -11,9 +11,7 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -26,8 +24,8 @@ import java.util.WeakHashMap;
 public class MainApplication extends Application {
 
     private Socket socket;
-    private ObjectInputStream ois = null;
-    private ObjectOutputStream oos = null;
+    private InputStream ois = null;
+    private OutputStream oos = null;
     private Config conf = new Config();
     private ProtocolHandler prot = new ProtocolHandler();
 
@@ -95,10 +93,9 @@ public class MainApplication extends Application {
 
     @Override
     public void init() throws Exception {
-        socket = new Socket(InetAddress.getByName(conf.getString("trafficApplication.ip").orElse("127.0.0.1")), conf.getInt("trafficApplication.port").orElse(30000));
-        oos = new ObjectOutputStream(socket.getOutputStream());
-        oos.flush();
-        ois = new ObjectInputStream(socket.getInputStream());
+        socket = new Socket(InetAddress.getByName(conf.getString("trafficApplication.ip").orElse("localhost")), conf.getInt("trafficApplication.port").orElse(31065));
+        oos = new DataOutputStream(socket.getOutputStream());
+        ois = new DataInputStream(socket.getInputStream());
 
         prot.registerPacket(LoginPacket.ID, LoginPacket.class);
         prot.registerPacket(LoginResponsePacket.ID, LoginResponsePacket.class);
