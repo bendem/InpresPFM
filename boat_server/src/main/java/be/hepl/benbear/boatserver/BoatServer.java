@@ -15,6 +15,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,6 +48,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
 
     public BoatServer(int port, ExecutorService threadPool) {
         super(
+            UncheckedLambda.supplier(InetAddress::getLocalHost).get(),
             port,
             Thread::new,
             threadPool,

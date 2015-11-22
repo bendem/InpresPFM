@@ -37,13 +37,13 @@ public abstract class Server<In, Out> {
     protected final Map<SocketChannel, Tuple<In, Out>> connections;
     protected final Set<SocketChannel> connectionsToSelect;
 
-    public Server(int port, ThreadFactory threadFactory, ExecutorService threadPool, Function<InputStream, In> inputStreamMapping, Function<OutputStream, Out> outputStreamMapping) {
+    public Server(InetAddress address, int port, ThreadFactory threadFactory, ExecutorService threadPool, Function<InputStream, In> inputStreamMapping, Function<OutputStream, Out> outputStreamMapping) {
         this.threadPool = threadPool;
         this.acceptThread = threadFactory.newThread(this::accept);
         this.selectThread = threadFactory.newThread(this::select);
         try {
             this.serverChannel = ServerSocketChannel.open();
-            this.serverChannel.bind(new InetSocketAddress(InetAddress.getLocalHost(), port));
+            this.serverChannel.bind(new InetSocketAddress(address, port));
             this.selector = Selector.open();
         } catch(IOException e) {
             throw new RuntimeException(e);

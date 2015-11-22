@@ -8,12 +8,14 @@ import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.net.Server;
 import be.hepl.benbear.commons.protocol.ProtocolHandler;
+import be.hepl.benbear.commons.streams.UncheckedLambda;
 import be.hepl.benbear.pfmcop.LoginPacket;
 import be.hepl.benbear.pfmcop.LoginResponsePacket;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +29,7 @@ public class ChatServer extends Server<DataInputStream, DataOutputStream> {
 
     public ChatServer(Config config) {
         super(
+            UncheckedLambda.supplier(() -> InetAddress.getByName(config.getString("chatserver.host.tcp").orElse("localhost"))).get(),
             config.getInt("chatserver.port.tcp").orElse(31063),
             Thread::new,
             Executors.newSingleThreadExecutor(),
@@ -55,7 +58,7 @@ public class ChatServer extends Server<DataInputStream, DataOutputStream> {
 
         if(check(packet.getUsername(), packet.getDigest())) {
             protocolHandler.write(os, new LoginResponsePacket(
-                config.getString("chatserver.host").orElse("localhost"),
+                config.getString("chatserver.host.udp").orElse("localhost"),
                 config.getInt("chatserver.port.udp").orElse(31064)
             ));
         }
