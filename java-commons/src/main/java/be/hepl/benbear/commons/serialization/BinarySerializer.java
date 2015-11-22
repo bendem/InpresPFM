@@ -30,11 +30,11 @@ public class BinarySerializer {
 
     private BinarySerializer() {
         deserializers = new HashMap<>();
+        deserializers.put(boolean.class, bb -> bb.get() != 0);
         deserializers.put(byte.class, ByteBuffer::get);
         deserializers.put(short.class, ByteBuffer::getShort);
         deserializers.put(int.class, ByteBuffer::getInt);
         deserializers.put(long.class, ByteBuffer::getLong);
-        deserializers.put(boolean.class, bb -> bb.get() != 0);
         // TODO Check that works against the cpp implementation
         deserializers.put(float.class, BinarySerializer::deserializeFloat);
         // Double not implemented
@@ -50,12 +50,12 @@ public class BinarySerializer {
         });
 
         serializers = new HashMap<>();
+        serializers.put(boolean.class, (o, dos) -> dos.writeBoolean((boolean) o));
         serializers.put(byte.class, (o, dos) -> dos.writeByte((byte) o));
         serializers.put(short.class, (o, dos) -> dos.writeShort((short) o));
         serializers.put(int.class, (o, dos) -> dos.writeInt((int) o));
         serializers.put(long.class, (o, dos) -> dos.writeLong((long) o));
         serializers.put(float.class, (o, dos) -> serializeFloat((float) o, dos));
-        serializers.put(boolean.class, (o, dos) -> dos.writeBoolean((boolean) o));
         // Double not implemented
         serializers.put(String.class, (o, dos) -> {
             String string = (String) o;

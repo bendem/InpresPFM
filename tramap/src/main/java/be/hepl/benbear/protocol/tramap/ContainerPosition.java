@@ -1,5 +1,6 @@
 package be.hepl.benbear.protocol.tramap;
 
+import be.hepl.benbear.commons.serialization.ArraySerializer;
 import be.hepl.benbear.commons.serialization.BinarySerializer;
 import be.hepl.benbear.commons.serialization.ObjectSerializer;
 
@@ -12,6 +13,8 @@ public class ContainerPosition {
             serializer,
             serializer
         );
+        ArraySerializer<ContainerPosition[]> arraySerializer = new ArraySerializer<>(ContainerPosition.class);
+        BinarySerializer.getInstance().registerSerializer(ContainerPosition[].class, arraySerializer, arraySerializer);
     }
 
     private final String containerId;
