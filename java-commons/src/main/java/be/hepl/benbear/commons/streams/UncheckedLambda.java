@@ -3,8 +3,11 @@ package be.hepl.benbear.commons.streams;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class UncheckedLambda {
+
+    public static final Consumer<Throwable> RETHROW = t -> { throw new RuntimeException(t); };
 
     @FunctionalInterface
     public interface ThrowingConsumer<T> {
@@ -28,6 +31,10 @@ public class UncheckedLambda {
                 handler.accept(e);
             }
         }
+    }
+
+    public static <T> Consumer<T> consumer(ThrowingConsumer<T> t) {
+        return consumer(t, RETHROW);
     }
 
     public static <T> Consumer<T> consumer(ThrowingConsumer<T> t, Consumer<Throwable> handler) {
@@ -56,6 +63,10 @@ public class UncheckedLambda {
                 handler.accept(e);
             }
         }
+    }
+
+    public static <T, U> BiConsumer<T, U> biconsumer(ThrowingBiConsumer<T, U> t) {
+        return biconsumer(t, RETHROW);
     }
 
     public static <T, U> BiConsumer<T, U> biconsumer(ThrowingBiConsumer<T, U> t, Consumer<Throwable> handler) {
@@ -87,8 +98,45 @@ public class UncheckedLambda {
         }
     }
 
+    public static <T, R> Function<T, R> function(ThrowingFunction<T, R> t) {
+        return function(t, RETHROW);
+    }
+
     public static <T, R> Function<T, R> function(ThrowingFunction<T, R> t, Consumer<Throwable> handler) {
         return new WrappedFunction<>(t, handler);
+    }
+
+    @FunctionalInterface
+    public interface ThrowingSupplier<T> {
+        T get() throws Throwable;
+    }
+
+    private static class WrappedSupplier<T> implements Supplier<T> {
+        private final ThrowingSupplier<T> supplier;
+        private final Consumer<Throwable> handler;
+
+        public WrappedSupplier(ThrowingSupplier<T> supplier, Consumer<Throwable> handler) {
+            this.supplier = supplier;
+            this.handler = handler;
+        }
+
+        @Override
+        public T get() {
+            try {
+                return supplier.get();
+            } catch(Throwable e) {
+                handler.accept(e);
+            }
+            return null;
+        }
+    }
+
+    public static <T> Supplier<T> supplier(ThrowingSupplier<T> supplier) {
+        return supplier(supplier, RETHROW);
+    }
+
+    public static <T> Supplier<T> supplier(ThrowingSupplier<T> supplier, Consumer<Throwable> handler) {
+        return new WrappedSupplier<>(supplier, handler);
     }
 
 }
