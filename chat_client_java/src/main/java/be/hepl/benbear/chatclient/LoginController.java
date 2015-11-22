@@ -33,8 +33,12 @@ public class LoginController implements Initializable {
                 onLogin();
             }
         });
+
         Platform.runLater(() -> {
-            // Prevent closing the login window
+            // This is executed on the next application tick so that
+            // all constructors have been called and everything has been
+            // initialized (mainly, app.getStage is not available while
+            // the application is starting).
             app.getStage(this).setOnCloseRequest(e -> {
                 e.consume();
                 app.close();
