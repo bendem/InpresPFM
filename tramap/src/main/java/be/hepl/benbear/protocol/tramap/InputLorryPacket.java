@@ -1,9 +1,13 @@
 package be.hepl.benbear.protocol.tramap;
 
+import be.hepl.benbear.commons.protocol.Packet;
+
 import java.util.Arrays;
 import java.util.List;
 
-public class InputLorryPacket {
+public class InputLorryPacket implements Packet {
+
+    public static final byte ID = 1;
 
     private final String reservationId;
     private final String[] containerIds;
@@ -21,4 +25,8 @@ public class InputLorryPacket {
         return Arrays.asList(containerIds);
     }
 
+    @Override
+    public byte getId() {
+        return ID;
+    }
 }

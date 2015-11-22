@@ -1,6 +1,10 @@
 package be.hepl.benbear.protocol.tramap;
 
-public class LogoutPacket {
+import be.hepl.benbear.commons.protocol.Packet;
+
+public class LogoutPacket implements Packet {
+
+    public static final byte ID = 9;
 
     // I'm against this, you should never ask anything on logout
     private final String username;
@@ -19,4 +23,8 @@ public class LogoutPacket {
         return password;
     }
 
+    @Override
+    public byte getId() {
+        return ID;
+    }
 }

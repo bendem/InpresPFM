@@ -1,6 +1,10 @@
 package be.hepl.benbear.protocol.tramap;
 
-public class LoginPacket {
+import be.hepl.benbear.commons.protocol.Packet;
+
+public class LoginPacket implements Packet {
+
+    public static final byte ID = 7;
 
     private final String username;
     private final String password;
@@ -18,4 +22,8 @@ public class LoginPacket {
         return password;
     }
 
+    @Override
+    public byte getId() {
+        return ID;
+    }
 }
