@@ -1,11 +1,14 @@
 package be.hepl.benbear.trafficapplication;
 
+import be.hepl.benbear.commons.protocol.Packet;
+import be.hepl.benbear.protocol.tramap.InputLorryPacket;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -42,7 +45,20 @@ public class InputTruckResController implements Initializable {
         if (containerListView.getItems().isEmpty()) {
             //Todo throw some error
         }
-        // Todo send Input_Lorry after check for values
+
+        try {
+            app.write(new InputLorryPacket(reservationTextField.getText(), ((String[])containerListView.getItems().toArray())));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            //Read will be in ResultInputController
+            app.open("ResultInput.fxml", "Input result", false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        app.getStage(this).close();
     }
 
     private void onAddContainer() {

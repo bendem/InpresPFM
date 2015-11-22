@@ -1,5 +1,8 @@
 package be.hepl.benbear.trafficapplication;
 
+import be.hepl.benbear.commons.protocol.Packet;
+import be.hepl.benbear.protocol.tramap.LoginPacket;
+import be.hepl.benbear.protocol.tramap.LoginResponsePacket;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -8,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -54,8 +58,22 @@ public class LoginController implements Initializable {
     }
 
     private void onLogin() {
-        mainController.setDisable(false);
-        app.getStage(this).close();
+        LoginResponsePacket p = null;
+
+        try {
+            app.write(new LoginPacket(usernameField.getText(), passwordField.getText()));
+            p = (LoginResponsePacket) app.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (p.isOk()) {
+            app.setConnected(true);
+            mainController.setDisable(false);
+            app.getStage(this).close();
+        } else {
+            //todo display wrong login and ask again
+        }
     }
 
     private void error(String error, Control control) {

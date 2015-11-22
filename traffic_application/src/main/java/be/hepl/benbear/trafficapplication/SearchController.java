@@ -1,9 +1,11 @@
 package be.hepl.benbear.trafficapplication;
 
+import be.hepl.benbear.protocol.tramap.ListOperationsPacket;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,11 +53,20 @@ public class SearchController implements Initializable {
         }
 
         //Todo send List_Operation packet
-        if (typeSearch.getSelectedToggle() == companyRadio) {
-            //send with company type as type
-        } else {
-            //send with destination type as type
+
+        try {
+            app.write(new ListOperationsPacket(startInstant, endInstant, criteriaTextField.getText(),
+                typeSearch.getSelectedToggle() == companyRadio ? ListOperationsPacket.Type.Society : ListOperationsPacket.Type.Destination));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
+        try {
+            //Read will be in ListMovesController
+            app.open("ListMoves.fxml", "List of operations", false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        app.getStage(this).close();
     }
 }

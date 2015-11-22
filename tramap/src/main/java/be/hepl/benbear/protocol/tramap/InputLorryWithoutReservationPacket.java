@@ -10,11 +10,15 @@ public class InputLorryWithoutReservationPacket implements Packet {
     public static final byte ID = 3;
 
     private final String license;
+    private final String companyName;
     private final String[] containerIds;
+    private final String[] containerContents;
 
-    public InputLorryWithoutReservationPacket(String license, String[] containerIds) {
+    public InputLorryWithoutReservationPacket(String license, String companyName, String[] containerIds, String[] containerContents) {
         this.license = license;
+        this.companyName = companyName;
         this.containerIds = containerIds;
+        this.containerContents = containerContents;
     }
 
     public String getLicense() {
@@ -23,6 +27,10 @@ public class InputLorryWithoutReservationPacket implements Packet {
 
     public List<String> getContainerIds() {
         return Arrays.asList(containerIds);
+    }
+
+    public List<String> getContainerContents() {
+        return Arrays.asList(containerContents);
     }
 
     @Override
