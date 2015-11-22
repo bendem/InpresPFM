@@ -6,6 +6,7 @@ import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.commons.db.Table;
 import be.hepl.benbear.commons.db.csv.CSVDatabase;
+import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.net.Server;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 import be.hepl.benbear.iobrep.*;
@@ -105,6 +106,7 @@ public class BoatServer extends Server<ObjectInputStream, ObjectOutputStream> {
         try {
             o = is.readObject();
         } catch(ClassNotFoundException e) {
+            Log.e("Failed to read object", e);
             return;
         }
 

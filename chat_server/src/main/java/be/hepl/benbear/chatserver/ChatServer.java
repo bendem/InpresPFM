@@ -61,15 +61,19 @@ public class ChatServer extends Server<DataInputStream, DataOutputStream> {
                 config.getString("chatserver.host.udp").orElse("localhost"),
                 config.getInt("chatserver.port.udp").orElse(31064)
             ));
+        } else {
+            Log.w("Connection failure from %s", packet.getUsername());
+            protocolHandler.write(os, new LoginResponsePacket(null, -1));
         }
     }
 
     private boolean check(String username, byte digest) {
+        Log.d("Checking %s's digest", username);
         Optional<Staff> staff;
         try {
             staff = database.table(Staff.class).findOne(DBPredicate.of("login", username)).get();
         } catch(InterruptedException | ExecutionException e) {
-            Log.e("Failed to retrieve user", e);
+            Log.e("Error retrieving user", e);
             return false;
         }
 
@@ -78,6 +82,8 @@ public class ChatServer extends Server<DataInputStream, DataOutputStream> {
 
     @Override
     protected void onClose(SocketChannel channel, Exception e) {
-
+        if(e != null) {
+            Log.e("Channel error %s", e, channel);
+        }
     }
 }

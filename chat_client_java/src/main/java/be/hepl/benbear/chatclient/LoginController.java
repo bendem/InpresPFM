@@ -1,5 +1,7 @@
 package be.hepl.benbear.chatclient;
 
+import be.hepl.benbear.commons.logging.Log;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -53,12 +55,28 @@ public class LoginController implements Initializable {
     }
 
     private void onLogin() {
-        chatController.setUsername(usernameField.getText());
-        app.getStage(this).close();
+        app.checkLogin(usernameField.getText().trim(), passwordField.getText().trim())
+            .whenComplete((res, exc) -> Platform.runLater(() -> {
+                if(exc != null) {
+                    error("An error happened: " + exc.getMessage());
+                    Log.e("Error while logging in", exc);
+                    return;
+                }
+
+                if(res.first.isEmpty()) {
+                    error("Invalid username or password", usernameField, passwordField);
+                } else {
+                    chatController.setUsername(usernameField.getText());
+                    app.startChat(res.first, res.second);
+                    app.getStage(this).close();
+                }
+            }));
     }
 
-    private void error(String error, Control control) {
-        control.getStyleClass().add("error");
+    private void error(String error, Control... controls) {
+        for(Control control : controls) {
+            control.getStyleClass().add("error");
+        }
         errorLabel.setText(errorLabel.getText() + '\n' + error);
     }
 

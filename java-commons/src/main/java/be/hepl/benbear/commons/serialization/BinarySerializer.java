@@ -57,6 +57,10 @@ public class BinarySerializer {
         // Double not implemented
         serializers.put(String.class, (o, dos) -> {
             String string = (String) o;
+            if(string == null) {
+                dos.writeInt(0);
+                return;
+            }
             dos.writeInt(string.length());
             dos.write(string.getBytes());
         });

@@ -1,6 +1,7 @@
 package be.hepl.benbear.commons.serialization;
 
 import be.hepl.benbear.commons.checking.Sanity;
+import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.reflection.FieldReflection;
 
 import java.io.DataOutputStream;
@@ -61,9 +62,10 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
             }
 
             try {
+                Log.d("Serializing %s from %s", f, object);
                 serializer.serialize(FieldReflection.extractFunction(object).apply(f), dos);
             } catch(IOException e) {
-                e.printStackTrace(); // TODO @Exception SerializationException?
+                Log.e("Failed to serialize %s", e, object); // TODO @Exception SerializationException?
             }
         });
     }

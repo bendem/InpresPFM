@@ -1,5 +1,11 @@
 package be.hepl.benbear.chatclient;
 
+import be.hepl.benbear.commons.config.Config;
+import be.hepl.benbear.commons.generics.Tuple;
+import be.hepl.benbear.commons.logging.Log;
+import be.hepl.benbear.commons.protocol.ProtocolHandler;
+import be.hepl.benbear.pfmcop.LoginPacket;
+import be.hepl.benbear.pfmcop.LoginResponsePacket;
 import be.hepl.benbear.pfmcop.UDPPacket;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -13,10 +19,14 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.net.Socket;
 import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChatApplication extends Application {
 
@@ -24,13 +34,21 @@ public class ChatApplication extends Application {
         launch(args);
     }
 
+    private final ExecutorService threadPool;
+    private final Config config;
     private final Map<Object, WeakReference<Stage>> stages;
     private final ObservableList<Message> messages;
     private Stage mainStage;
 
     public ChatApplication() {
+        threadPool = Executors.newSingleThreadExecutor();
+        config = new Config();
         stages = new WeakHashMap<>();
         messages = FXCollections.observableArrayList();
+    }
+
+    public Config getConfig() {
+        return config;
     }
 
     public Stage getStage(Object controller) {
@@ -50,8 +68,37 @@ public class ChatApplication extends Application {
         return FXCollections.unmodifiableObservableList(messages);
     }
 
+    public CompletableFuture<Tuple<String, Integer>> checkLogin(String username, String password) {
+        CompletableFuture<Tuple<String, Integer>> future = new CompletableFuture<>();
+        threadPool.submit(() -> {
+            try (Socket socket = new Socket(
+                config.getString("chatserver.host").orElse("localhost"),
+                config.getInt("chatserver.port.tcp").orElse(31063)
+            )) {
+                ProtocolHandler protocolHandler = new ProtocolHandler();
+                protocolHandler.registerPacket(LoginPacket.ID, LoginPacket.class);
+                protocolHandler.registerPacket(LoginResponsePacket.ID, LoginResponsePacket.class);
+
+                Log.d("Contacting server %s", socket.getRemoteSocketAddress());
+
+                protocolHandler.write(socket.getOutputStream(), new LoginPacket(username, password));
+                LoginResponsePacket response = protocolHandler.readSpecific(socket.getInputStream(), LoginResponsePacket.class);
+                future.complete(new Tuple<>(response.getHost(), response.getPort()));
+            } catch(IOException e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
+    public void startChat(String host, int port) {
+        // TODO
+    }
+
     @Override
     public void start(Stage stage) throws IOException {
+        Log.d("start");
+        config.load(getParameters().getNamed().get("config"));
         ChatController ctrl = open("chat.fxml", "InpresFPM - Chat", false, true);
         this.<LoginController>open("login.fxml", "InpresFPM - Login", true)
             .setChatController(ctrl);
@@ -59,7 +106,8 @@ public class ChatApplication extends Application {
 
     @Override
     public void stop() throws Exception {
-        // NOP
+        Log.d("stop");
+        threadPool.shutdown();
     }
 
     public <T> T open(String fxml, String title, boolean modal) throws IOException {
@@ -105,5 +153,4 @@ public class ChatApplication extends Application {
     private URL getResource(String name) {
         return Objects.requireNonNull(getClass().getClassLoader().getResource(name), "Resource not found: " + name);
     }
-
 }
