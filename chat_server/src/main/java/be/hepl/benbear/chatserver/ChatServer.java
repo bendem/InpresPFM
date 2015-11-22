@@ -1,8 +1,11 @@
 package be.hepl.benbear.chatserver;
 
 import be.hepl.benbear.accounting_db.Staff;
+import be.hepl.benbear.commons.config.Config;
+import be.hepl.benbear.commons.db.DBPredicate;
 import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.SQLDatabase;
+import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.net.Server;
 import be.hepl.benbear.commons.protocol.ProtocolHandler;
 import be.hepl.benbear.pfmcop.LoginPacket;
@@ -12,26 +15,34 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 public class ChatServer extends Server<DataInputStream, DataOutputStream> {
 
+    private final Config config;
     private final ProtocolHandler protocolHandler;
     private final SQLDatabase database;
 
-    public ChatServer(int port) {
+    public ChatServer(Config config) {
         super(
-            port, Thread::new,
+            config.getInt("chatserver.port.tcp").orElse(31063),
+            Thread::new,
             Executors.newSingleThreadExecutor(),
             DataInputStream::new,
             DataOutputStream::new
         );
+        this.config = config;
 
         Database.Driver.ORACLE.load();
 
         database = new SQLDatabase();
         database.registerClass(Staff.class);
-        database.connect("jdbc:oracle:thin:@178.32.41.4:8080:xe", "accounting", "bleh");
+        database.connect(
+            config.getString("jdbc.url").get(),
+            config.getString("jdbc.accounting.user").get(),
+            config.getString("jdbc.accounting.password").get());
 
         protocolHandler = new ProtocolHandler();
         protocolHandler.registerPacket((byte) 1, LoginPacket.class);
@@ -43,14 +54,23 @@ public class ChatServer extends Server<DataInputStream, DataOutputStream> {
         LoginPacket packet = protocolHandler.readSpecific(is, LoginPacket.class);
 
         if(check(packet.getUsername(), packet.getDigest())) {
-            os.writeShort(31064);
+            protocolHandler.write(os, new LoginResponsePacket(
+                config.getString("chatserver.host").orElse("localhost"),
+                config.getInt("chatserver.port.udp").orElse(31064)
+            ));
         }
     }
 
     private boolean check(String username, byte digest) {
-        // TODO Implement stuff
+        Optional<Staff> staff;
+        try {
+            staff = database.table(Staff.class).findOne(DBPredicate.of("login", username)).get();
+        } catch(InterruptedException | ExecutionException e) {
+            Log.e("Failed to retrieve user", e);
+            return false;
+        }
 
-        return true;
+        return staff.isPresent() && LoginPacket.digest(staff.get().getPassword()) == digest;
     }
 
     @Override

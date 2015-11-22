@@ -1,13 +1,13 @@
 package be.hepl.benbear.chatserver;
 
+import be.hepl.benbear.commons.config.Config;
+
+import java.nio.file.Paths;
+
 public class Main {
 
     public static void main(String...args) {
-        int port = 31063;
-        if(args.length > 0) {
-            port = Integer.parseInt(args[0]);
-        }
-        new ChatServer(port).start();
+        new ChatServer(new Config(args.length == 0 ? null : Paths.get(args[0]))).start();
     }
 
 }

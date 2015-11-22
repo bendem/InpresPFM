@@ -2,6 +2,7 @@
 target/
 build/
 .idea/
+*.conf
 *.exe
 *.log
 *.iml
