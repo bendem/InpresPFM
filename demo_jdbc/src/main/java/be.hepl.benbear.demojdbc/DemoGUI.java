@@ -19,6 +19,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 public class DemoGUI {
+
     private JTable tableData;
     private JComboBox<Class<?>> comboBoxTables;
     private JButton buttonOk;
@@ -64,7 +65,7 @@ public class DemoGUI {
             currentTable = database.table((Class<?>) comboBoxTables.getSelectedItem());
             try {
                 updateSelection(currentTable);
-            } catch (ExecutionException | InterruptedException e1) {
+            } catch(ExecutionException | InterruptedException e1) {
                 e1.printStackTrace();
             }
             buttonInsert.setEnabled(true);
@@ -79,7 +80,7 @@ public class DemoGUI {
             dia.setVisible(true);
             try {
                 updateSelection(currentTable);
-            } catch (ExecutionException | InterruptedException e1) {
+            } catch(ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
@@ -88,14 +89,14 @@ public class DemoGUI {
             Object[] ids = new Object[currentTable.getIdCount()];
             int index = tableData.getSelectedRow();
 
-            for (int j = 0; j < ids.length; j++) {
+            for(int j = 0; j < ids.length; j++) {
                 ids[j] = tableData.getValueAt(index, j);
             }
             currentTable.deleteById(ids);
 
             try {
                 updateSelection(currentTable);
-            } catch (ExecutionException | InterruptedException e1) {
+            } catch(ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
@@ -107,7 +108,7 @@ public class DemoGUI {
             dia.setVisible(true);
             try {
                 updateSelection(currentTable);
-            } catch (ExecutionException | InterruptedException e1) {
+            } catch(ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
@@ -130,7 +131,7 @@ public class DemoGUI {
             public void windowClosed(WindowEvent e) {
                 try {
                     demoGUI.database.close();
-                } catch (Exception e1) {
+                } catch(Exception e1) {
                     e1.printStackTrace();
                 }
             }
