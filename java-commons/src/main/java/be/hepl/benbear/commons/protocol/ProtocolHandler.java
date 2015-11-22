@@ -72,12 +72,13 @@ public class ProtocolHandler {
     public <T extends Packet> ProtocolHandler write(OutputStream os, T packet) throws IOException {
         Sanity.noneNull(os, packet);
 
-        Log.d("Writing packet %d", packet.getId());
-
         byte[] bytes = serializer.serialize(packet);
+
+        Log.d("Writing packet %d of length %d", packet.getId(), bytes.length);
+
         os.write(packet.getId());
-        os.write(bytes.length & 0xff);
         os.write(bytes.length >> 8 & 0xff);
+        os.write(bytes.length & 0xff);
         os.write(bytes);
         os.write(FRAME_END);
 
