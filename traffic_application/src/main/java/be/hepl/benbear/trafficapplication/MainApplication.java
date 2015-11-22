@@ -28,7 +28,7 @@ public class MainApplication extends Application {
     private Socket socket;
     private ObjectInputStream ois = null;
     private ObjectOutputStream oos = null;
-    private Config conf = new Config(null);
+    private Config conf = new Config();
     private ProtocolHandler prot = new ProtocolHandler();
 
     private Stage mainStage;

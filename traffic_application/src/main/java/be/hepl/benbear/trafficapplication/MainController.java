@@ -1,5 +1,7 @@
 package be.hepl.benbear.trafficapplication;
 
+import be.hepl.benbear.protocol.tramap.LogoutPacket;
+import be.hepl.benbear.protocol.tramap.LogoutResponsePacket;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -47,7 +49,20 @@ public class MainController implements Initializable {
     }
 
     private void onLogout() {
-        app.setConnected(false);
+        LogoutResponsePacket packet = null;
+        try {
+            app.write(new LogoutPacket());
+            packet = (LogoutResponsePacket) app.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (packet.isOk()){
+            app.setConnected(false);
+            setDisable(true);
+        } else {
+            //TODO probably want to give some feedback
+        }
     }
 
     private void onTruckRes() {
