@@ -81,6 +81,12 @@ public class UDPReceiver implements Runnable {
             Log.d("Received %d bytes: %s", length, Arrays.toString(Arrays.copyOfRange(packet.getData(), 2, length + 2)));
 
             UDPPacket deserialized = serializer.deserialize(UDPPacket.class, ByteBuffer.wrap(packet.getData(), 2, length));
+
+            if(deserialized.type == UDPPacket.Type.QUESTION && !Arrays.equals(deserialized.digest,
+                    UDPPacket.digest(deserialized.from, deserialized.content, deserialized.tag))) {
+                Log.w("Invalid digest, dropping question from %s: %s", deserialized.from, deserialized.content);
+                continue;
+            }
             messageConsumer.accept(Message.from(deserialized));
         }
     }
