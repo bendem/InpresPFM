@@ -31,12 +31,36 @@ public class Log {
     }
 
     public static synchronized void log(Type type, Throwable throwable, String str, Object... objects) {
-        // TODO That can be much better, but you know, time is missing
-        System.err.printf("[%s] %s%n", type, String.format(str, objects));
+        // TODO That can be much better, but you know, don't have time
+        System.err.printf("[%s] [%s] [%s] %s%n",
+            type, Thread.currentThread().getName(), findClassFromStack(), String.format(str, objects));
+
         if(throwable != null) {
             System.err.println(throwable.getMessage());
             throwable.printStackTrace();
         }
+    }
+
+    private static String findClassFromStack() {
+        boolean foundLog = false;
+        for(StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            if(!foundLog && e.getClassName().equals(Log.class.getName())) {
+                foundLog = true;
+                continue;
+            }
+            if(foundLog && !e.getClassName().equals(Log.class.getName())) {
+                return fqdnToClassName(e.getClassName()) + '.' + e.getMethodName() + ':' + e.getLineNumber();
+            }
+        }
+        throw new AssertionError("No stacktrace element outside of the class");
+    }
+
+    private static String fqdnToClassName(String fqdn) {
+        int i = fqdn.lastIndexOf('.');
+        if(i < 0) {
+            return fqdn;
+        }
+        return fqdn.substring(i + 1);
     }
 
 }
