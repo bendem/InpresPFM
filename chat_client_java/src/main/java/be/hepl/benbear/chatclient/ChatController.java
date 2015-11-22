@@ -1,6 +1,5 @@
 package be.hepl.benbear.chatclient;
 
-import be.hepl.benbear.pfmcop.QuestionPacket;
 import be.hepl.benbear.pfmcop.UDPPacket;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -58,8 +57,8 @@ public class ChatController implements Initializable {
             }
             inputField.setText("");
             UUID tag = UUID.randomUUID();
-            byte[] digest = QuestionPacket.digest(username, text, tag);
-            app.send(new QuestionPacket(username, text, tag, digest));
+            byte[] digest = UDPPacket.digest(username, text, tag);
+            app.send(new UDPPacket(UDPPacket.Type.QUESTION, username, text, tag, digest));
         });
         answerButton.setOnAction(e -> {
             String text = inputField.getText();
@@ -68,7 +67,8 @@ public class ChatController implements Initializable {
             }
             inputField.setText("");
             Message message = chatList.getSelectionModel().getSelectedItem();
-            app.send(new UDPPacket(UDPPacket.Type.ANSWER, username, text, message.getUuid()));
+            // TODO Check digest
+            app.send(new UDPPacket(UDPPacket.Type.ANSWER, username, text, message.getUuid(), null));
         });
         eventButton.setOnAction(e -> {
             String text = inputField.getText();
@@ -76,7 +76,7 @@ public class ChatController implements Initializable {
                 return;
             }
             inputField.setText("");
-            app.send(new UDPPacket(UDPPacket.Type.EVENT, username, text, null));
+            app.send(new UDPPacket(UDPPacket.Type.EVENT, username, text, null, null));
         });
     }
 

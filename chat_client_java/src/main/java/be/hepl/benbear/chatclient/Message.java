@@ -6,6 +6,15 @@ import java.util.UUID;
 
 public class Message {
 
+    public static Message from(UDPPacket packet) {
+        return new Message(
+            packet.getType(),
+            packet.getFrom(),
+            packet.getContent(),
+            packet.getTag()
+        );
+    }
+
     public final UDPPacket.Type type;
     public final String username;
     public final String message;

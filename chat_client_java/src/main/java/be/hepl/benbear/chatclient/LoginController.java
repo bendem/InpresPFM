@@ -66,7 +66,9 @@ public class LoginController implements Initializable {
     }
 
     private void onLogin() {
-        app.checkLogin(usernameField.getText().trim(), passwordField.getText().trim())
+        String username = usernameField.getText().trim();
+
+        app.checkLogin(username, passwordField.getText().trim())
             .whenComplete((res, exc) -> Platform.runLater(() -> {
                 if(exc != null) {
                     error("An error happened: " + exc.getMessage());
@@ -74,12 +76,12 @@ public class LoginController implements Initializable {
                     return;
                 }
 
-                if(res.first.isEmpty()) {
+                if(res.first == null || res.first.isEmpty()) {
                     error("Invalid username or password", usernameField, passwordField);
                 } else {
-                    chatController.setUsername(usernameField.getText());
                     app.startChat(res.first, res.second);
                     app.getStage(this).close();
+                    chatController.setUsername(username);
                 }
             }));
     }

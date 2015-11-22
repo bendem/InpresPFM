@@ -1,13 +1,16 @@
 package be.hepl.benbear.chatclient;
 
+import be.hepl.benbear.commons.checking.Sanity;
 import be.hepl.benbear.commons.config.Config;
 import be.hepl.benbear.commons.generics.Tuple;
 import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.protocol.ProtocolHandler;
+import be.hepl.benbear.commons.serialization.BinarySerializer;
 import be.hepl.benbear.pfmcop.LoginPacket;
 import be.hepl.benbear.pfmcop.LoginResponsePacket;
 import be.hepl.benbear.pfmcop.UDPPacket;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -19,8 +22,9 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.net.Socket;
-import java.net.URL;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
@@ -39,9 +43,11 @@ public class ChatApplication extends Application {
     private final Map<Object, WeakReference<Stage>> stages;
     private final ObservableList<Message> messages;
     private Stage mainStage;
+    private MulticastSocket socket;
+    private SocketAddress address;
 
     public ChatApplication() {
-        threadPool = Executors.newSingleThreadExecutor();
+        threadPool = Executors.newFixedThreadPool(2);
         config = new Config();
         stages = new WeakHashMap<>();
         messages = FXCollections.observableArrayList();
@@ -56,12 +62,22 @@ public class ChatApplication extends Application {
     }
 
     public void send(UDPPacket packet) {
-        // TODO Send the packet
-        addMessage(packet);
-    }
+        Sanity.notNull(socket, "Socket not yet initialized");
 
-    private void addMessage(UDPPacket packet) {
-        messages.add(new Message(packet.type, packet.from, packet.content, packet.tag));
+        try {
+            byte[] serialized = BinarySerializer.getInstance().serialize(packet);
+            ByteBuffer buffer = ByteBuffer.allocate(serialized.length + 2);
+            buffer.put((byte) (serialized.length >> 8));
+            buffer.put((byte) (serialized.length & 0xff));
+            buffer.put(serialized);
+
+            Log.d("Sending %d bytes: %s", serialized.length, Arrays.toString(serialized));
+
+            DatagramPacket datagramPacket = new DatagramPacket(buffer.array(), 0, serialized.length + 2, address);
+            socket.send(datagramPacket);
+        } catch(IOException e) {
+            Log.e("Failed to send message", e);
+        }
     }
 
     public ObservableList<Message> messagesProperty() {
@@ -92,12 +108,25 @@ public class ChatApplication extends Application {
     }
 
     public void startChat(String host, int port) {
-        // TODO
+        Log.d("Joining multicast group on %s:%d", host, port);
+        try {
+            address = new InetSocketAddress(InetAddress.getByName(host), port);
+            socket = new MulticastSocket(port);
+            socket.joinGroup(address, NetworkInterface.getByName(config.getString("chatclient.network_interface").get()));
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        threadPool.submit(new UDPReceiver(
+            socket, address,
+            (Message m) -> Platform.runLater(() -> messages.add(m)),
+            threadPool::isShutdown
+        ));
     }
 
     @Override
     public void start(Stage stage) throws IOException {
-        Log.d("start");
+        Log.d("starting");
         config.load(getParameters().getNamed().get("config"));
         ChatController ctrl = open("chat.fxml", "InpresFPM - Chat", false, true);
         this.<LoginController>open("login.fxml", "InpresFPM - Login", true)
@@ -106,7 +135,8 @@ public class ChatApplication extends Application {
 
     @Override
     public void stop() throws Exception {
-        Log.d("stop");
+        Log.d("stopping");
+        socket.close();
         threadPool.shutdown();
     }
 

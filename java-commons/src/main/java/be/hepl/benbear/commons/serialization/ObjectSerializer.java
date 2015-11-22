@@ -33,6 +33,7 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
         Sanity.noneNull(bb);
 
         List<Object> args = fieldReflection.getTypes()
+            .peek(t -> Log.d("Deserializing type %s", t))
             .map(BinarySerializer.getInstance()::getDeserializer)
             .peek(deserializer -> {
                 if(deserializer == null) {
@@ -62,7 +63,7 @@ public class ObjectSerializer<T> implements Serializer<T>, Deserializer<T> {
             }
 
             try {
-                Log.d("Serializing %s from %s", f, object);
+                Log.d("Serializing %s %s from %s", f.getType(), f.getName(), object);
                 serializer.serialize(FieldReflection.extractFunction(object).apply(f), dos);
             } catch(IOException e) {
                 Log.e("Failed to serialize %s", e, object); // TODO @Exception SerializationException?
