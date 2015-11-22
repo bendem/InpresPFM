@@ -1,30 +1,32 @@
-#!/bin/bash
+set -e
 
-function run_gradle() {
-    local path=${1:0:(-1)}
-    cd $path
-    echo Running gradle in $(pwd)
-    gradle build &> ../$path.log
+function build() {
+    echo
+    echo "Building $*"
+    cd "$*"
+    grep "id 'maven'" build.gradle >/dev/null && gradle clean install || gradle clean build
+    cd ..
 }
 
-function run_cmake() {
-    local path=${1:0:(-1)}
-    cd $path
-    if [ ! -d "build" ]; then
-        mkdir build
-    fi
-    echo Running cmake in $(pwd)
-    cd build
-    cmake .. &> ../../$path.log
-    make &>> ../../$path.log
-}
+build java-commons
 
-for f in */; do
-    if [ -f "$f/build.gradle" ]; then
-        run_gradle $f&
-    else
-        if [ -f "$f/CMakeLists.txt" ]; then
-            run_cmake $f&
-        fi
-    fi
-done
+build accounting_db
+build trafficdb
+
+build iobrep
+build pfmcop
+build tramap
+
+build boat_server
+build chat_client_java
+build chat_server
+build demo_jdbc
+build reservation_app
+build reservation_servlet
+build traffic_application
+build traffic_server
+
+# BoatApp
+
+# cpp-commons
+# container_server
