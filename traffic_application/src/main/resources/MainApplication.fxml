@@ -1,15 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="350.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.MainController">
-   <children>
-      <Label text="Application_Traffic" />
-      <Button fx:id="truckResButton" mnemonicParsing="false" prefWidth="250.0" text="Truck with reservation" />
-      <Button fx:id="truckNoResButton" mnemonicParsing="false" prefWidth="250.0" text="Truck without reservation" />
-      <Button fx:id="listButton" mnemonicParsing="false" prefWidth="250.0" text="List movements" />
-      <Button fx:id="loginButton" mnemonicParsing="false" prefWidth="250.0" text="Login" />
-   </children>
+<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="350.0" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.MainController">
+    <children>
+        <Label text="Application_Traffic">
+         <font>
+            <Font size="20.0" />
+         </font>
+         <VBox.margin>
+            <Insets bottom="20.0" top="20.0" />
+         </VBox.margin></Label>
+        <Button fx:id="truckResButton" mnemonicParsing="false" prefWidth="250.0" text="Truck with reservation" />
+        <Button fx:id="truckNoResButton" mnemonicParsing="false" prefWidth="250.0" text="Truck without reservation" />
+        <Button fx:id="listButton" mnemonicParsing="false" prefWidth="250.0" text="List movements" />
+        <Button fx:id="loginButton" mnemonicParsing="false" prefWidth="250.0" text="Login" />
+    </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
 </VBox>

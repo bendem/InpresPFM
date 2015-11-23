@@ -5,10 +5,9 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-
-<VBox alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.InputTruckResController">
+<VBox alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.InputTruckResController">
    <children>
-      <HBox alignment="CENTER_LEFT">
+      <HBox alignment="CENTER_LEFT" spacing="5.0">
          <children>
             <Label prefWidth="90.0" text="Reservation n°">
                <padding>
@@ -21,7 +20,7 @@
             <Insets left="10.0" right="10.0" top="7.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT">
+      <HBox alignment="CENTER_LEFT" spacing="5.0">
          <children>
             <Label prefWidth="90.0" text="Container id">
                <padding>
@@ -42,4 +41,7 @@
       </ListView>
       <Button fx:id="confirmButton" mnemonicParsing="false" text="Confirm" />
    </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
 </VBox>
