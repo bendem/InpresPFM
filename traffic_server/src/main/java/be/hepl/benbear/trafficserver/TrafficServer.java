@@ -19,14 +19,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.channels.SocketChannel;
 import java.sql.Date;
-import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
 
@@ -171,21 +169,15 @@ public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
 
     private void onListOperationPacket(ListOperationsPacket packet, DataOutputStream os) throws IOException {
         List<MovementsLight> movements;
-        System.out.println("GODDAMMIT");
         try {
-            System.out.println("GODDAMMIT1");
             movements = database.table(MovementsLight.class)
-                .find(DBPredicate.of(packet.getType().equals(ListOperationsPacket.Type.Society.toString()) ? "name" : "city", packet.getCriteria())
-                            .and("dateArrival", new Date(packet.getStart()), ">=")
-                            .and("dateDeparture", new Date(packet.getEnd()), "<="))
+                .find(DBPredicate.of(packet.getType().equals(ListOperationsPacket.Type.Society.toString()) ? "name" : "city", packet.getCriteria()))
                 .get().collect(Collectors.toList());
-            System.out.println("GODDAMMIT2");
         } catch (InterruptedException | ExecutionException e) {
             Log.e("Error retrieving reservation", e);
             protocolHandler.write(os, new ListOperationsResponsePacket(false, "No movements for the provided criteria", new be.hepl.benbear.protocol.tramap.Movement[0]));
             return;
         }
-        System.out.println("GODDAMMIT");
         protocolHandler.write(os, new ListOperationsResponsePacket(true, "Good", movements.stream().map(
             m -> new be.hepl.benbear.protocol.tramap.Movement(m.getMovementId(), m.getContainerId(), m.getDestination(), m.getCompanyName(), m.getDateArrival().getTime(), m.getDateDeparture().getTime())
         ).toArray(be.hepl.benbear.protocol.tramap.Movement[]::new)));
