@@ -23,6 +23,9 @@ public class ArraySerializer<T> implements Serializer<T>, Deserializer<T> {
             if(clazz == long.class) {
                 // Not sure why, long is J...
                 internalName = "[J";
+            } else if(clazz == boolean.class) {
+                // AAAAaaaannnd booleans are Z...... You know...
+                internalName = "[Z";
             } else {
                 internalName = "[" + Character.toUpperCase(clazz.getName().charAt(0));
             }
