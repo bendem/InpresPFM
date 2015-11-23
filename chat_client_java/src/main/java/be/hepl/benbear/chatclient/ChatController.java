@@ -14,12 +14,18 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
 public class ChatController implements Initializable {
 
+    private static final int HISTORY_SIZE = 20;
+
     private final ChatApplication app;
+    private final List<String> sentMessages;
+    private int sentMessagesIndex;
     @FXML private ListView<Message> chatList;
     @FXML private TextField inputField;
     @FXML private Button questionButton;
@@ -29,6 +35,8 @@ public class ChatController implements Initializable {
 
     public ChatController(ChatApplication app) {
         this.app = app;
+        sentMessages = new ArrayList<>(HISTORY_SIZE);
+        sentMessagesIndex = 0;
     }
 
     @Override
@@ -56,6 +64,18 @@ public class ChatController implements Initializable {
                     e.consume();
                     eventButton.fire();
                 }
+            } else if(e.getCode() == KeyCode.UP) {
+                if(sentMessages.isEmpty() || sentMessagesIndex <= 0) {
+                    return;
+                }
+                inputField.setText(sentMessages.get(--sentMessagesIndex));
+                e.consume();
+            } else if(e.getCode() == KeyCode.DOWN) {
+                if(sentMessages.isEmpty() || sentMessagesIndex + 1 >= sentMessages.size()) {
+                    return;
+                }
+                inputField.setText(sentMessages.get(++sentMessagesIndex));
+                e.consume();
             }
         });
 
@@ -64,29 +84,36 @@ public class ChatController implements Initializable {
             if(text.isEmpty()) {
                 return;
             }
-            inputField.setText("");
             UUID tag = UUID.randomUUID();
             byte[] digest = UDPPacket.digest(username, text, tag);
-            app.send(new UDPPacket(UDPPacket.Type.QUESTION, username, text, tag, digest));
+            send(new UDPPacket(UDPPacket.Type.QUESTION, username, text, tag, digest));
         });
         answerButton.setOnAction(e -> {
             String text = inputField.getText();
             if(text.isEmpty()) {
                 return;
             }
-            inputField.setText("");
             Message message = chatList.getSelectionModel().getSelectedItem();
-            // TODO Check digest
-            app.send(new UDPPacket(UDPPacket.Type.ANSWER, username, text, message.getUuid(), null));
+            // TODO Possibly check digest here instead of on receive?
+            send(new UDPPacket(UDPPacket.Type.ANSWER, username, text, message.getUuid(), null));
         });
         eventButton.setOnAction(e -> {
             String text = inputField.getText();
             if(text.isEmpty()) {
                 return;
             }
-            inputField.setText("");
-            app.send(new UDPPacket(UDPPacket.Type.EVENT, username, text, null, null));
+            send(new UDPPacket(UDPPacket.Type.EVENT, username, text, null, null));
         });
+    }
+
+    private void send(UDPPacket packet) {
+        if(sentMessages.size() == HISTORY_SIZE) {
+            sentMessages.remove(0);
+        }
+        sentMessages.add(inputField.getText());
+        sentMessagesIndex = sentMessages.size();
+        inputField.setText("");
+        app.send(packet);
     }
 
     public void setUsername(String username) {
