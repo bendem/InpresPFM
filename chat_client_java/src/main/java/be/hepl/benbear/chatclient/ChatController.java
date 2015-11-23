@@ -3,6 +3,7 @@ package be.hepl.benbear.chatclient;
 import be.hepl.benbear.pfmcop.UDPPacket;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -42,11 +43,19 @@ public class ChatController implements Initializable {
             selectedUuid.setValue(n == null ? null : n.getUuid());
         });
         chatList.setItems(app.messagesProperty());
+        chatList.getItems().addListener((ListChangeListener.Change<?extends Message> change) -> {
+            chatList.scrollTo(change.getList().size());
+        });
 
         inputField.setOnKeyPressed(e -> {
-            if(e.getCode() == KeyCode.ENTER && e.isControlDown()) {
-                e.consume();
-                answerButton.fire();
+            if(e.getCode() == KeyCode.ENTER) {
+                if(e.isControlDown()) {
+                    e.consume();
+                    answerButton.fire();
+                } else if(e.isAltDown()) {
+                    e.consume();
+                    eventButton.fire();
+                }
             }
         });
 
