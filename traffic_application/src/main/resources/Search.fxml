@@ -6,7 +6,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.SearchController">
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="250.0" minWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.SearchController">
    <children>
       <HBox alignment="CENTER_LEFT" spacing="5.0">
          <children>
@@ -15,7 +15,7 @@
                   <Insets />
                </HBox.margin>
             </Label>
-            <DatePicker fx:id="startDatePicker" HBox.hgrow="ALWAYS" />
+            <DatePicker fx:id="startDatePicker" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
          </children>
          <VBox.margin>
             <Insets />
@@ -28,7 +28,7 @@
                   <Insets right="5.0" />
                </HBox.margin>
             </Label>
-            <DatePicker fx:id="endDatePicker" HBox.hgrow="ALWAYS" />
+            <DatePicker fx:id="endDatePicker" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
          </children>
          <VBox.margin>
             <Insets />
