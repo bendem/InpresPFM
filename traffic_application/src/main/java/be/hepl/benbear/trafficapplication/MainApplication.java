@@ -23,23 +23,22 @@ import java.util.WeakHashMap;
 
 public class MainApplication extends Application {
 
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    private final Config conf = new Config();
+    private final ProtocolHandler prot = new ProtocolHandler();
     private Socket socket;
     private InputStream ois = null;
     private OutputStream oos = null;
-    private Config conf = new Config();
-    private ProtocolHandler prot = new ProtocolHandler();
 
     private Stage mainStage;
-
     private final Map<Object, WeakReference<Stage>> stages;
     private boolean connected = false;
 
     public MainApplication() {
         stages = new WeakHashMap<>();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
     public Stage getStage(Object controller) {
