@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -68,6 +69,8 @@ public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
         protocolHandler.registerPacket(ListOperationsResponsePacket.ID, ListOperationsResponsePacket.class);
         protocolHandler.registerPacket(LogoutPacket.ID, LogoutPacket.class);
         protocolHandler.registerPacket(LogoutResponsePacket.ID, LogoutResponsePacket.class);
+        new ContainerPosition("d",0,0);
+        new be.hepl.benbear.protocol.tramap.Movement(0,"o","o","o",0,0);
     }
 
     @Override
@@ -115,22 +118,20 @@ public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
     }
 
     private void onInputLorryPacket(InputLorryPacket packet, DataOutputStream os) throws IOException {
-        Stream<ReservationsContainers> listRes;
+        List<ReservationsContainers> listRes;
 
         try {
-            listRes = database.table(ReservationsContainers.class).find(DBPredicate.of("reservation_id", packet.getReservationId())).get();
+            listRes = database.table(ReservationsContainers.class).find(DBPredicate.of("reservation_id", packet.getReservationId())).get().collect(Collectors.toList());
         } catch (InterruptedException | ExecutionException e) {
             Log.e("Error retrieving reservation", e);
             protocolHandler.write(os, new InputLorryResponsePacket(false, "Reservation number " + packet.getReservationId() + "not found", new ContainerPosition[0]));
             return;
         }
-
-        if (!listRes.map(ReservationsContainers::getContainerId).collect(Collectors.toSet()).containsAll(packet.getContainerIds())) {
+        if (!listRes.stream().map(ReservationsContainers::getContainerId).collect(Collectors.toList()).containsAll(packet.getContainerIds())) {
             protocolHandler.write(os, new InputLorryResponsePacket(false, "One of the ids is not part of the reservation", new ContainerPosition[0]));
             return;
         }
-
-        protocolHandler.write(os, new InputLorryResponsePacket(true, "Good", listRes
+        protocolHandler.write(os, new InputLorryResponsePacket(true, "Good", listRes.stream()
             .filter(r -> packet.getContainerIds().contains(r.getContainerId()))
             .map(r -> new ContainerPosition(r.getContainerId(), r.getX(), r.getY()))
             .toArray(ContainerPosition[]::new)
@@ -138,25 +139,24 @@ public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
     }
 
     private void onInputLorryWithoutReservationPacket(InputLorryWithoutReservationPacket packet, DataOutputStream os) throws IOException {
-        Stream<FreeParc> freeParc;
+        List<FreeParc> freeParc;
         try {
-            freeParc = database.table(FreeParc.class).find().get();
+            freeParc = database.table(FreeParc.class).find().get().collect(Collectors.toList());
         } catch (InterruptedException | ExecutionException e) {
             Log.e("Error retrieving reservation", e);
             protocolHandler.write(os, new InputLorryWithoutReservationResponsePacket(false, "No free space in the parc", new ContainerPosition[0]));
             return;
         }
-
-        if (freeParc.count() > packet.getContainerIds().size()) {
+        if (freeParc.size() < packet.getContainerIds().size()) {
             protocolHandler.write(os, new InputLorryWithoutReservationResponsePacket(false, "Not enough free space in the parc", new ContainerPosition[0]));
             return;
         }
 
-        Iterator<FreeParc> itParc = freeParc.limit(packet.getContainerIds().size()).iterator();
+        Iterator<FreeParc> itParc = freeParc.iterator();
         Iterator<String> itCont = packet.getContainerIds().iterator();
         ContainerPosition contPos[] = new ContainerPosition[packet.getContainerIds().size()];
         int i = 0;
-        while(itParc.hasNext()) {
+        while(itCont.hasNext()) {
             String contid = itCont.next();
             FreeParc fp = itParc.next();
             contPos[i] = new ContainerPosition(contid, fp.getX(), fp.getY());
@@ -167,18 +167,22 @@ public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
     }
 
     private void onListOperationPacket(ListOperationsPacket packet, DataOutputStream os) throws IOException {
-        Stream<MovementsLight> movements;
+        List<MovementsLight> movements;
+        System.out.println("GODDAMMIT");
         try {
+            System.out.println("GODDAMMIT1");
             movements = database.table(MovementsLight.class)
-                .find(DBPredicate.of(packet.getType() == ListOperationsPacket.Type.Society.toString() ? "name" : "city", packet.getCriteria())).get();
+                .find(DBPredicate.of(packet.getType().equals(ListOperationsPacket.Type.Society.toString()) ? "name" : "city", packet.getCriteria()))
+                .get().collect(Collectors.toList());
+            System.out.println("GODDAMMIT2");
         } catch (InterruptedException | ExecutionException e) {
             Log.e("Error retrieving reservation", e);
             protocolHandler.write(os, new ListOperationsResponsePacket(false, "No movements for the provided criteria", new be.hepl.benbear.protocol.tramap.Movement[0]));
             return;
         }
-
-        protocolHandler.write(os, new ListOperationsResponsePacket(true, "Good", movements.map(
-            m -> new be.hepl.benbear.protocol.tramap.Movement(m.getMovementId(), m.getContainerId(), m.getDestination(), m.getCompany_name(), m.getDateArrival().toInstant(), m.getDateDeparture().toInstant())
+        System.out.println("GODDAMMIT");
+        protocolHandler.write(os, new ListOperationsResponsePacket(true, "Good", movements.stream().map(
+            m -> new be.hepl.benbear.protocol.tramap.Movement(m.getMovementId(), m.getContainerId(), m.getDestination(), m.getCompanyName(), m.getDateArrival().getTime(), m.getDateDeparture().getTime())
         ).toArray(be.hepl.benbear.protocol.tramap.Movement[]::new)));
     }
 

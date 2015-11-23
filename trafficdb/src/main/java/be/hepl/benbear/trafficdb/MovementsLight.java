@@ -10,16 +10,16 @@ public class MovementsLight {
     @PrimaryKey
     private final int movementId;
     private final String containerId;
-    private final String destination;
-    private final String company_name;
+    private final String name;
+    private final String city;
     private final Date dateArrival;
     private final Date dateDeparture;
 
-    public MovementsLight(int movementId, String containerId, String destination, String company_name, Date dateArrival, Date dateDeparture) {
+    public MovementsLight(int movementId, String containerId, String name, String city, Date dateArrival, Date dateDeparture) {
         this.movementId = movementId;
         this.containerId = containerId;
-        this.destination = destination;
-        this.company_name = company_name;
+        this.name = name;
+        this.city = city;
         this.dateArrival = dateArrival;
         this.dateDeparture = dateDeparture;
     }
@@ -33,11 +33,11 @@ public class MovementsLight {
     }
 
     public String getDestination() {
-        return destination;
+        return city;
     }
 
-    public String getCompany_name() {
-        return company_name;
+    public String getCompanyName() {
+        return name;
     }
 
     public Date getDateArrival() {

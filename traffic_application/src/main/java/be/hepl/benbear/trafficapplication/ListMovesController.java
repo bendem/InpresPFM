@@ -41,9 +41,9 @@ public class ListMovesController implements Initializable {
         idColumn.setCellValueFactory(f -> new ReadOnlyIntegerWrapper(f.getValue().getMovementId()));
         containerIdColumn.setCellValueFactory(f -> new ReadOnlyObjectWrapper<>(f.getValue().getContainerId()));
         destinationColumn.setCellValueFactory(f -> new ReadOnlyObjectWrapper<>(f.getValue().getDestination()));
-        companyColumn.setCellValueFactory(f -> new ReadOnlyObjectWrapper<>(f.getValue().getCompany_name()));
-        arrivalColumn.setCellValueFactory(f -> new ReadOnlyObjectWrapper<>(f.getValue().getDateArrival()));
-        departureColumn.setCellValueFactory(f -> new ReadOnlyObjectWrapper<>(f.getValue().getDateDeparture()));
+        companyColumn.setCellValueFactory(f -> new ReadOnlyObjectWrapper<>(f.getValue().getCompanyName()));
+        arrivalColumn.setCellValueFactory(f -> new ReadOnlyObjectWrapper<>(Instant.ofEpochMilli(f.getValue().getDateArrival())));
+        departureColumn.setCellValueFactory(f -> new ReadOnlyObjectWrapper<>(Instant.ofEpochMilli(f.getValue().getDateDeparture())));
         okButton.setOnAction(e -> onOk());
 
         try {

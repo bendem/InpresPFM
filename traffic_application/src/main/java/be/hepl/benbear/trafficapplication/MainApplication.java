@@ -107,6 +107,8 @@ public class MainApplication extends Application {
         prot.registerPacket(ListOperationsResponsePacket.ID, ListOperationsResponsePacket.class);
         prot.registerPacket(LogoutPacket.ID, LogoutPacket.class);
         prot.registerPacket(LogoutResponsePacket.ID, LogoutResponsePacket.class);
+        new ContainerPosition("d",0,0);
+        new be.hepl.benbear.protocol.tramap.Movement(0,"o","o","o",0,0);
     }
 
     public Packet read() throws IOException {

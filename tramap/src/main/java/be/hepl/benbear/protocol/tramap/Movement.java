@@ -1,9 +1,8 @@
 package be.hepl.benbear.protocol.tramap;
 
+import be.hepl.benbear.commons.serialization.ArraySerializer;
 import be.hepl.benbear.commons.serialization.BinarySerializer;
 import be.hepl.benbear.commons.serialization.ObjectSerializer;
-
-import java.time.Instant;
 
 public class Movement {
 
@@ -14,20 +13,22 @@ public class Movement {
             serializer,
             serializer
         );
+        ArraySerializer<Movement[]> arraySerializer = new ArraySerializer<>(Movement.class);
+        BinarySerializer.getInstance().registerSerializer(Movement[].class, arraySerializer, arraySerializer);
     }
 
     private final int movementId;
     private final String containerId;
     private final String destination;
-    private final String company_name;
-    private final Instant dateArrival;
-    private final Instant dateDeparture;
+    private final String companyName;
+    private final long dateArrival;
+    private final long dateDeparture;
 
-    public Movement(int movementId, String containerId, String destination, String company_name, Instant dateArrival, Instant dateDeparture) {
+    public Movement(int movementId, String containerId, String destination, String companyName, long dateArrival, long dateDeparture) {
         this.movementId = movementId;
         this.containerId = containerId;
         this.destination = destination;
-        this.company_name = company_name;
+        this.companyName = companyName;
         this.dateArrival = dateArrival;
         this.dateDeparture = dateDeparture;
     }
@@ -40,15 +41,15 @@ public class Movement {
         return destination;
     }
 
-    public String getCompany_name() {
-        return company_name;
+    public String getCompanyName() {
+        return companyName;
     }
 
-    public Instant getDateArrival() {
+    public long getDateArrival() {
         return dateArrival;
     }
 
-    public Instant getDateDeparture() {
+    public long getDateDeparture() {
         return dateDeparture;
     }
 
