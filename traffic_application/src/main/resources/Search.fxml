@@ -6,11 +6,11 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.SearchController">
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.trafficapplication.SearchController">
    <children>
       <HBox alignment="CENTER_LEFT" spacing="5.0">
          <children>
-            <Label text="Start period" HBox.hgrow="NEVER">
+            <Label minWidth="-Infinity" text="Start period" HBox.hgrow="NEVER">
                <HBox.margin>
                   <Insets />
                </HBox.margin>
@@ -23,7 +23,7 @@
       </HBox>
       <HBox alignment="CENTER_LEFT" spacing="5.0">
          <children>
-            <Label text="End period" HBox.hgrow="NEVER">
+            <Label minWidth="-Infinity" text="End period" HBox.hgrow="NEVER">
                <HBox.margin>
                   <Insets right="5.0" />
                </HBox.margin>
@@ -36,7 +36,7 @@
       </HBox>
       <HBox spacing="5.0">
          <children>
-            <Label text="Criteria">
+            <Label minWidth="-Infinity" text="Criteria">
                <HBox.margin>
                   <Insets right="5.0" />
                </HBox.margin>
