@@ -89,7 +89,7 @@ public class ChatApplication extends Application {
         CompletableFuture<Tuple<String, Integer>> future = new CompletableFuture<>();
         threadPool.submit(() -> {
             try (Socket socket = new Socket(
-                config.getString("chatserver.host").orElse("localhost"),
+                config.getString("chatserver.host.tcp").orElse("localhost"),
                 config.getInt("chatserver.port.tcp").orElse(31063)
             )) {
                 ProtocolHandler protocolHandler = new ProtocolHandler();
@@ -145,7 +145,9 @@ public class ChatApplication extends Application {
     @Override
     public void stop() throws Exception {
         Log.d("stopping");
-        socket.close();
+        if(socket != null) {
+            socket.close();
+        }
         threadPool.shutdown();
     }
 
