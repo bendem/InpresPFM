@@ -18,6 +18,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.channels.SocketChannel;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +55,7 @@ public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
         database.registerClass(Reservation.class);
         database.registerClass(ReservationsContainers.class);
         database.registerClass(FreeParc.class);
+        database.registerClass(MovementsLight.class);
         database.connect(
             config.getString("jdbc.url").get(),
             config.getString("jdbc.trafficdb.user").get(),
@@ -172,7 +175,9 @@ public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
         try {
             System.out.println("GODDAMMIT1");
             movements = database.table(MovementsLight.class)
-                .find(DBPredicate.of(packet.getType().equals(ListOperationsPacket.Type.Society.toString()) ? "name" : "city", packet.getCriteria()))
+                .find(DBPredicate.of(packet.getType().equals(ListOperationsPacket.Type.Society.toString()) ? "name" : "city", packet.getCriteria())
+                            .and("dateArrival", new Date(packet.getStart()), ">=")
+                            .and("dateDeparture", new Date(packet.getEnd()), "<="))
                 .get().collect(Collectors.toList());
             System.out.println("GODDAMMIT2");
         } catch (InterruptedException | ExecutionException e) {
