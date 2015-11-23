@@ -40,7 +40,7 @@ public class BinarySerializer {
         // Double not implemented
         deserializers.put(String.class, bb -> {
             int len = bb.getInt();
-            if(len < 0) {
+            if(len <= 0) {
                 // That's what you get for using unsigned...
                 return "";
             }
@@ -63,8 +63,9 @@ public class BinarySerializer {
                 dos.writeInt(0);
                 return;
             }
-            dos.writeInt(string.length());
-            dos.write(string.getBytes());
+            byte[] bytes = string.getBytes();
+            dos.writeInt(bytes.length);
+            dos.write(bytes);
         });
 
         // Register (de)serializers for array types

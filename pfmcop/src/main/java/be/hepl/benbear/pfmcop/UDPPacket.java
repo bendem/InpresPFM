@@ -6,9 +6,14 @@ import java.util.UUID;
 public class UDPPacket {
 
     public static byte[] digest(String from, String content, UUID uuid) {
-        ByteBuffer bb = ByteBuffer.allocate(from.length() + content.length() + 36);
-        bb.put(from.getBytes()).put(content.getBytes()).put(uuid.toString().getBytes());
-        bb.flip();
+        byte[] fromBytes = from.getBytes();
+        byte[] contentBytes = content.getBytes();
+        ByteBuffer bb = ByteBuffer.allocate(fromBytes.length + contentBytes.length + 36); // 36 = UUIDv4 size
+        bb
+            .put(fromBytes)
+            .put(contentBytes)
+            .put(uuid.toString().getBytes())
+            .flip();
         return Digestion.digest(bb);
     }
 
