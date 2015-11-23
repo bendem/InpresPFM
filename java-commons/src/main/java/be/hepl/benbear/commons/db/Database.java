@@ -27,7 +27,7 @@ public interface Database extends AutoCloseable {
 
     Database connect(String jdbc, String username, String password);
 
-    <T> Database registerClass(Class<T> clazz);
+    Database registerClass(Class<?>... classes);
 
     Set<String> getRegisteredTables();
 

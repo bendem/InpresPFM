@@ -14,8 +14,11 @@ public abstract class AbstractDatabase implements Database {
     }
 
     @Override
-    public <T> Database registerClass(Class<T> clazz) {
-        tables.compute(clazz, (k, v) -> createTable(clazz));
+    public Database registerClass(Class<?>... classes) {
+        for(Class<?> clazz : classes) {
+            tables.compute(clazz, (k, v) -> createTable(clazz));
+        }
+
         return this;
     }
 

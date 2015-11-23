@@ -15,11 +15,11 @@ public class CSVDatabase extends AbstractDatabase {
     /* package */ Path folder;
 
     @Override
-    public <T> Database registerClass(Class<T> clazz) {
+    public Database registerClass(Class<?>... classes) {
         if(!isConnected()) {
             throw new IllegalStateException("You need to call connect before registering classes");
         }
-        return super.registerClass(clazz);
+        return super.registerClass(classes);
     }
 
     /**
