@@ -109,8 +109,8 @@ public class ChatApplication extends Application {
     }
 
     public void startChat(String host, int port) {
-        Log.d("Joining multicast group on %s:%d", host, port);
         try {
+            Log.d("Creating multicast socket on %s:%d", host, port);
             address = new InetSocketAddress(InetAddress.getByName(host), port);
             socket = new MulticastSocket(port);
             Optional<String> interfaceOption = config.getString("chatclient.network_interface");
@@ -120,6 +120,7 @@ public class ChatApplication extends Application {
             } else {
                 networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
             }
+            Log.d("Joining multicast group on %s", networkInterface);
             socket.joinGroup(address, networkInterface);
         } catch(IOException e) {
             throw new RuntimeException(e);
