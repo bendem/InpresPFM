@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -112,7 +113,14 @@ public class ChatApplication extends Application {
         try {
             address = new InetSocketAddress(InetAddress.getByName(host), port);
             socket = new MulticastSocket(port);
-            socket.joinGroup(address, NetworkInterface.getByName(config.getString("chatclient.network_interface").get()));
+            Optional<String> interfaceOption = config.getString("chatclient.network_interface");
+            NetworkInterface networkInterface;
+            if(interfaceOption.isPresent()) {
+                networkInterface = NetworkInterface.getByName(interfaceOption.get());
+            } else {
+                networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            }
+            socket.joinGroup(address, networkInterface);
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
