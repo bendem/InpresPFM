@@ -17,7 +17,6 @@ repositories {
 }
 
 dependencies {
-    shadow 'org.jfree:jfreechart:1.0.19'
     shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
 }
 

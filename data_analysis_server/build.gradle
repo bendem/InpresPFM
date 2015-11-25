@@ -19,6 +19,9 @@ repositories {
 
 dependencies {
     shadow 'org.apache.commons:commons-math3:3.5'
+    shadow 'be.hepl.benbear:pidep:1.0-SNAPSHOT'
+    shadow 'be.hepl.benbear:accounting_db:1.0-SNAPSHOT'
+    shadow 'be.hepl.benbear:trafficdb:1.0-SNAPSHOT'
     shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
 }
 
