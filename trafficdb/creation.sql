@@ -108,8 +108,20 @@ for each row begin
     select movement_seq.nextval into :new.movement_id from dual;
 end;
 
-create or replace view free_empl as select x, y from parcs where (x,y) not in (select x,y from reservations_containers);
-create or replace view movements_light as select movement_id, container_id, name, city, date_arrival, date_departure from movements natural join destinations natural join companies;
+create or replace view free_empl as
+select x, y from parcs where (x,y) not in (select x,y from reservations_containers);
+
+create or replace view movements_light as
+select movement_id, container_id, name, city, date_arrival, date_departure, weight from movements natural join destinations natural join companies order by dbms_random.random;
+
+create or replace view container_per_dest_year as
+select count(*) count, city, extract (year from date_arrival) year from movements_light group by city, extract (year from date_arrival);
+
+create or replace view container_per_dest_month as
+select count(*) count, city, extract (month from date_arrival) month from movements_light group by city, extract (month from date_arrival);
+
+create or replace view container_per_dest_quarter as
+select count(*) count, city, extract (year from date_arrival) year, to_char(date_arrival, 'Q') quarter from movements_light group by to_char(date_arrival, 'Q'), city, extract (year from date_arrival);
 /
 
 exit

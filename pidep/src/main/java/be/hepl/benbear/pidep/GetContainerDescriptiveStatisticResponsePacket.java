@@ -2,12 +2,12 @@ package be.hepl.benbear.pidep;
 
 public class GetContainerDescriptiveStatisticResponsePacket extends Packet {
 
-    private final float average;
-    private final float[] modes;
-    private final float median;
-    private final float std;
+    private final double average;
+    private final double[] modes;
+    private final double median;
+    private final double std;
 
-    public GetContainerDescriptiveStatisticResponsePacket(float average, float[] modes, float median, float std) {
+    public GetContainerDescriptiveStatisticResponsePacket(double average, double[] modes, double median, double std) {
         super(Id.GetContainerDescriptiveStatisticResponse);
         this.average = average;
         this.modes = modes;
@@ -15,19 +15,19 @@ public class GetContainerDescriptiveStatisticResponsePacket extends Packet {
         this.std = std;
     }
 
-    public float getAverage() {
+    public double getAverage() {
         return average;
     }
 
-    public float[] getModes() {
+    public double[] getModes() {
         return modes;
     }
 
-    public float getMedian() {
+    public double getMedian() {
         return median;
     }
 
-    public float getStd() {
+    public double getStd() {
         return std;
     }
 

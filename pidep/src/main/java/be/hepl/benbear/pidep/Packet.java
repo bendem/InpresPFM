@@ -3,6 +3,7 @@ package be.hepl.benbear.pidep;
 public abstract class Packet {
 
     public enum Id {
+        Error,
         Login,
         LoginResponse,
         GetContainerDescriptiveStatistic,

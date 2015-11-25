@@ -14,14 +14,16 @@ public class MovementsLight {
     private final String city;
     private final Date dateArrival;
     private final Date dateDeparture;
+    private final double weight;
 
-    public MovementsLight(int movementId, String containerId, String name, String city, Date dateArrival, Date dateDeparture) {
+    public MovementsLight(int movementId, String containerId, String name, String city, Date dateArrival, Date dateDeparture, double weight) {
         this.movementId = movementId;
         this.containerId = containerId;
         this.name = name;
         this.city = city;
         this.dateArrival = dateArrival;
         this.dateDeparture = dateDeparture;
+        this.weight = weight;
     }
 
     public int getMovementId() {
@@ -46,5 +48,9 @@ public class MovementsLight {
 
     public Date getDateDeparture() {
         return dateDeparture;
+    }
+
+    public double getWeight() {
+        return weight;
     }
 }
