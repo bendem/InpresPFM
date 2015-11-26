@@ -1,11 +1,6 @@
 package be.hepl.benbear.commons.db;
 
-import java.sql.Date;
-import java.sql.JDBCType;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import java.sql.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,7 +72,11 @@ import java.util.Optional;
     }
 
     public static <T> void set(PreparedStatement stmt, int i, T obj) throws SQLException {
-        set(stmt, i, obj, obj.getClass());
+        if(obj == null) {
+            stmt.setNull(i, Types.NULL);
+        } else {
+            set(stmt, i, obj, obj.getClass());
+        }
     }
 
     public static <T> void set(PreparedStatement stmt, int i, T obj, Class<? extends T> clazz) throws SQLException {
