@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -62,6 +63,8 @@ public class DataAnalysisApplication extends BaseApplication {
             Packet packet;
             try {
                 packet = (Packet) is.readObject();
+            } catch(InterruptedIOException e) {
+                return;
             } catch(IOException | ClassNotFoundException | ClassCastException e) {
                 Log.e("Error receiving packet", e);
                 if(e instanceof EOFException) {
@@ -116,6 +119,8 @@ public class DataAnalysisApplication extends BaseApplication {
     public void stop() throws Exception {
         Log.d("Stopping");
 
+        sender.interrupt();
+
         if(is != null) {
             is.close();
         }
@@ -126,7 +131,6 @@ public class DataAnalysisApplication extends BaseApplication {
             socket.close();
         }
 
-        sender.interrupt();
         threadPool.shutdown();
     }
 }
