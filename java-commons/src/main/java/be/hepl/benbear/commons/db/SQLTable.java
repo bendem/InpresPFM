@@ -123,7 +123,9 @@ public class SQLTable<T> extends AbstractTable<T> {
     private PreparedStatement bind(PreparedStatement stmt, Collection<Object> objects) throws SQLException {
         int i = 0;
         for(Object o : objects) {
-            JDBCAdapter.set(stmt, ++i, o);
+            if(o != null) {
+                JDBCAdapter.set(stmt, ++i, o);
+            }
         }
 
         return stmt;

@@ -72,7 +72,7 @@ public class DBPredicateImpl implements DBPredicate {
             .append(' ')
             .append(comparison)
             .append(' ')
-            .append("?");
+            .append(value == null ? "null" : "?");
 
         if(next != null) {
             builder

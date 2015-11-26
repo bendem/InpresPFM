@@ -72,11 +72,7 @@ import java.util.Optional;
     }
 
     public static <T> void set(PreparedStatement stmt, int i, T obj) throws SQLException {
-        if(obj == null) {
-            stmt.setNull(i, Types.NULL);
-        } else {
-            set(stmt, i, obj, obj.getClass());
-        }
+        set(stmt, i, obj, obj.getClass());
     }
 
     public static <T> void set(PreparedStatement stmt, int i, T obj, Class<? extends T> clazz) throws SQLException {
