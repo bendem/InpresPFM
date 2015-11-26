@@ -7,7 +7,7 @@ public class GetStatInferConformityTestPacket extends AuthenticatedPacket {
     private final int numberOfElem;
 
     public GetStatInferConformityTestPacket(UUID session, int numberOfElem) {
-        super(Id.GetStatInferConformityTestPacket, session);
+        super(Id.GetStatInferConformityTest, session);
         this.numberOfElem = numberOfElem;
     }
 

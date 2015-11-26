@@ -5,7 +5,7 @@ public class GetStatInferHomogeneityTestResponsePacket extends Packet {
     private final double pValue;
 
     public GetStatInferHomogeneityTestResponsePacket(boolean significant, double pValue) {
-        super(Id.GetStatInferHomogeneityTestResponsePacket);
+        super(Id.GetStatInferHomogeneityTestResponse);
         this.significant = significant;
         this.pValue = pValue;
     }

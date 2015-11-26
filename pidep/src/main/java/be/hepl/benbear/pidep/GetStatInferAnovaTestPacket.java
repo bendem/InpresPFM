@@ -7,7 +7,7 @@ public class GetStatInferAnovaTestPacket extends AuthenticatedPacket {
     private final int numberOfElem;
 
     public GetStatInferAnovaTestPacket(UUID session, int numberOfElem) {
-        super(Id.GetStatInferAnovaTestPacket, session);
+        super(Id.GetStatInferAnovaTest, session);
         this.numberOfElem = numberOfElem;
     }
 

@@ -6,7 +6,7 @@ public class GetStatInferConformityTestResponsePacket extends Packet {
     private final double pValue;
 
     public GetStatInferConformityTestResponsePacket(boolean significant, double pValue) {
-        super(Id.GetStatInferConformityTestResponsePacket);
+        super(Id.GetStatInferConformityTestResponse);
         this.significant = significant;
         this.pValue = pValue;
     }

@@ -12,6 +12,7 @@ import be.hepl.benbear.pidep.*;
 import be.hepl.benbear.trafficdb.*;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.inference.TestUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -30,7 +31,6 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
@@ -102,6 +102,13 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
     }
 
     @Override
+    protected void onClose(SocketChannel channel, Exception e) {
+        if(e != null) {
+            Log.e("%s errored", e, channel);
+        }
+    }
+
+    @Override
     protected void read(ObjectInputStream is, ObjectOutputStream os) throws IOException {
         Packet packet;
 
@@ -118,10 +125,22 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
                 break;
             case GetContainerDescriptiveStatistic:
                 containerDescriptiveStatistic(os, (GetContainerDescriptiveStatisticPacket) packet);
+                break;
             case GetContainerPerDestinationGraph:
                 containerPerDestinationGraph(os, (GetContainerPerDestinationGraphPacket) packet);
+                break;
             case GetContainerPerDestinationPerQuarterGraph:
                 containerPerDestinationPerQuarter(os, (GetContainerPerDestinationPerQuarterGraphPacket) packet);
+                break;
+            case GetStatInferConformityTest:
+                statInferConformityTest(os, (GetStatInferConformityTestPacket) packet);
+                break;
+            case GetStatInferHomogeneityTest:
+                statInferHomogeneityTest(os, (GetStatInferHomogeneityTestPacket) packet);
+                break;
+            case GetStatInferAnovaTest:
+                statInferAnovaTest(os, (GetStatInferAnovaTestPacket) packet);
+                break;
             default:
                 Log.e("Unhandled packet: %s", packet);
         }
@@ -168,10 +187,10 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
         try {
             if (packet.getType() == GetContainerDescriptiveStatisticPacket.Type.IN) {
                 movements = trafficDb.table(MovementsLight.class)
-                    .find(DBPredicate.of("date_departure", "null", "is")).get();
+                    .find(DBPredicate.of("date_departure", null, "is")).get();
             } else {
                 movements = trafficDb.table(MovementsLight.class)
-                    .find(DBPredicate.of("date_departure", "null", "is not")).get();
+                    .find(DBPredicate.of("date_departure", null, "is not")).get();
             }
         } catch (InterruptedException | ExecutionException e) {
             os.writeObject(new ErrorPacket("Failed to retrieve movements"));
@@ -264,10 +283,103 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
         os.writeObject(new GetContainerPerDestinationPerQuarterGraphResponsePacket(byteArrayOutputStream.toByteArray()));
     }
 
-    @Override
-    protected void onClose(SocketChannel channel, Exception e) {
-        if(e != null) {
-            Log.e("%s errored", e, channel);
+    private void statInferConformityTest(ObjectOutputStream os, GetStatInferConformityTestPacket packet) throws IOException {
+        if (!sessions.contains(packet.getSession())) {
+            os.writeObject(new ErrorPacket("User not connected"));
+            return;
         }
+
+        Stream<MovementsLight> conts = null;
+        double[] values;
+        try {
+            conts = trafficDb.table(MovementsLight.class)
+                .find(DBPredicate.of("date_departure", null, "is not")).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e("Failed to retrieve movements %s", e);
+        }
+
+        if (conts == null) {
+            os.writeObject(new ErrorPacket("No containers in the database fitting the criteria"));
+            return;
+        }
+
+        values = conts.limit(packet.getNumberOfElem()).mapToDouble(value -> (value.getDateDeparture().getDay() - value.getDateArrival().getDay())).toArray();
+
+        double pvalue = TestUtils.tTest(10, values);
+        boolean significant = TestUtils.tTest(10, values, 0.025);
+
+        os.writeObject(new GetStatInferConformityTestResponsePacket(significant, pvalue));
+    }
+
+    private void statInferHomogeneityTest(ObjectOutputStream os, GetStatInferHomogeneityTestPacket packet) throws IOException {
+        if (!sessions.contains(packet.getSession())) {
+            os.writeObject(new ErrorPacket("User not connected"));
+            return;
+        }
+
+        Stream<MovementsLight> data1 = null;
+        Stream<MovementsLight> data2 = null;
+        double[] values1;
+        double[] values2;
+        try {
+            data1 = trafficDb.table(MovementsLight.class)
+                .find(DBPredicate.of("city", packet.getFirstCity()).and("date_departure", null, "is not")).get();
+            data2 = trafficDb.table(MovementsLight.class)
+                .find(DBPredicate.of("city", packet.getSecondCity()).and("date_departure", null, "is not")).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e("Failed to retrieve movements %s", e);
+        }
+
+        if (data1 == null || data2 == null) {
+            os.writeObject(new ErrorPacket("No containers in the database fitting the criteria"));
+            return;
+        }
+
+        values1 = data1.limit(packet.getNumberOfElem()).mapToDouble(value -> (value.getDateDeparture().getDay() - value.getDateArrival().getDay())).toArray();
+        values2 = data2.limit(packet.getNumberOfElem()).mapToDouble(value -> (value.getDateDeparture().getDay() - value.getDateArrival().getDay())).toArray();
+
+        double pvalue = TestUtils.tTest(values1, values2);
+        boolean significant = TestUtils.tTest(values1, values2, 0.025);
+
+        os.writeObject(new GetStatInferConformityTestResponsePacket(significant, pvalue));
+    }
+
+    private void statInferAnovaTest(ObjectOutputStream os, GetStatInferAnovaTestPacket packet) throws IOException {
+        if (!sessions.contains(packet.getSession())) {
+            os.writeObject(new ErrorPacket("User not connected"));
+            return;
+        }
+
+        Stream<MovementsLight> data = null;
+        try {
+            data = trafficDb.table(MovementsLight.class)
+                .find(DBPredicate.of("date_departure", null, "is not")).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e("Failed to retrieve movements %s", e);
+        }
+
+        Map<String, List<Double>> values = new HashMap<>();
+
+        if (data == null) {
+            os.writeObject(new ErrorPacket("No containers in the database fitting the criteria"));
+            return;
+        }
+
+        data.forEach(mov -> {
+            if(!values.containsKey(mov.getDestination())) {
+                values.put(mov.getDestination(), new ArrayList<>());
+            }
+            values.get(mov.getDestination()).add((double)mov.getDateDeparture().getDay() - mov.getDateArrival().getDay());
+        });
+
+        List<double[]> dataLists = new ArrayList<>();
+        values.forEach((s, doubles) -> {
+            dataLists.add(doubles.stream().limit(packet.getNumberOfElem()).mapToDouble(d -> d).toArray());
+        });
+
+        double pvalue = TestUtils.oneWayAnovaPValue(dataLists);
+        boolean significant = TestUtils.oneWayAnovaTest(dataLists, 0.025);
+
+        os.writeObject(new GetStatInferAnovaTestResponsePacket(significant, pvalue));
     }
 }

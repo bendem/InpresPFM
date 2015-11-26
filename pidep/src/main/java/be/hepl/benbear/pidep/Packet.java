@@ -12,12 +12,12 @@ public abstract class Packet {
         GetContainerPerDestinationGraphResponse,
         GetContainerPerDestinationPerQuarterGraph,
         GetContainerPerDestinationPerQuarterGraphResponse,
-        GetStatInferConformityTestPacket,
-        GetStatInferConformityTestResponsePacket,
-        GetStatInferHomogeneityTestPacket,
-        GetStatInferHomogeneityTestResponsePacket,
-        GetStatInferAnovaTestPacket,
-        GetStatInferAnovaTestResponsePacket
+        GetStatInferConformityTest,
+        GetStatInferConformityTestResponse,
+        GetStatInferHomogeneityTest,
+        GetStatInferHomogeneityTestResponse,
+        GetStatInferAnovaTest,
+        GetStatInferAnovaTestResponse
     }
 
     private final Id id;

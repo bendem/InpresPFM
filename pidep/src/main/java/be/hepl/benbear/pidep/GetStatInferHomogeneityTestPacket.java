@@ -9,7 +9,7 @@ public class GetStatInferHomogeneityTestPacket extends AuthenticatedPacket {
     private final String secondCity;
 
     public GetStatInferHomogeneityTestPacket(UUID session, int numberOfElem, String firstCity, String secondCity) {
-        super(Id.GetStatInferHomogeneityTestPacket, session);
+        super(Id.GetStatInferHomogeneityTest, session);
         this.numberOfElem = numberOfElem;
         this.firstCity = firstCity;
         this.secondCity = secondCity;
