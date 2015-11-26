@@ -5,7 +5,7 @@ public class GetStatInferAnovaTestResponsePacket extends Packet {
     private final double pValue;
 
     public GetStatInferAnovaTestResponsePacket(boolean significant, double pValue) {
-        super(Id.GetStatInferConformityTestResponsePacket);
+        super(Id.GetStatInferAnovaTestResponsePacket);
         this.significant = significant;
         this.pValue = pValue;
     }
