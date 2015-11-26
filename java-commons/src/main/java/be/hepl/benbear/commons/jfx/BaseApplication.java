@@ -1,5 +1,6 @@
 package be.hepl.benbear.commons.jfx;
 
+import be.hepl.benbear.commons.generics.Tuple;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -57,17 +58,7 @@ public abstract class BaseApplication extends Application {
             throw new IllegalArgumentException("The main window can't be modal");
         }
 
-        FXMLLoader loader = new FXMLLoader(getResource(fxml));
-
-        loader.setControllerFactory(clazz -> {
-            try {
-                return clazz.getConstructor(getClass()).newInstance(this);
-            } catch(InstantiationException | IllegalAccessException
-                | NoSuchMethodException | InvocationTargetException e) {
-                throw new RuntimeException("Could not instantiate controller for " + clazz, e);
-            }
-        });
-
+        FXMLLoader loader = load(getResource(fxml));
         Parent app = loader.load();
         Stage stage = new Stage();
         if(main) {
@@ -90,6 +81,26 @@ public abstract class BaseApplication extends Application {
         T controller = loader.getController();
         stages.put(controller, new WeakReference<>(stage));
         return controller;
+    }
+
+    private FXMLLoader load(URL fxml) {
+        FXMLLoader loader = new FXMLLoader(fxml);
+
+        loader.setControllerFactory(clazz -> {
+            try {
+                return clazz.getConstructor(getClass()).newInstance(this);
+            } catch(InstantiationException | IllegalAccessException
+                    | NoSuchMethodException | InvocationTargetException e) {
+                throw new RuntimeException("Could not instantiate controller for " + clazz, e);
+            }
+        });
+
+        return loader;
+    }
+
+    public <T> Tuple<Parent, T> loadNode(String fxml) throws IOException {
+        FXMLLoader loader = load(getResource(fxml));
+        return new Tuple<>(loader.load(), loader.getController());
     }
 
     protected static URL getResource(String name) {

@@ -19,14 +19,12 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
@@ -36,20 +34,6 @@ import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 
 public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputStream> {
-
-    private static final MessageDigest MESSAGE_DIGEST;
-    static {
-        try {
-            MESSAGE_DIGEST = MessageDigest.getInstance("sha-1");
-        } catch(NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    private static synchronized byte[] digest(ByteBuffer bb) {
-        MESSAGE_DIGEST.reset();
-        MESSAGE_DIGEST.update(bb);
-        return MESSAGE_DIGEST.digest();
-    }
 
     private final SQLDatabase accountingDb;
     private final SQLDatabase trafficDb;
@@ -154,26 +138,34 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
                 .findOne(DBPredicate.of("login", p.getUsername())).get();
         } catch(InterruptedException | ExecutionException e) {
             Log.e("Failed to retrieve user %s", e, p.getUsername());
-            os.writeObject(new LoginReponsePacket(null, "Internal error"));
+            os.writeObject(new ErrorPacket("Internal error"));
             return;
         }
 
         if(!user.isPresent()) {
-            os.writeObject(new LoginReponsePacket(null, "Unknown user"));
+            os.writeObject(new ErrorPacket("Unknown user"));
             return;
         }
 
-        byte[] pwdBytes = user.get().getPassword().getBytes();
-        ByteBuffer bb = ByteBuffer.allocate(p.getSalt().length + pwdBytes.length);
-        bb.put(p.getSalt()).put(pwdBytes).flip();
-
-        if(Arrays.equals(p.getDigest(), digest(bb))) {
+        byte[] digest = digest(user.get().getPassword(), p.getTime(), p.getSalt());
+        if(Arrays.equals(p.getDigest(), digest)) {
             UUID uuid = UUID.randomUUID();
             sessions.add(uuid);
-            os.writeObject(new LoginReponsePacket(uuid, null));
+            os.writeObject(new LoginReponsePacket(uuid));
         } else {
-            os.writeObject(new LoginReponsePacket(null, "Password invalid"));
+            os.writeObject(new ErrorPacket("Password invalid"));
         }
+    }
+
+    private byte[] digest(String password, long time, byte[] salt) {
+        ByteArrayOutputStream boas = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(boas);
+        try {
+            dos.writeLong(time);
+            dos.write(salt);
+            dos.write(password.getBytes());
+        } catch(IOException e) {}
+        return LoginPacket.digest(boas.toByteArray());
     }
 
     private void containerDescriptiveStatistic(ObjectOutputStream os, GetContainerDescriptiveStatisticPacket packet) throws IOException {
