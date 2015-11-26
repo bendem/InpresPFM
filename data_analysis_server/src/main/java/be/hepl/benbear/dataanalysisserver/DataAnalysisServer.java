@@ -103,6 +103,14 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
             return;
         }
 
+        if(packet instanceof AuthenticatedPacket) {
+            if(!sessions.contains(((AuthenticatedPacket) packet).getSession())) {
+                os.writeObject(new ErrorPacket("Invalid session"));
+                os.flush();
+                return;
+            }
+        }
+
         switch(packet.getId()) {
             case Login:
                 Log.d("Received Login");
