@@ -5,13 +5,25 @@ import java.util.UUID;
 public class GetStatInferHomogeneityTestPacket extends AuthenticatedPacket {
 
     private final int numberOfElem;
+    private final String firstCity;
+    private final String secondCity;
 
-    public GetStatInferHomogeneityTestPacket(UUID session, int numberOfElem) {
+    public GetStatInferHomogeneityTestPacket(UUID session, int numberOfElem, String firstCity, String secondCity) {
         super(Id.GetStatInferHomogeneityTestPacket, session);
         this.numberOfElem = numberOfElem;
+        this.firstCity = firstCity;
+        this.secondCity = secondCity;
     }
 
     public int getNumberOfElem() {
         return numberOfElem;
+    }
+
+    public String getFirstCity() {
+        return firstCity;
+    }
+
+    public String getSecondCity() {
+        return secondCity;
     }
 }
