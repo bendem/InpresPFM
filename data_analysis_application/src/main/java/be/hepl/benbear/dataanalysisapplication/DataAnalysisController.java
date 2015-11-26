@@ -1,6 +1,7 @@
 package be.hepl.benbear.dataanalysisapplication;
 
 import be.hepl.benbear.commons.generics.Tuple;
+import be.hepl.benbear.commons.jfx.Inputs;
 import be.hepl.benbear.pidep.*;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.fxml.FXML;
@@ -69,18 +70,20 @@ public class DataAnalysisController implements Initializable {
             throw new RuntimeException("Could not load login node", e);
         }
 
+        // TODO Disable default buttons on inactive panes, they seem to interfere
+
+        Inputs.integer(containerDescriptiveStatisticSampleSizeField, 2, Integer.MAX_VALUE);
+        Inputs.integer(containerPerDestinationGraphTimeField, 0, Integer.MAX_VALUE);
+        Inputs.integer(containerPerDestinationPerQuarterGraphYearField, 0, Integer.MAX_VALUE);
+        Inputs.integer(statInferConformityTestSampleSizeField, 2, Integer.MAX_VALUE);
+        Inputs.integer(statInferHomogeneityTestSampleSizeField, 2, Integer.MAX_VALUE);
+
         containerDescriptiveStatisticNameColumn.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().first));
         containerDescriptiveStatisticValueColumn.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().second));
-
-        // TODO Only allow ints in fields
-        // TODO Disable default buttons on inactive panes, they seem to interfere
-        // TODO Bind all the things
-
         containerDescriptiveStatisticTypeBox.getItems().setAll(
             GetContainerDescriptiveStatisticPacket.Type.IN,
             GetContainerDescriptiveStatisticPacket.Type.OUT
         );
-
         containerDescriptiveStatisticButton.setOnAction(e -> app.send(new GetContainerDescriptiveStatisticPacket(
             app.getSession(),
             Integer.parseInt(containerDescriptiveStatisticSampleSizeField.getText()),
@@ -132,10 +135,10 @@ public class DataAnalysisController implements Initializable {
             case GetContainerDescriptiveStatisticResponse:
                 GetContainerDescriptiveStatisticResponsePacket p1 = (GetContainerDescriptiveStatisticResponsePacket) packet;
                 containerDescriptiveStatisticTable.getItems().setAll(
-                    new Tuple("Average", p1.getAverage()),
-                    new Tuple("Median", p1.getMedian()),
-                    new Tuple("Modes", Arrays.stream(p1.getModes()).mapToObj(String::valueOf).collect(Collectors.joining(", "))),
-                    new Tuple("Standard deviation",p1.getStd())
+                    new Tuple<>("Average", String.valueOf(p1.getAverage())),
+                    new Tuple<>("Median", String.valueOf(p1.getMedian())),
+                    new Tuple<>("Modes", Arrays.stream(p1.getModes()).mapToObj(String::valueOf).collect(Collectors.joining(", "))),
+                    new Tuple<>("Standard deviation", String.valueOf(p1.getStd()))
                 );
                 break;
             case GetContainerPerDestinationGraphResponse: {
