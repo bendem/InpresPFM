@@ -30,7 +30,7 @@ public class Log {
         log(Type.ERROR, throwable, str, objects);
     }
 
-    public static synchronized void log(Type type, Throwable throwable, String str, Object... objects) {
+    public static void log(Type type, Throwable throwable, String str, Object... objects) {
         // TODO That can be much better, but you know, don't have time
         System.err.printf("[%s] [%s] [%s] %s%n",
             type, Thread.currentThread().getName(), findClassFromStack(), String.format(str, objects));
@@ -52,7 +52,7 @@ public class Log {
                 return fqdnToClassName(e.getClassName()) + '.' + e.getMethodName() + ':' + e.getLineNumber();
             }
         }
-        throw new AssertionError("No stacktrace element outside of the class");
+        return "n/a";
     }
 
     private static String fqdnToClassName(String fqdn) {
