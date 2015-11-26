@@ -67,6 +67,8 @@ public class DataAnalysisController implements Initializable {
             throw new RuntimeException("Could not load login node", e);
         }
 
+        // TODO Only allow ints in fields
+        // TODO Disable default buttons on inactive panes, they seem to interfere
         // TODO Bind all the things
         containerPerDestinationGraphTypeBox.getItems().setAll(
             GetContainerPerDestinationGraphPacket.Type.MONTHLY,
