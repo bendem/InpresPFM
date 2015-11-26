@@ -105,24 +105,31 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
 
         switch(packet.getId()) {
             case Login:
+                Log.d("Received Login");
                 login(os, (LoginPacket) packet);
                 break;
             case GetContainerDescriptiveStatistic:
+                Log.d("Received GetContainerDescriptiveStatistic");
                 containerDescriptiveStatistic(os, (GetContainerDescriptiveStatisticPacket) packet);
                 break;
             case GetContainerPerDestinationGraph:
+                Log.d("Received GetContainerPerDestinationGraph");
                 containerPerDestinationGraph(os, (GetContainerPerDestinationGraphPacket) packet);
                 break;
             case GetContainerPerDestinationPerQuarterGraph:
+                Log.d("Received GetContainerPerDestinationPerQuarterGraph");
                 containerPerDestinationPerQuarter(os, (GetContainerPerDestinationPerQuarterGraphPacket) packet);
                 break;
             case GetStatInferConformityTest:
+                Log.d("Received GetStatInferConformityTest");
                 statInferConformityTest(os, (GetStatInferConformityTestPacket) packet);
                 break;
             case GetStatInferHomogeneityTest:
+                Log.d("Received GetStatInferHomogeneityTest");
                 statInferHomogeneityTest(os, (GetStatInferHomogeneityTestPacket) packet);
                 break;
             case GetStatInferAnovaTest:
+                Log.d("Received GetStatInferAnovaTest");
                 statInferAnovaTest(os, (GetStatInferAnovaTestPacket) packet);
                 break;
             default:
@@ -185,12 +192,8 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
                     .find(DBPredicate.of("date_departure", null, "is not")).get();
             }
         } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace(System.out);
             os.writeObject(new ErrorPacket("Failed to retrieve movements"));
-            Log.e("Failed to retrieve movements %s", e);
-        }
-
-        if (movements == null) {
-            os.writeObject(new ErrorPacket("No movements in the database fitting the criteria"));
             return;
         }
 
@@ -240,7 +243,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
 
         JFreeChart chart = ChartFactory.createPieChart(title , dataset);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(chart.createBufferedImage(1920, 1080), "png", byteArrayOutputStream);
+        ImageIO.write(chart.createBufferedImage(700, 400), "png", byteArrayOutputStream);
 
         os.writeObject(new GetContainerPerDestinationGraphResponsePacket(byteArrayOutputStream.toByteArray()));
     }
@@ -270,7 +273,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
 
         JFreeChart chart = ChartFactory.createBarChart("Number of containers", "Quarters", "Number", dataset);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(chart.createBufferedImage(1920, 1080), "png", byteArrayOutputStream);
+        ImageIO.write(chart.createBufferedImage(700, 400), "png", byteArrayOutputStream);
 
         os.writeObject(new GetContainerPerDestinationPerQuarterGraphResponsePacket(byteArrayOutputStream.toByteArray()));
     }
@@ -333,7 +336,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
         double pvalue = TestUtils.tTest(values1, values2);
         boolean significant = TestUtils.tTest(values1, values2, 0.025);
 
-        os.writeObject(new GetStatInferConformityTestResponsePacket(significant, pvalue));
+        os.writeObject(new GetStatInferHomogeneityTestResponsePacket(significant, pvalue));
     }
 
     private void statInferAnovaTest(ObjectOutputStream os, GetStatInferAnovaTestPacket packet) throws IOException {

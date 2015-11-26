@@ -105,6 +105,10 @@
                             <children>
                                 <Label maxHeight="1.7976931348623157E308" text="Sample size:" />
                                 <TextField fx:id="statInferHomogeneityTestSampleSizeField" />
+                        <Label maxHeight="1.7976931348623157E308" text="First city:" />
+                        <TextField fx:id="statInferHomogeneityTestFirstCityField" />
+                        <Label maxHeight="1.7976931348623157E308" text="Second city:" />
+                        <TextField fx:id="statInferHomogeneityTestSecondCityField" />
                                 <Button fx:id="statInferHomogeneityTestButton" defaultButton="true" mnemonicParsing="false" text="OK" />
                             </children>
                         </HBox>
@@ -122,8 +126,8 @@
                     <children>
                         <HBox spacing="10.0">
                             <children>
-                                <Label maxHeight="1.7976931348623157E308" text="Sample size:" />
-                                <TextField fx:id="statInferAnovaTestSampleSizeField" />
+                        <Label maxHeight="1.7976931348623157E308" text="Sample size:" />
+                        <TextField fx:id="statInferAnovaTestSampleSizeField" />
                                 <Button fx:id="statInferAnovaTestButton" defaultButton="true" mnemonicParsing="false" text="OK" />
                             </children>
                         </HBox>

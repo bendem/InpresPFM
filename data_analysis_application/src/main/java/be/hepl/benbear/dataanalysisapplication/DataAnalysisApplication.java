@@ -82,7 +82,7 @@ public class DataAnalysisApplication extends BaseApplication {
                 } else if(packet.getId() == Packet.Id.Error) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "An error happened: " + ((ErrorPacket) packet).getMessage());
                     alert.initOwner(getMainStage());
-                    alert.showAndWait();
+                    alert.show();
                     dataAnalysisController.getLoginController().resetError();
                 } else {
                     dataAnalysisController.handle(packet);

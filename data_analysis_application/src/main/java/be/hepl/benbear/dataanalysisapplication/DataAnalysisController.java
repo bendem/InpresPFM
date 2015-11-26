@@ -1,10 +1,8 @@
 package be.hepl.benbear.dataanalysisapplication;
 
 import be.hepl.benbear.commons.generics.Tuple;
-import be.hepl.benbear.pidep.GetContainerDescriptiveStatisticPacket;
-import be.hepl.benbear.pidep.GetContainerPerDestinationGraphPacket;
-import be.hepl.benbear.pidep.GetContainerPerDestinationGraphResponsePacket;
-import be.hepl.benbear.pidep.Packet;
+import be.hepl.benbear.pidep.*;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
@@ -16,7 +14,9 @@ import javafx.scene.image.ImageView;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class DataAnalysisController implements Initializable {
 
@@ -28,9 +28,9 @@ public class DataAnalysisController implements Initializable {
     @FXML private ChoiceBox<GetContainerDescriptiveStatisticPacket.Type> containerDescriptiveStatisticTypeBox;
     @FXML private TextField containerDescriptiveStatisticSampleSizeField;
     @FXML private Button containerDescriptiveStatisticButton;
-    @FXML private TableView<Tuple<String, ?>> containerDescriptiveStatisticTable;
-    @FXML private TableColumn<Tuple<String, ?>, String> containerDescriptiveStatisticNameColumn;
-    @FXML private TableColumn<Tuple<String, ?>, String> containerDescriptiveStatisticValueColumn;
+    @FXML private TableView<Tuple<String, String>> containerDescriptiveStatisticTable;
+    @FXML private TableColumn<Tuple<String, String>, String> containerDescriptiveStatisticNameColumn;
+    @FXML private TableColumn<Tuple<String, String>, String> containerDescriptiveStatisticValueColumn;
     @FXML private Tab containerPerDestinationGraphTab;
     @FXML private ChoiceBox<GetContainerPerDestinationGraphPacket.Type> containerPerDestinationGraphTypeBox;
     @FXML private TextField containerPerDestinationGraphTimeField;
@@ -45,6 +45,8 @@ public class DataAnalysisController implements Initializable {
     @FXML private Button statInferConformityTestButton;
     @FXML private Label statInferConformityTestResultLabel;
     @FXML private Tab statInferHomogeneityTestTab;
+    @FXML private TextField statInferHomogeneityTestFirstCityField;
+    @FXML private TextField statInferHomogeneityTestSecondCityField;
     @FXML private TextField statInferHomogeneityTestSampleSizeField;
     @FXML private Button statInferHomogeneityTestButton;
     @FXML private Label statInferHomogeneityTestResultLabel;
@@ -67,9 +69,24 @@ public class DataAnalysisController implements Initializable {
             throw new RuntimeException("Could not load login node", e);
         }
 
+        containerDescriptiveStatisticNameColumn.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().first));
+        containerDescriptiveStatisticValueColumn.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().second));
+
         // TODO Only allow ints in fields
         // TODO Disable default buttons on inactive panes, they seem to interfere
         // TODO Bind all the things
+
+        containerDescriptiveStatisticTypeBox.getItems().setAll(
+            GetContainerDescriptiveStatisticPacket.Type.IN,
+            GetContainerDescriptiveStatisticPacket.Type.OUT
+        );
+
+        containerDescriptiveStatisticButton.setOnAction(e -> app.send(new GetContainerDescriptiveStatisticPacket(
+            app.getSession(),
+            Integer.parseInt(containerDescriptiveStatisticSampleSizeField.getText()),
+            containerDescriptiveStatisticTypeBox.getSelectionModel().getSelectedItem()
+        )));
+
         containerPerDestinationGraphTypeBox.getItems().setAll(
             GetContainerPerDestinationGraphPacket.Type.MONTHLY,
             GetContainerPerDestinationGraphPacket.Type.YEARLY
@@ -78,6 +95,28 @@ public class DataAnalysisController implements Initializable {
             app.getSession(),
             containerPerDestinationGraphTypeBox.getSelectionModel().getSelectedItem(),
             Integer.parseInt(containerPerDestinationGraphTimeField.getText())
+        )));
+
+        containerPerDestinationPerQuarterGraphButton.setOnAction(e -> app.send(new GetContainerPerDestinationPerQuarterGraphPacket(
+            app.getSession(),
+            Integer.parseInt(containerPerDestinationPerQuarterGraphYearField.getText())
+        )));
+
+        statInferConformityTestButton.setOnAction(e -> app.send(new GetStatInferConformityTestPacket(
+            app.getSession(),
+            Integer.parseInt(statInferConformityTestSampleSizeField.getText())
+        )));
+
+        statInferHomogeneityTestButton.setOnAction(e -> app.send(new GetStatInferHomogeneityTestPacket(
+            app.getSession(),
+            Integer.parseInt(statInferHomogeneityTestSampleSizeField.getText()),
+            statInferHomogeneityTestFirstCityField.getText(),
+            statInferHomogeneityTestSecondCityField.getText()
+        )));
+
+        statInferAnovaTestButton.setOnAction(e -> app.send(new GetStatInferAnovaTestPacket(
+            app.getSession(),
+            Integer.parseInt(statInferAnovaTestSampleSizeField.getText())
         )));
     }
 
@@ -91,22 +130,43 @@ public class DataAnalysisController implements Initializable {
     public void handle(Packet packet) {
         switch(packet.getId()) {
             case GetContainerDescriptiveStatisticResponse:
+                GetContainerDescriptiveStatisticResponsePacket p1 = (GetContainerDescriptiveStatisticResponsePacket) packet;
+                containerDescriptiveStatisticTable.getItems().setAll(
+                    new Tuple("Average", p1.getAverage()),
+                    new Tuple("Median", p1.getMedian()),
+                    new Tuple("Modes", Arrays.stream(p1.getModes()).mapToObj(String::valueOf).collect(Collectors.joining(", "))),
+                    new Tuple("Standard deviation",p1.getStd())
+                );
                 break;
             case GetContainerPerDestinationGraphResponse: {
-                GetContainerPerDestinationGraphResponsePacket p = (GetContainerPerDestinationGraphResponsePacket) packet;
+                GetContainerPerDestinationGraphResponsePacket p2 = (GetContainerPerDestinationGraphResponsePacket) packet;
                 setImage(
                     containerPerDestinationGraphImage,
-                    new Image(new ByteArrayInputStream(p.getBytes()))
+                    new Image(new ByteArrayInputStream(p2.getBytes()))
                 );
                 break;
             }
             case GetContainerPerDestinationPerQuarterGraphResponse:
+                GetContainerPerDestinationPerQuarterGraphResponsePacket p3 = (GetContainerPerDestinationPerQuarterGraphResponsePacket) packet;
+                setImage(
+                    containerPerDestinationPerQuarterGraphImage,
+                    new Image(new ByteArrayInputStream(p3.getBytes()))
+                );
                 break;
             case GetStatInferConformityTestResponse:
+                GetStatInferConformityTestResponsePacket p4 = (GetStatInferConformityTestResponsePacket) packet;
+                statInferConformityTestResultLabel.setText("The hypothesis that the average time spent in the parc is 10 days is to be "
+                    + (p4.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + p4.getpValue());
                 break;
             case GetStatInferHomogeneityTestResponse:
+                GetStatInferHomogeneityTestResponsePacket p5 = (GetStatInferHomogeneityTestResponsePacket) packet;
+                statInferHomogeneityTestResultLabel.setText("The hypothesis that the average time spent in the parc is the same for these two destinations is to be "
+                    + (p5.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + p5.getpValue());
                 break;
             case GetStatInferAnovaTestResponse:
+                GetStatInferAnovaTestResponsePacket p6 = (GetStatInferAnovaTestResponsePacket) packet;
+                statInferAnovaTestResultLabel.setText("The hypothesis that the average time spent in the parc is the same for all the destinations is to be "
+                    + (p6.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + p6.getpValue());
                 break;
         }
     }
