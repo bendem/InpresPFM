@@ -4,13 +4,13 @@ import be.hepl.benbear.commons.config.Config;
 import be.hepl.benbear.commons.jfx.BaseApplication;
 import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.pidep.ErrorPacket;
-import be.hepl.benbear.pidep.LoginPacket;
 import be.hepl.benbear.pidep.LoginReponsePacket;
 import be.hepl.benbear.pidep.Packet;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -42,7 +42,7 @@ public class DataAnalysisApplication extends BaseApplication {
         threadPool = Executors.newSingleThreadExecutor();
     }
 
-    public void send(LoginPacket packet) {
+    public void send(Packet packet) {
         threadPool.submit(() -> {
             try {
                 os.writeObject(packet);
@@ -55,6 +55,41 @@ public class DataAnalysisApplication extends BaseApplication {
                 });
             }
         });
+    }
+
+    public void receive() {
+        while(!Thread.interrupted() && !socket.isClosed()) {
+            Packet packet;
+            try {
+                packet = (Packet) is.readObject();
+            } catch(IOException | ClassNotFoundException | ClassCastException e) {
+                Log.e("Error receiving packet", e);
+                if(e instanceof EOFException) {
+                    // FIXME This should disconnect instead
+                    close();
+                    return;
+                }
+                continue;
+            }
+
+            Platform.runLater(() -> {
+                if(packet.getId() == Packet.Id.LoginResponse) {
+                    session = ((LoginReponsePacket) packet).getSession();
+                    dataAnalysisController.connected();
+                } else if(packet.getId() == Packet.Id.Error) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "An error happened: " + ((ErrorPacket) packet).getMessage());
+                    alert.initOwner(getMainStage());
+                    alert.showAndWait();
+                    dataAnalysisController.getLoginController().resetError();
+                } else {
+                    dataAnalysisController.handle(packet);
+                }
+            });
+        }
+    }
+
+    public UUID getSession() {
+        return session;
     }
 
     @Override
@@ -75,32 +110,6 @@ public class DataAnalysisApplication extends BaseApplication {
 
         dataAnalysisController = open("DataAnalysisApplication.fxml", "InpresFPM - Data Analysis", false, true);
         //open("login.fxml", "InpresFPM - Login", true);
-    }
-
-    public void receive() {
-        while(!Thread.interrupted() && !socket.isClosed()) {
-            Packet packet;
-            try {
-                packet = (Packet) is.readObject();
-            } catch(IOException | ClassNotFoundException | ClassCastException e) {
-                Log.e("Error receiving packet", e);
-                continue;
-            }
-
-            Platform.runLater(() -> {
-                if(packet.getId() == Packet.Id.LoginResponse) {
-                    session = ((LoginReponsePacket) packet).getSession();
-                    dataAnalysisController.connected();
-                } else if(packet.getId() == Packet.Id.Error) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "An error happened: " + ((ErrorPacket) packet).getMessage());
-                    alert.initOwner(getMainStage());
-                    alert.showAndWait();
-                    dataAnalysisController.getLoginController().resetError();
-                } else {
-                    dataAnalysisController.handle(packet);
-                }
-            });
-        }
     }
 
     @Override

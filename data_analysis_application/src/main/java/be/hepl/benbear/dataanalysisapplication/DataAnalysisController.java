@@ -3,13 +3,17 @@ package be.hepl.benbear.dataanalysisapplication;
 import be.hepl.benbear.commons.generics.Tuple;
 import be.hepl.benbear.pidep.GetContainerDescriptiveStatisticPacket;
 import be.hepl.benbear.pidep.GetContainerPerDestinationGraphPacket;
+import be.hepl.benbear.pidep.GetContainerPerDestinationGraphResponsePacket;
 import be.hepl.benbear.pidep.Packet;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Bounds;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -62,14 +66,38 @@ public class DataAnalysisController implements Initializable {
         } catch(IOException e) {
             throw new RuntimeException("Could not load login node", e);
         }
+
+        // TODO Bind all the things
+        containerPerDestinationGraphTypeBox.getItems().setAll(
+            GetContainerPerDestinationGraphPacket.Type.MONTHLY,
+            GetContainerPerDestinationGraphPacket.Type.YEARLY
+        );
+        containerPerDestinationGraphButton.setOnAction(e -> app.send(new GetContainerPerDestinationGraphPacket(
+            app.getSession(),
+            containerPerDestinationGraphTypeBox.getSelectionModel().getSelectedItem(),
+            Integer.parseInt(containerPerDestinationGraphTimeField.getText())
+        )));
+    }
+
+    private void setImage(ImageView view, Image image) {
+        Bounds bounds = view.getParent().getBoundsInLocal();
+        view.setFitWidth(bounds.getWidth());
+        view.setFitHeight(bounds.getHeight());
+        view.setImage(image);
     }
 
     public void handle(Packet packet) {
         switch(packet.getId()) {
             case GetContainerDescriptiveStatisticResponse:
                 break;
-            case GetContainerPerDestinationGraphResponse:
+            case GetContainerPerDestinationGraphResponse: {
+                GetContainerPerDestinationGraphResponsePacket p = (GetContainerPerDestinationGraphResponsePacket) packet;
+                setImage(
+                    containerPerDestinationGraphImage,
+                    new Image(new ByteArrayInputStream(p.getBytes()))
+                );
                 break;
+            }
             case GetContainerPerDestinationPerQuarterGraphResponse:
                 break;
             case GetStatInferConformityTestResponse:

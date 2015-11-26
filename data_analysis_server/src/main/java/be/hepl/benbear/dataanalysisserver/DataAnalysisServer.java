@@ -240,7 +240,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
 
         JFreeChart chart = ChartFactory.createPieChart(title , dataset);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(chart.createBufferedImage(1920, 1080), "jpg", byteArrayOutputStream);
+        ImageIO.write(chart.createBufferedImage(1920, 1080), "png", byteArrayOutputStream);
 
         os.writeObject(new GetContainerPerDestinationGraphResponsePacket(byteArrayOutputStream.toByteArray()));
     }
@@ -270,7 +270,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
 
         JFreeChart chart = ChartFactory.createBarChart("Number of containers", "Quarters", "Number", dataset);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(chart.createBufferedImage(1920, 1080), "jpg", byteArrayOutputStream);
+        ImageIO.write(chart.createBufferedImage(1920, 1080), "png", byteArrayOutputStream);
 
         os.writeObject(new GetContainerPerDestinationPerQuarterGraphResponsePacket(byteArrayOutputStream.toByteArray()));
     }
