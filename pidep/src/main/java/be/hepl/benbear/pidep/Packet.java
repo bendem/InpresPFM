@@ -1,6 +1,8 @@
 package be.hepl.benbear.pidep;
 
-public abstract class Packet {
+import java.io.Serializable;
+
+public abstract class Packet implements Serializable {
 
     public enum Id {
         Error,
