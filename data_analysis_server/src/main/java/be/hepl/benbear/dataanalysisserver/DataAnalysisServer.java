@@ -20,6 +20,7 @@ import org.jfree.data.general.DefaultPieDataset;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -87,7 +88,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
 
     @Override
     protected void onClose(SocketChannel channel, Exception e) {
-        if(e != null) {
+        if(!(e instanceof EOFException)) {
             Log.e("%s errored", e, channel);
         }
     }
