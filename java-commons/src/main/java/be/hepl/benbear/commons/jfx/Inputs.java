@@ -18,9 +18,8 @@ public final class Inputs {
             }
 
             try {
-                int val = Integer.parseInt(n);
-                int clamped = clamp(val, min, max);
-                if(clamped != val) { // Don't rely on the implementation preventing recursion
+                int clamped = clamp(Integer.parseInt(n), min, max);
+                if(!n.equals(String.valueOf(clamped))) { // Don't rely on the implementation preventing recursion
                     input.setText(String.valueOf(clamped));
                 }
             } catch(NumberFormatException e) {
