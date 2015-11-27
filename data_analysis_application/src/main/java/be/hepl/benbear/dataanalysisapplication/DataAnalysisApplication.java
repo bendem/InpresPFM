@@ -10,7 +10,6 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
@@ -65,13 +64,13 @@ public class DataAnalysisApplication extends BaseApplication {
                 packet = (Packet) is.readObject();
             } catch(InterruptedIOException e) {
                 return;
-            } catch(IOException | ClassNotFoundException | ClassCastException e) {
+            } catch(IOException e) {
+                Log.e("IO error receiving packet", e);
+                // FIXME This should disconnect instead
+                Platform.runLater(this::close);
+                return;
+            } catch(ClassNotFoundException | ClassCastException e) {
                 Log.e("Error receiving packet", e);
-                if(e instanceof EOFException) {
-                    // FIXME This should disconnect instead
-                    close();
-                    return;
-                }
                 continue;
             }
 
