@@ -14,8 +14,17 @@ public final class Inputs {
         input.textProperty().addListener((obs, o, n) -> {
             if(n.isEmpty()) {
                 input.setText(String.valueOf(min));
-            } else {
-                input.setText(String.valueOf(clamp(Integer.parseInt(n), min, max)));
+                return;
+            }
+
+            try {
+                int val = Integer.parseInt(n);
+                int clamped = clamp(val, min, max);
+                if(clamped != val) { // Don't rely on the implementation preventing recursion
+                    input.setText(String.valueOf(clamped));
+                }
+            } catch(NumberFormatException e) {
+                input.setText(String.valueOf(min));
             }
         });
 
