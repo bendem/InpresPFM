@@ -14,6 +14,8 @@ public final class Inputs {
         input.textProperty().addListener((obs, o, n) -> {
             if(n.isEmpty()) {
                 input.setText(String.valueOf(min));
+            } else {
+                input.setText(String.valueOf(clamp(Integer.parseInt(n), min, max)));
             }
         });
 
@@ -32,9 +34,13 @@ public final class Inputs {
             int current = input.getText().isEmpty() ? 0 : Integer.parseInt(input.getText());
             int newCount = (e.getCode() == KeyCode.UP ? 1 : -1) * (e.isControlDown() ? 10 : 1) + current;
 
-            input.setText(String.valueOf(Math.max(min, Math.min(max, newCount))));
+            input.setText(String.valueOf(clamp(newCount, min, max)));
             e.consume();
         });
+    }
+
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 
 }
