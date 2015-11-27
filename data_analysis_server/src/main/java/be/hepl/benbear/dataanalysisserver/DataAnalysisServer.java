@@ -219,7 +219,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
             return;
         }
 
-        weights = movements.mapToDouble(MovementsLight::getWeight).toArray();
+        weights = movements.limit(packet.getSampleSize()).mapToDouble(MovementsLight::getWeight).toArray();
 
         DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(weights);
 
