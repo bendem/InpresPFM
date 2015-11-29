@@ -37,7 +37,7 @@ ProgramProperties::ProgramProperties(int argc, char** argv) : programName(argv[0
         }
     }
 
-    std::string properties = get("property-file", StringUtils::split(programName, '/').back() + ".properties");
+    std::string properties = get("config", StringUtils::split(programName, '/').back() + ".properties");
     std::ifstream is(properties);
     if(!is.fail()) {
         LOG << Logger::Debug << "Property file found (" << properties << ")";
@@ -79,15 +79,17 @@ unsigned short ProgramProperties::getAsUnsignedShort(const std::string& key, uns
 void ProgramProperties::loadFile(std::istream& is) {
     std::string line;
     while(std::getline(is, line)) {
-        if(line.empty() || line[0] == '#' || line[0] == ';') {
+        if(line.length() < 2 || line[0] == '#' || (line[0] == '/' && line[0] == line[1]) || line[0] == ';') {
+            // Ignore comments
             continue;
         }
 
-        std::vector<std::string> parts = StringUtils::split(line, ':');
-        if(parts.empty() || !get(parts[0], "").empty()) {
+        unsigned long i = line.find('=');
+        if(i == std::string::npos || i == 0) {
+            // Missing '=' or it's the first character of the line
             continue;
         }
 
-        props.insert({ parts[0], StringUtils::join(parts.begin() + 1, parts.end(), ":") });
+        props.insert({ line.substr(0, i), line.substr(i + 1) });
     }
 }

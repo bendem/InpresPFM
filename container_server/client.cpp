@@ -11,12 +11,13 @@ int main(int argc, char** argv) {
     ProgramProperties props(argc, argv);
 
     if(props.has("h") || props.has("help")) {
-        std::cout << "Usage: " << argv[0] << " --port=<port> --host=<host>" << std::endl;
+        std::cout << "Usage: " << argv[0]
+            << " --config=<config-file> --port=<port> --host=<host>" << std::endl;
         return 0;
     }
 
-    unsigned short port = props.getAsUnsignedShort("port", 31060);
-    std::string host = props.get("host", "localhost");
+    unsigned short port = props.getAsUnsignedShort("containerserver.port", 31060);
+    std::string host = props.get("containerserver.host", "localhost");
 
     std::shared_ptr<Socket> s(new Socket);
     s->connect(port, host);

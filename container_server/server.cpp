@@ -14,13 +14,14 @@ int main(int argc, char** argv) {
         .addHandler(Logger::fileHandler("server.log", Logger::Warning | Logger::Error));
 
     if(props.has("h") || props.has("help")) {
-        std::cout << "Usage: " << argv[0] << " --port=<port> --parc-file=<parc_file> --user-file<user_file>" << std::endl;
+        std::cout << "Usage: " << argv[0]
+            << " --config=<config-file> --port=<port> --parc-file=<parc_file> --user-file=<user_file>" << std::endl;
         return 0;
     }
 
-    unsigned short port = props.getAsUnsignedShort("port", 31060); // 31060 -> 31069
-    std::string parc_file = props.get("parc-file", "data/parc.dat");
-    std::string user_file = props.get("user-file", "data/users.csv");
+    unsigned short port = props.getAsUnsignedShort("containerserver.port", 31060); // 31060 -> 31069
+    std::string parc_file = props.get("containerserver.parc_file", "data/parc.dat");
+    std::string user_file = props.get("containerserver.user_file", "data/users.csv");
 
     LOG << "Creating thread pool";
     ThreadPool pool(4, [] {
