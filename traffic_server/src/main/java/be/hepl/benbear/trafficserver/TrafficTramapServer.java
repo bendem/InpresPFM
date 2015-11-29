@@ -35,7 +35,7 @@ public class TrafficTramapServer extends Server<DataInputStream, DataOutputStrea
     public TrafficTramapServer(Config config) {
         super(
             UncheckedLambda.supplier(() -> InetAddress.getByName(config.getString("trafficserver.host").orElse("localhost"))).get(),
-            config.getInt("trafficserver.port").orElse(31065),
+            config.getInt("trafficserver.tramapport").orElse(31065),
             Thread::new,
             Executors.newSingleThreadExecutor(),
             DataInputStream::new,
