@@ -46,11 +46,11 @@ public class ArraySerializer<T> implements Serializer<T>, Deserializer<T> {
 
     @Override
     public T deserialize(ByteBuffer bb) {
-        if(bb.get() == -1) {
+        if(bb.get() != 0) {
             return null;
         }
 
-        int length = bb.getInt(); // TODO Check for length < 0?
+        int length = bb.getInt();
         if(length < 0) {
             throw new SerializationException("Array of negative size: " + length);
         }
