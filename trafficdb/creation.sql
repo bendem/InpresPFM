@@ -122,6 +122,19 @@ select count(*) count, city, extract (month from date_arrival) month from moveme
 
 create or replace view container_per_dest_quarter as
 select count(*) count, city, extract (year from date_arrival) year, to_char(date_arrival, 'Q') quarter from movements_light group by to_char(date_arrival, 'Q'), city, extract (year from date_arrival);
+
+create or replace view container_leaving as select distinct movement_id, container_id, name, city, date_arrival, weight
+from movements natural join destinations natural join companies
+where date_departure is null
+order by date_arrival;
+
+create or replace view container_left as select distinct movement_id, container_id, name, city, date_arrival, date_departure, weight
+from movements natural join destinations natural join companies
+where date_departure is not null
+order by date_arrival;
+
+create or replace view container_incoming as
+select container_id, city, x, y from containers natural join reservations_containers natural join reservations natural join destinations;
 /
 
 exit

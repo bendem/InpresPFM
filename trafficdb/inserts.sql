@@ -77,17 +77,19 @@ declare
   month_after number;
   year number;
   year_after number;
+  date_after date;
+  scontainer_id varchar(20);
 begin
-  year := 2015;
-  for i in 0..100 loop
+  year := 2016;
+  for i in 0..1000 loop
     day := round(dbms_random.value(1,28));
     day_after := day + round(abs(sys.dbms_random.normal * 2) + 10);
     month := round(dbms_random.value(1,12));
     if day_after >=30 then
-      day_after := 2;
+      day_after := 30 - day;
       if month = 12 then
         year_after := year+1;
-        month_after := month+1;
+        month_after := 1;
       else
         year_after := year;
         month_after := month+1;
@@ -96,10 +98,17 @@ begin
       month_after := month;
       year_after := year;
     end if;
-    dbms_output.put_line(day||month||year);
-    dbms_output.put_line(day_after||month_after||year_after);
+
+    if (round(dbms_random.value(0,1)) = 1) then
+      date_after := to_date(day||'/'||month||'/'||year, 'dd/mm/YYYY');
+    else
+      date_after := null;
+    end if;
+
+    select container_id into scontainer_id from (select * from containers order by dbms_random.value)where rownum = 1;
+
     insert into movements(container_id, company_id, transporter_id_in, transporter_id_out, destination_id, date_arrival, date_departure, weight) values
-    ('C11', 1, null, null, round(dbms_random.value(1,4)), to_date(day||'/'||month||'/'||year, 'dd/mm/YYYY'), to_date(day_after||'/'||month_after||'/'||year_after, 'dd/mm/YYYY'), round(dbms_random.value(50,700)));
+    (scontainer_id, (select company_id from containers where container_id = scontainer_id), null, null, round(dbms_random.value(1,4)), to_date(day||'/'||month||'/'||year, 'dd/mm/YYYY'), date_after, round(dbms_random.value(50,700)));
 
   end loop;
 end;
