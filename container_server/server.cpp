@@ -38,6 +38,8 @@ int main(int argc, char** argv) {
     LOG << "Starting up";
     server.init().listen();
 
+    admin.close();
+
     LOG << "Application end";
 
     return 0;

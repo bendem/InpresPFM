@@ -45,7 +45,7 @@ public class ContainerServerAdmin extends BaseApplication {
     }
 
     public <T extends Packet> CompletableFuture<T> send(Packet packet, Class<T> response) {
-        CompletableFuture<T> future = CompletableFuture.completedFuture(null);
+        CompletableFuture<T> future = new CompletableFuture<>();
 
         threadPool.submit(() -> {
             try {
@@ -64,8 +64,8 @@ public class ContainerServerAdmin extends BaseApplication {
         Log.d("starting");
         config.load(getParameters().getNamed().get("config"));
         socket = new Socket(
-            config.getString("container_server.host").orElse("localhost"),
-            config.getInt("container_server.port").orElse(31060)
+            config.getString("containerserver.host").orElse("localhost"),
+            config.getInt("containerserver.admin.port").orElse(31069)
         );
         AdminController ctrl = open("admin.fxml", "InpresFPM - Container Server Admin", false, true);
         this.<LoginController>open("login.fxml", "InpresFPM - Login", true)

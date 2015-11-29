@@ -3,6 +3,7 @@
 
 #include "csa/PacketId.hpp"
 #include "csa/Translator.hpp"
+#include "protocol/ProtocolHandler.hpp"
 #include "server/ContainerServer.hpp"
 
 using namespace csa;
@@ -13,11 +14,13 @@ public:
     Admin(ContainerServer&, unsigned short);
 
     void run();
+    void close();
 
 private:
     ContainerServer& server;
-    ProtocolHandler<Translator, csa::PacketId> protocolHandler;
+    ProtocolHandler<Translator, csa::PacketId> proto;
     Socket socket;
+    std::shared_ptr<Socket> currentAdmin;
     std::thread thread;
     std::atomic_bool closed;
 

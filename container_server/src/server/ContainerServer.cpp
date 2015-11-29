@@ -9,7 +9,7 @@ ContainerServer::ContainerServer(unsigned short port, const string& container_fi
           socket(),
           selector(),
           selectorThread(selector, pool, proto),
-          closed(false) {
+          closed(false), closing(false), paused(false) {
     LOG << Logger::Debug << "Loaded " << parcLocations.size() << " location from " << container_file;
 
     LOG << "Binding server socket to " << port;
@@ -36,6 +36,12 @@ ContainerServer& ContainerServer::listen() {
     while(!closed) {
         try {
             std::shared_ptr<Socket> connection = socket.accept();
+            if(closing || paused) {
+                LOG << Logger::Warning << "Ignoring connection from " << connection->getHost() << ", server unavailable";
+                connection->close();
+                continue;
+            }
+
             LOG << Logger::Debug
                 << "Connection accepted " << connection->getHandle()
                 << ": " << connection->getHost() << ':' << connection->getPort();
@@ -68,6 +74,30 @@ void ContainerServer::close() {
         return;
     }
     this->socket.close();
+}
+
+std::vector<string> ContainerServer::getConnectedIps() {
+    Lock lk(this->loggedInUsersMutex);
+
+    std::vector<string> ips;
+    ips.reserve(this->loggedInUsers.size());
+    for(const std::pair<Socket*, string>& user : this->loggedInUsers) {
+        ips.push_back(user.first->getHost() + ':' + std::to_string(user.first->getPort()));
+    }
+
+    return ips;
+}
+
+bool ContainerServer::close(unsigned int time) {
+    if(closing.exchange(true)) {
+        return false;
+    }
+    // TODO Send messages to everybody
+    std::thread([time, this] {
+        std::this_thread::sleep_for(std::chrono::seconds(time));
+        this->close();
+    });
+    return true;
 }
 
 void ContainerServer::loginHandler(const cmmp::LoginPacket& p, std::shared_ptr<Socket> s) {

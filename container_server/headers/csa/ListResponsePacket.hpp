@@ -9,7 +9,7 @@ namespace csa {
 class ListResponsePacket : public Packet<ListResponsePacket> {
 
 public:
-    static const PacketId id;
+    static const PacketId id = PacketId::ListResponse;
 
     ListResponsePacket(std::vector<std::string> ips) : ips(ips) { }
 

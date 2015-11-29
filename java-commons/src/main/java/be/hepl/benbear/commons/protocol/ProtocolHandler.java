@@ -63,10 +63,10 @@ public class ProtocolHandler {
     public <T extends Packet> T readSpecific(InputStream is, Class<T> packetClass) throws IOException {
         Sanity.noneNull(is, packetClass);
 
-        T read;
+        Object read;
         while((read = read(is)).getClass() != packetClass);
 
-        return read;
+        return (T) read;
     }
 
     public <T extends Packet> ProtocolHandler write(OutputStream os, T packet) throws IOException {

@@ -43,6 +43,12 @@ public:
      */
     void close();
 
+    std::vector<string> getConnectedIps();
+
+    ContainerServer& togglePause() { /* TODO */return *this; }
+
+    bool close(unsigned);
+
     // Handlers
     void loginHandler(const cmmp::LoginPacket&, std::shared_ptr<Socket>);
     void inputTruckHandler(const cmmp::InputTruckPacket&, std::shared_ptr<Socket>);
@@ -74,6 +80,8 @@ private:
     Selector selector;
     SelectorThread<cmmp::Translator, cmmp::PacketId> selectorThread;
     std::atomic_bool closed;
+    std::atomic_bool closing;
+    std::atomic_bool paused;
 
     std::unordered_map<Socket*, string> loggedInUsers;
     Mutex loggedInUsersMutex;

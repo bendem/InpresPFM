@@ -78,7 +78,7 @@ public class LoginController implements Initializable {
                     return;
                 }
 
-                if(res.getError() == null) {
+                if(res.getError().isEmpty()) {
                     adminController.unlock();
                     app.getStage(this).close();
                 } else {
