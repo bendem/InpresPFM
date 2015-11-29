@@ -7,9 +7,9 @@ public class SendWeightPacket implements Packet {
 
     private final String[] containerIds;
     private final Position[] containerPositions;
-    private final float[] containerWeights;
+    private final int[] containerWeights;
 
-    public SendWeightPacket(String[] containerIds, Position[] containerPositions, float[] containerWeights) {
+    public SendWeightPacket(String[] containerIds, Position[] containerPositions, int[] containerWeights) {
         this.containerIds = containerIds;
         this.containerPositions = containerPositions;
         this.containerWeights = containerWeights;
@@ -23,7 +23,7 @@ public class SendWeightPacket implements Packet {
         return containerPositions;
     }
 
-    public float[] getContainerWeights() {
+    public int[] getContainerWeights() {
         return containerWeights;
     }
 
