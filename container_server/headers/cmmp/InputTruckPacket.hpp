@@ -7,6 +7,8 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
+namespace cmmp {
+
 class InputTruckPacket : public Packet<InputTruckPacket> {
 
 public:
@@ -27,5 +29,7 @@ private:
     std::vector<Container> containers;
 
 };
+
+}
 
 #endif

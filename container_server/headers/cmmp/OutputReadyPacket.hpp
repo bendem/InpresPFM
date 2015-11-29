@@ -6,6 +6,8 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
+namespace cmmp {
+
 class OutputReadyPacket : public Packet<OutputReadyPacket> {
 
 public:
@@ -29,5 +31,7 @@ private:
     uint16_t capacity;
 
 };
+
+}
 
 #endif

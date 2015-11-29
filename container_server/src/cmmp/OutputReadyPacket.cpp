@@ -1,5 +1,7 @@
 #include "cmmp/OutputReadyPacket.hpp"
 
+namespace cmmp {
+
 const PacketId OutputReadyPacket::id = PacketId::OutputReady;
 
 OutputReadyPacket OutputReadyPacket::decode(std::istream& is) {
@@ -14,4 +16,6 @@ void OutputReadyPacket::encode(std::ostream& os) const {
     StreamUtils::write(os, license);
     StreamUtils::write(os, destination);
     StreamUtils::write(os, capacity);
+}
+
 }

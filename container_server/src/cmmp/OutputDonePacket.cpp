@@ -1,5 +1,7 @@
 #include "cmmp/OutputDonePacket.hpp"
 
+namespace cmmp {
+
 const PacketId OutputDonePacket::id = PacketId::OutputDone;
 
 OutputDonePacket OutputDonePacket::decode(std::istream& is) {
@@ -12,4 +14,6 @@ OutputDonePacket OutputDonePacket::decode(std::istream& is) {
 void OutputDonePacket::encode(std::ostream& os) const {
     StreamUtils::write(os, license);
     StreamUtils::write(os, containerCount);
+}
+
 }

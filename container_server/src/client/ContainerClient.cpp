@@ -1,6 +1,6 @@
 #include "client/ContainerClient.hpp"
 
-ContainerClient::ContainerClient(std::shared_ptr<Socket> ptr, ProtocolHandler<CMMPTranslator, PacketId>& proto)
+ContainerClient::ContainerClient(std::shared_ptr<Socket> ptr, ProtocolHandler<Translator, PacketId>& proto)
     : socket(ptr),
       proto(proto),
       closed(false),

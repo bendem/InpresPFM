@@ -1,3 +1,4 @@
+#include "admin/Admin.hpp"
 #include "server/ContainerServer.hpp"
 #include "utils/ProgramProperties.hpp"
 
@@ -30,6 +31,9 @@ int main(int argc, char** argv) {
 
     LOG << "Creating server";
     ContainerServer server(port, parc_file, user_file, pool);
+
+    unsigned short admin_port = props.getAsUnsignedShort("containerserver.admin.port", 31069);
+    Admin admin(server, admin_port);
 
     LOG << "Starting up";
     server.init().listen();

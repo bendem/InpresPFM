@@ -1,5 +1,7 @@
 #include "cmmp/OutputOneResponsePacket.hpp"
 
+namespace cmmp {
+
 const PacketId OutputOneResponsePacket::id = PacketId::OutputOneResponse;
 
 OutputOneResponsePacket OutputOneResponsePacket::decode(std::istream& is) {
@@ -14,4 +16,6 @@ void OutputOneResponsePacket::encode(std::ostream& os) const {
     if(!ok) {
         StreamUtils::write(os, reason);
     }
+}
+
 }

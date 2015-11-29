@@ -20,6 +20,8 @@ class ProtocolHandler {
     static const len_t MAX_LEN = UINT16_MAX;
 
 public:
+    ProtocolHandler() : ProtocolHandler(Translator()) {}
+
     ProtocolHandler(const Translator& translator) : translator(translator), closed(false) {
         static_assert(sizeof(Id) == 1, "Can only use ProtocolHandler with 1 byte ids");
     }

@@ -1,5 +1,7 @@
 #include "cmmp/LogoutResponsePacket.hpp"
 
+namespace cmmp {
+
 const PacketId LogoutResponsePacket::id = PacketId::LogoutResponse;
 
 LogoutResponsePacket LogoutResponsePacket::decode(std::istream& is) {
@@ -14,4 +16,6 @@ void LogoutResponsePacket::encode(std::ostream& os) const {
     if(!ok) {
         StreamUtils::write(os, reason);
     }
+}
+
 }

@@ -1,6 +1,8 @@
-#include "cmmp/CMMPTranslator.hpp"
+#include "cmmp/Translator.hpp"
 
-void CMMPTranslator::decode(PacketId id, std::istream& is, std::shared_ptr<Socket> socket) {
+namespace cmmp {
+
+void Translator::decode(PacketId id, std::istream& is, std::shared_ptr<Socket> socket) {
     switch(id) {
         case PacketId::Login:
             LoginPacket::decode(is).handle(socket);
@@ -47,4 +49,6 @@ void CMMPTranslator::decode(PacketId id, std::istream& is, std::shared_ptr<Socke
     }
 
     throw ProtocolError("Invalid packet id");
+}
+
 }

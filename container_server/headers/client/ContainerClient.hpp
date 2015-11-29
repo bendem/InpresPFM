@@ -5,24 +5,26 @@
 #include <memory>
 #include <string>
 
-#include "cmmp/CMMPTranslator.hpp"
+#include "cmmp/Translator.hpp"
 #include "input/InputHelper.hpp"
 #include "net/Socket.hpp"
 #include "protocol/ProtocolHandler.hpp"
+
+using namespace cmmp;
 
 class ContainerClient {
     using string = std::string;
     using cstring_ref = const string&;
 
 public:
-    ContainerClient(std::shared_ptr<Socket>, ProtocolHandler<CMMPTranslator, PacketId>&);
+    ContainerClient(std::shared_ptr<Socket>, ProtocolHandler<Translator, PacketId>&);
 
     ContainerClient& init();
     ContainerClient& mainLoop();
 
 private:
     std::shared_ptr<Socket> socket;
-    ProtocolHandler<CMMPTranslator, PacketId>& proto;
+    ProtocolHandler<Translator, PacketId>& proto;
     bool closed;
     bool loggedIn;
 

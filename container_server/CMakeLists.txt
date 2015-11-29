@@ -12,7 +12,7 @@ include_directories(headers)
 include_directories(../cpp-commons/headers)
 
 set(COMMON_FILES
-    headers/cmmp/CMMPTranslator.hpp
+    headers/cmmp/Translator.hpp
     headers/cmmp/InputDonePacket.hpp
     headers/cmmp/InputDoneResponsePacket.hpp
     headers/cmmp/InputTruckPacket.hpp
@@ -30,7 +30,7 @@ set(COMMON_FILES
     headers/cmmp/PacketId.hpp
     headers/Container.hpp
     headers/ParcLocation.hpp
-    src/cmmp/CMMPTranslator.cpp
+    src/cmmp/Translator.cpp
     src/cmmp/InputDonePacket.cpp
     src/cmmp/InputDoneResponsePacket.cpp
     src/cmmp/InputTruckPacket.cpp
@@ -47,7 +47,8 @@ set(COMMON_FILES
     src/cmmp/OutputReadyResponsePacket.cpp
     src/ParcLocation.cpp
     src/Container.cpp
-)
+    src/admin/Admin.cpp
+    headers/csa/Translator.hpp)
 add_library(cmmp_protocol ${COMMON_FILES})
 target_link_libraries(cmmp_protocol cpp_commons)
 
@@ -59,7 +60,20 @@ add_executable(container_server
     headers/server/ContainerServer.hpp
     src/server/ContainerServer.cpp
     server.cpp
-)
+    headers/admin/Admin.hpp
+    src/admin/Admin.cpp
+    headers/csa/PacketId.hpp
+    headers/csa/LoginPacket.hpp
+    headers/csa/LoginResponsePacket.hpp
+    headers/csa/ListPacket.hpp
+    headers/csa/ListResponsePacket.hpp
+    headers/csa/PausePacket.hpp
+    headers/csa/PauseResponsePacket.hpp
+    headers/csa/StopPacket.hpp
+    headers/csa/StopResponsePacket.hpp
+    src/csa/LoginPacket.cpp
+    src/csa/ListResponsePacket.cpp
+    src/csa/Translator.cpp)
 target_link_libraries(container_server cpp_commons)
 target_link_libraries(container_server cmmp_protocol)
 

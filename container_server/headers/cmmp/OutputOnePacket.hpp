@@ -6,6 +6,8 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
+namespace cmmp {
+
 class OutputOnePacket : public Packet<OutputOnePacket> {
 
 public:
@@ -23,5 +25,7 @@ private:
     std::string containerId;
 
 };
+
+}
 
 #endif

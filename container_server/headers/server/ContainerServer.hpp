@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "ParcLocation.hpp"
-#include "cmmp/CMMPTranslator.hpp"
+#include "cmmp/Translator.hpp"
 #include "io/BinaryFile.hpp"
 #include "io/CSVFile.hpp"
 #include "net/Selector.hpp"
@@ -44,13 +44,13 @@ public:
     void close();
 
     // Handlers
-    void loginHandler(const LoginPacket&, std::shared_ptr<Socket>);
-    void inputTruckHandler(const InputTruckPacket&, std::shared_ptr<Socket>);
-    void inputDoneHandler(const InputDonePacket&, std::shared_ptr<Socket>);
-    void outputReadyHandler(const OutputReadyPacket&, std::shared_ptr<Socket>);
-    void outputOneHandler(const OutputOnePacket&, std::shared_ptr<Socket>);
-    void outputDoneHandler(const OutputDonePacket&, std::shared_ptr<Socket>);
-    void logoutHandler(const LogoutPacket&, std::shared_ptr<Socket>);
+    void loginHandler(const cmmp::LoginPacket&, std::shared_ptr<Socket>);
+    void inputTruckHandler(const cmmp::InputTruckPacket&, std::shared_ptr<Socket>);
+    void inputDoneHandler(const cmmp::InputDonePacket&, std::shared_ptr<Socket>);
+    void outputReadyHandler(const cmmp::OutputReadyPacket&, std::shared_ptr<Socket>);
+    void outputOneHandler(const cmmp::OutputOnePacket&, std::shared_ptr<Socket>);
+    void outputDoneHandler(const cmmp::OutputDonePacket&, std::shared_ptr<Socket>);
+    void logoutHandler(const cmmp::LogoutPacket&, std::shared_ptr<Socket>);
 
     /**
      * Checks whether a socket has already authenticated.
@@ -69,10 +69,10 @@ private:
 
     ThreadPool& pool;
 
-    ProtocolHandler<CMMPTranslator, PacketId> proto;
+    ProtocolHandler<cmmp::Translator, cmmp::PacketId> proto;
     Socket socket;
     Selector selector;
-    SelectorThread<CMMPTranslator, PacketId> selectorThread;
+    SelectorThread<cmmp::Translator, cmmp::PacketId> selectorThread;
     std::atomic_bool closed;
 
     std::unordered_map<Socket*, string> loggedInUsers;

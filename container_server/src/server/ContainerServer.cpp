@@ -5,7 +5,7 @@ ContainerServer::ContainerServer(unsigned short port, const string& container_fi
           parcLocations(containerFile.load()),
           users(user_file, ';'),
           pool(pool),
-          proto(CMMPTranslator()),
+          proto(),
           socket(),
           selector(),
           selectorThread(selector, pool, proto),
@@ -21,13 +21,13 @@ ContainerServer::~ContainerServer() {
 }
 
 ContainerServer& ContainerServer::init() {
-    LoginPacket::registerHandler(std::bind(&ContainerServer::loginHandler, this, _1, _2));
-    InputTruckPacket::registerHandler(std::bind(&ContainerServer::inputTruckHandler, this, _1, _2));
-    InputDonePacket::registerHandler(std::bind(&ContainerServer::inputDoneHandler, this, _1, _2));
-    OutputReadyPacket::registerHandler(std::bind(&ContainerServer::outputReadyHandler, this, _1, _2));
-    OutputOnePacket::registerHandler(std::bind(&ContainerServer::outputOneHandler, this, _1, _2));
-    OutputDonePacket::registerHandler(std::bind(&ContainerServer::outputDoneHandler, this, _1, _2));
-    LogoutPacket::registerHandler(std::bind(&ContainerServer::logoutHandler, this, _1, _2));
+    cmmp::LoginPacket::registerHandler(std::bind(&ContainerServer::loginHandler, this, _1, _2));
+    cmmp::InputTruckPacket::registerHandler(std::bind(&ContainerServer::inputTruckHandler, this, _1, _2));
+    cmmp::InputDonePacket::registerHandler(std::bind(&ContainerServer::inputDoneHandler, this, _1, _2));
+    cmmp::OutputReadyPacket::registerHandler(std::bind(&ContainerServer::outputReadyHandler, this, _1, _2));
+    cmmp::OutputOnePacket::registerHandler(std::bind(&ContainerServer::outputOneHandler, this, _1, _2));
+    cmmp::OutputDonePacket::registerHandler(std::bind(&ContainerServer::outputDoneHandler, this, _1, _2));
+    cmmp::LogoutPacket::registerHandler(std::bind(&ContainerServer::logoutHandler, this, _1, _2));
 
     return *this;
 }
@@ -70,12 +70,12 @@ void ContainerServer::close() {
     this->socket.close();
 }
 
-void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket> s) {
+void ContainerServer::loginHandler(const cmmp::LoginPacket& p, std::shared_ptr<Socket> s) {
     string username = p.getUsername();
     if(this->isLoggedIn(s)) {
         LOG << Logger::Warning << "Ignoring connect attempt from an authentified socket: " << username;
 
-        this->proto.write(s, LoginResponsePacket(false, "Already logged in"));
+        this->proto.write(s, cmmp::LoginResponsePacket(false, "Already logged in"));
         return;
     }
 
@@ -83,7 +83,7 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
 
     if(p.isNew()) {
         if(username.empty() || password.empty()) {
-            this->proto.write(s, LoginResponsePacket(false, "Empty username or password"));
+            this->proto.write(s, cmmp::LoginResponsePacket(false, "Empty username or password"));
             return;
         }
 
@@ -91,13 +91,13 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
                 || password.find_first_of("\n;\r\0") != string::npos
                 || std::count_if(username.begin(), username.end(), [](char c) { return !std::isprint(c); }) != 0
                 || std::count_if(password.begin(), password.end(), [](char c) { return !std::isprint(c); }) != 0) {
-            this->proto.write(s, LoginResponsePacket(false, "Invalid character in username or password"));
+            this->proto.write(s, cmmp::LoginResponsePacket(false, "Invalid character in username or password"));
             return;
         }
 
         Lock usersLock(this->usersMutex);
         if(!this->users.find("username", username).empty()) {
-            this->proto.write(s, LoginResponsePacket(false, "Username already in use"));
+            this->proto.write(s, cmmp::LoginResponsePacket(false, "Username already in use"));
             return;
         }
 
@@ -109,7 +109,7 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
         Lock loggedInUsersLock(this->loggedInUsersMutex);
         this->loggedInUsers.insert({ s.get(), username});
 
-        this->proto.write(s, LoginResponsePacket(true));
+        this->proto.write(s, cmmp::LoginResponsePacket(true));
         return;
     }
 
@@ -118,7 +118,7 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
     if(map.empty()) {
         LOG << Logger::Warning << "Tried to login with unknown username: " << username;
 
-        this->proto.write(s, LoginResponsePacket(false, "user not found"));
+        this->proto.write(s, cmmp::LoginResponsePacket(false, "user not found"));
         return;
     }
 
@@ -127,17 +127,17 @@ void ContainerServer::loginHandler(const LoginPacket& p, std::shared_ptr<Socket>
 
         Lock lk(this->loggedInUsersMutex);
         this->loggedInUsers.insert({ s.get(), username});
-        this->proto.write(s, LoginResponsePacket(true));
+        this->proto.write(s, cmmp::LoginResponsePacket(true));
         return;
     }
 
     LOG << Logger::Warning << "Tried to login from " << username << " with invalid password";
-    this->proto.write(s, LoginResponsePacket(false, "Invalid password"));
+    this->proto.write(s, cmmp::LoginResponsePacket(false, "Invalid password"));
 }
 
-void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_ptr<Socket> s) {
+void ContainerServer::inputTruckHandler(const cmmp::InputTruckPacket& p, std::shared_ptr<Socket> s) {
     if(!this->isLoggedIn(s)) {
-        this->proto.write(s, InputTruckResponsePacket(false, {}, "Not logged in"));
+        this->proto.write(s, cmmp::InputTruckResponsePacket(false, {}, "Not logged in"));
         return;
     }
 
@@ -145,7 +145,7 @@ void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_p
         // Check a the client isn't already storing containers
         Lock lk(this->containersBeingStoredMutex);
         if(this->containersBeingStored.find(s.get()) != this->containersBeingStored.end()) {
-            this->proto.write(s, InputTruckResponsePacket(false, {}, "Already storing containers"));
+            this->proto.write(s, cmmp::InputTruckResponsePacket(false, {}, "Already storing containers"));
             return;
         }
     }
@@ -163,28 +163,28 @@ void ContainerServer::inputTruckHandler(const InputTruckPacket& p, std::shared_p
                 had_place = this->findFreePlace(tmp);
             } catch(std::logic_error e) {
                 LOG << Logger::Error << "Something is really bad: " << e.what();
-                this->proto.write(s, InputTruckResponsePacket(false, {}, string("Something is really bad: ") + e.what()));
+                this->proto.write(s, cmmp::InputTruckResponsePacket(false, {}, string("Something is really bad: ") + e.what()));
                 return;
             }
 
             if(!had_place) {
-                this->proto.write(s, InputTruckResponsePacket(false, {}, "No free place available"));
+                this->proto.write(s, cmmp::InputTruckResponsePacket(false, {}, "No free place available"));
                 return;
             } else {
                 // Save the container info for later
-                containers.emplace_back(tmp);
+                containers.push_back(tmp);
             }
         }
 
         this->containersBeingStored.insert({ s.get(), containers });
     }
 
-    this->proto.write(s, InputTruckResponsePacket(true, containers));
+    this->proto.write(s, cmmp::InputTruckResponsePacket(true, containers));
 }
 
-void ContainerServer::inputDoneHandler(const InputDonePacket& p, std::shared_ptr<Socket> s) {
+void ContainerServer::inputDoneHandler(const cmmp::InputDonePacket& p, std::shared_ptr<Socket> s) {
     if(!this->isLoggedIn(s)) {
-        this->proto.write(s, InputDoneResponsePacket(false, "Not logged in"));
+        this->proto.write(s, cmmp::InputDoneResponsePacket(false, "Not logged in"));
         return;
     }
 
@@ -192,14 +192,14 @@ void ContainerServer::inputDoneHandler(const InputDonePacket& p, std::shared_ptr
     auto containersToValidate = this->containersBeingStored.find(s.get());
     if(containersToValidate == this->containersBeingStored.end()) {
         LOG << Logger::Warning << "Received InputDone even tho no containers where being stored";
-        this->proto.write(s, InputDoneResponsePacket(false, "No containers currently being stored"));
+        this->proto.write(s, cmmp::InputDoneResponsePacket(false, "No containers currently being stored"));
         return;
     }
 
     if(!p.isOk()) {
         LOG << Logger::Debug << "Something happened while storing, cleaning up";
         this->cleanupContainersBeingStored(*s, Socket::CloseReason::Error);
-        this->proto.write(s, InputDoneResponsePacket(true));
+        this->proto.write(s, cmmp::InputDoneResponsePacket(true));
         return;
     }
 
@@ -228,18 +228,18 @@ void ContainerServer::inputDoneHandler(const InputDonePacket& p, std::shared_ptr
     }
 
     // TODO Do something with the weight?
-    this->proto.write(s, InputDoneResponsePacket(true));
+    this->proto.write(s, cmmp::InputDoneResponsePacket(true));
 }
 
-void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared_ptr<Socket> s) {
+void ContainerServer::outputReadyHandler(const cmmp::OutputReadyPacket& p, std::shared_ptr<Socket> s) {
     if(!this->isLoggedIn(s)) {
-        this->proto.write(s, OutputReadyResponsePacket(false, {}, "Not logged in"));
+        this->proto.write(s, cmmp::OutputReadyResponsePacket(false, {}, "Not logged in"));
         return;
     }
 
     uint16_t capacity = p.getCapacity();
     if(capacity == 0 || p.getDestination().empty()) {
-        this->proto.write(s, OutputReadyResponsePacket(false, {}, "Invalid value received"));
+        this->proto.write(s, cmmp::OutputReadyResponsePacket(false, {}, "Invalid value received"));
         return;
     }
 
@@ -267,16 +267,16 @@ void ContainerServer::outputReadyHandler(const OutputReadyPacket& p, std::shared
     }
 
     if(containers.empty()) {
-        this->proto.write(s, OutputReadyResponsePacket(false, {}, "No containers for this destination"));
+        this->proto.write(s, cmmp::OutputReadyResponsePacket(false, {}, "No containers for this destination"));
     } else {
-        this->proto.write(s, OutputReadyResponsePacket(true, containers));
+        this->proto.write(s, cmmp::OutputReadyResponsePacket(true, containers));
     }
 
 }
 
-void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr<Socket> s) {
+void ContainerServer::outputOneHandler(const cmmp::OutputOnePacket& p, std::shared_ptr<Socket> s) {
     if(!this->isLoggedIn(s)) {
-        this->proto.write(s, OutputOneResponsePacket(false, "Not logged in"));
+        this->proto.write(s, cmmp::OutputOneResponsePacket(false, "Not logged in"));
         return;
     }
 
@@ -290,36 +290,36 @@ void ContainerServer::outputOneHandler(const OutputOnePacket& p, std::shared_ptr
                 this->containerFile.update(location, [&location](const ParcLocation& file_location) {
                     return location.x == file_location.x && location.y == file_location.y;
                 });
-                this->proto.write(s, OutputOneResponsePacket(true));
+                this->proto.write(s, cmmp::OutputOneResponsePacket(true));
                 return;
             }
         }
     }
 
     LOG << Logger::Warning << "Invalid container id output: " << p.getContainerId();
-    this->proto.write(s, OutputOneResponsePacket(false, "Invalid container id (not existing or ready to leave)"));
+    this->proto.write(s, cmmp::OutputOneResponsePacket(false, "Invalid container id (not existing or ready to leave)"));
 }
 
-void ContainerServer::outputDoneHandler(const OutputDonePacket&, std::shared_ptr<Socket> s) {
+void ContainerServer::outputDoneHandler(const cmmp::OutputDonePacket&, std::shared_ptr<Socket> s) {
     if(!this->isLoggedIn(s)) {
-        this->proto.write(s, OutputDoneResponsePacket(false, "Not logged in"));
+        this->proto.write(s, cmmp::OutputDoneResponsePacket(false, "Not logged in"));
         return;
     }
 
     // TODO mkay? :/ That's some useless stuff here
-    this->proto.write(s, OutputDoneResponsePacket(true));
+    this->proto.write(s, cmmp::OutputDoneResponsePacket(true));
 }
 
-void ContainerServer::logoutHandler(const LogoutPacket&, std::shared_ptr<Socket> s) {
+void ContainerServer::logoutHandler(const cmmp::LogoutPacket&, std::shared_ptr<Socket> s) {
     if(!this->isLoggedIn(s)) {
-        this->proto.write(s, LogoutResponsePacket(false, "Not logged in"));
+        this->proto.write(s, cmmp::LogoutResponsePacket(false, "Not logged in"));
         return;
     }
 
     // TODO Not sure what the stuff from the packet is useful for...
     Lock lk(this->loggedInUsersMutex);
     this->loggedInUsers.erase(s.get());
-    this->proto.write(s, LogoutResponsePacket(true, "Logged out"));
+    this->proto.write(s, cmmp::LogoutResponsePacket(true, "Logged out"));
 
     // s->close(); // Not closing the connection so he can reconnect without restarting the application
 }

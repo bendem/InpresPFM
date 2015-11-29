@@ -22,8 +22,7 @@ int main(int argc, char** argv) {
     std::shared_ptr<Socket> s(new Socket);
     s->connect(port, host);
 
-    CMMPTranslator translator;
-    ProtocolHandler<CMMPTranslator, PacketId> proto(translator);
+    ProtocolHandler<Translator, PacketId> proto;
 
     ContainerClient client(s, proto);
 

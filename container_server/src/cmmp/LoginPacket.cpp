@@ -1,5 +1,7 @@
 #include "cmmp/LoginPacket.hpp"
 
+namespace cmmp {
+
 const PacketId LoginPacket::id = PacketId::Login;
 
 LoginPacket LoginPacket::decode(std::istream& is) {
@@ -14,4 +16,6 @@ void LoginPacket::encode(std::ostream& os) const {
     StreamUtils::write(os, this->username);
     StreamUtils::write(os, this->password);
     StreamUtils::write(os, this->newUser);
+}
+
 }

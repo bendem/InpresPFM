@@ -1,5 +1,7 @@
 #include "cmmp/InputTruckPacket.hpp"
 
+namespace cmmp {
+
 const PacketId InputTruckPacket::id = PacketId::InputTruck;
 
 InputTruckPacket InputTruckPacket::decode(std::istream& is) {
@@ -20,4 +22,6 @@ void InputTruckPacket::encode(std::ostream& os) const {
     for(const Container& container : containers) {
         StreamUtils::write(os, container);
     }
+}
+
 }

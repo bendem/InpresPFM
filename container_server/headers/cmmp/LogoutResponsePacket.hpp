@@ -6,6 +6,8 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
+namespace cmmp {
+
 class LogoutResponsePacket : public Packet<LogoutResponsePacket> {
 
 public:
@@ -26,5 +28,7 @@ private:
     std::string reason;
 
 };
+
+}
 
 #endif

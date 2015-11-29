@@ -1,5 +1,7 @@
 #include "cmmp/OutputReadyResponsePacket.hpp"
 
+namespace cmmp {
+
 const PacketId OutputReadyResponsePacket::id = PacketId::OutputReadyResponse;
 
 OutputReadyResponsePacket OutputReadyResponsePacket::decode(std::istream& is) {
@@ -31,4 +33,6 @@ void OutputReadyResponsePacket::encode(std::ostream& os) const {
             StreamUtils::write(os, value);
         }
     }
+}
+
 }

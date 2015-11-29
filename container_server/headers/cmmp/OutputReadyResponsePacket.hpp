@@ -7,6 +7,8 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
+namespace cmmp {
+
 class OutputReadyResponsePacket : public Packet<OutputReadyResponsePacket> {
 
 public:
@@ -30,5 +32,7 @@ private:
     std::string reason;
 
 };
+
+}
 
 #endif

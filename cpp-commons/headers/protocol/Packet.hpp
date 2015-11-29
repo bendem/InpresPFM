@@ -15,9 +15,9 @@ using PacketHandler = std::function<void(const P&, std::shared_ptr<Socket>)>;
  * and handle callbacks.
  *
  * A packet should implement
- * + static P decode(vector<char>::const_iterator),
- * + void encode(vector<char>&),
- * + static Id id
+ * + static OutputReadyResponsePacket decode(std::istream&);
+ * + void encode(std::ostream&) const;
+ * + static const Id id;
  */
 template<class P>
 class Packet {

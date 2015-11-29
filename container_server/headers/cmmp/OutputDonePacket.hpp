@@ -6,6 +6,8 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
+namespace cmmp {
+
 class OutputDonePacket : public Packet<OutputDonePacket> {
 
 public:
@@ -26,5 +28,7 @@ private:
     uint16_t containerCount;
 
 };
+
+}
 
 #endif

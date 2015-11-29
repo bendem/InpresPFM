@@ -1,5 +1,7 @@
 #include "cmmp/InputDonePacket.hpp"
 
+namespace cmmp {
+
 const PacketId InputDonePacket::id = PacketId::InputDone;
 
 InputDonePacket InputDonePacket::decode(std::istream& is) {
@@ -14,4 +16,6 @@ void InputDonePacket::encode(std::ostream& os) const {
     if(ok) {
         StreamUtils::write(os, weight);
     }
+}
+
 }

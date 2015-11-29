@@ -7,6 +7,8 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
+namespace cmmp {
+
 class InputTruckResponsePacket : public Packet<InputTruckResponsePacket> {
 
 public:
@@ -30,5 +32,7 @@ private:
     std::string reason;
 
 };
+
+}
 
 #endif

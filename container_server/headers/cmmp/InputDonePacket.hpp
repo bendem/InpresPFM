@@ -4,6 +4,8 @@
 #include "cmmp/PacketId.hpp"
 #include "protocol/Packet.hpp"
 
+namespace cmmp {
+
 class InputDonePacket : public Packet<InputDonePacket> {
 
 public:
@@ -24,5 +26,7 @@ private:
     float weight;
 
 };
+
+}
 
 #endif

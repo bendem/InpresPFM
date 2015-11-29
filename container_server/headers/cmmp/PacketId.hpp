@@ -1,7 +1,9 @@
-#ifndef CONTAINER_SERVER_PACKETID_HPP
-#define CONTAINER_SERVER_PACKETID_HPP
+#ifndef CONTAINER_SERVER_CMMP_PACKETID_HPP
+#define CONTAINER_SERVER_CMMP_PACKETID_HPP
 
 #include <cstdint>
+
+namespace cmmp {
 
 enum PacketId : uint8_t {
     Login,
@@ -19,5 +21,7 @@ enum PacketId : uint8_t {
     OutputDoneResponse,
     LogoutResponse,
 };
+
+}
 
 #endif

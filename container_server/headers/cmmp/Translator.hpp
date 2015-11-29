@@ -19,7 +19,9 @@
 #include "net/Socket.hpp"
 #include "protocol/ProtocolError.hpp"
 
-class CMMPTranslator {
+namespace cmmp {
+
+class Translator {
 
 public:
     void decode(PacketId id, std::istream&, std::shared_ptr<Socket>);
@@ -33,15 +35,17 @@ public:
 };
 
 template<class P>
-P CMMPTranslator::decodeSpecific(std::istream& is, std::shared_ptr<Socket> s) {
+P Translator::decodeSpecific(std::istream& is, std::shared_ptr<Socket> s) {
     P decoded = P::decode(is);
     decoded.handle(s);
     return decoded;
 }
 
 template<class T>
-void CMMPTranslator::encode(const T& item, std::ostream& v) {
+void Translator::encode(const T& item, std::ostream& v) {
     item.encode(v);
+}
+
 }
 
 #endif
