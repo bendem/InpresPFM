@@ -26,13 +26,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class TrafficServer extends Server<DataInputStream, DataOutputStream> {
+public class TrafficTramapServer extends Server<DataInputStream, DataOutputStream> {
 
     private final Config config;
     private final ProtocolHandler protocolHandler;
     private final SQLDatabase database;
 
-    public TrafficServer(Config config) {
+    public TrafficTramapServer(Config config) {
         super(
             UncheckedLambda.supplier(() -> InetAddress.getByName(config.getString("trafficserver.host").orElse("localhost"))).get(),
             config.getInt("trafficserver.port").orElse(31065),
