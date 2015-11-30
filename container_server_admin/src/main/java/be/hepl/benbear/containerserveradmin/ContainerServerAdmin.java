@@ -75,6 +75,8 @@ public class ContainerServerAdmin extends BaseApplication {
     @Override
     public void stop() throws Exception {
         Log.d("stopping");
+        threadPool.shutdown();
+        socket.close();
     }
 
 }

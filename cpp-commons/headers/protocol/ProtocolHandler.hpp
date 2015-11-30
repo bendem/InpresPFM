@@ -22,9 +22,11 @@ class ProtocolHandler {
 public:
     ProtocolHandler() : ProtocolHandler(Translator()) {}
 
-    ProtocolHandler(const Translator& translator) : translator(translator), closed(false) {
+    ProtocolHandler(const Translator& translator) : translator(translator) {
         static_assert(sizeof(Id) == 1, "Can only use ProtocolHandler with 1 byte ids");
     }
+
+    ProtocolHandler& registerPrePacket(std::function<bool(Id, uint16_t)> handler);
 
     void read(std::shared_ptr<Socket>);
 
@@ -34,12 +36,11 @@ public:
     template<class T>
     ProtocolHandler<Translator, Id>& write(std::shared_ptr<Socket>, const T&);
 
-    void close() { closed = true; }
-
 private:
     Translator translator;
-    std::atomic_bool closed;
+    std::vector<std::function<bool(Id, uint16_t)>> prePacket; // TODO Extract type and document it
 
+    bool shouldHandlePacket(Id, len_t);
     std::pair<Id, std::string> readPacket(std::shared_ptr<Socket>);
 
     static const uint8_t FRAME_END;
@@ -50,27 +51,50 @@ template<class Translator, class Id>
 const uint8_t ProtocolHandler<Translator, Id>::FRAME_END = 0x42;
 
 template<class Translator, class Id>
+ProtocolHandler<Translator, Id>& ProtocolHandler<Translator, Id>::registerPrePacket(std::function<bool(Id, uint16_t)> handler) {
+    prePacket.push_back(handler);
+    return *this;
+}
+
+template<class Translator, class Id>
 std::pair<Id, std::string> ProtocolHandler<Translator, Id>::readPacket(std::shared_ptr<Socket> socket) {
     Id id;
     len_t len;
+    bool shouldHandle;
+    std::string packet;
 
-    std::stringstream ios;
-    socket->accumulate(sizeof(len_t) + 1, ios);
+    do {
+        std::stringstream ios;
+        socket->accumulate(sizeof(len_t) + 1, ios);
 
-    id = static_cast<Id>(StreamUtils::read<uint8_t>(ios));
-    len = StreamUtils::read<len_t>(ios) + 1; // + 1 => end frame marquer
+        id = static_cast<Id>(StreamUtils::read<uint8_t>(ios));
+        len = StreamUtils::read<len_t>(ios) + 1; // + 1 => end frame marquer
 
-    LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len;
+        LOG << Logger::Debug << "Packet received: id:" << id << ":len:" << len;
 
-    std::stringstream os;
-    socket->accumulate(len, os);
-    std::string packet = os.str();
+        std::stringstream os;
+        socket->accumulate(len, os);
+        packet = os.str();
 
-    if (packet.back() != FRAME_END) {
-        throw ProtocolError("Invalid frame end");
-    }
-    packet.pop_back();
+        if(packet.back() != FRAME_END) {
+            throw ProtocolError("Invalid frame end");
+        }
+        packet.pop_back();
+
+        shouldHandle = shouldHandlePacket(id, len);
+    } while(!shouldHandle);
+
     return { id, packet };
+}
+
+template<class Translator, class Id>
+bool ProtocolHandler<Translator, Id>::shouldHandlePacket(Id id, len_t len) {
+    for(auto item : prePacket) {
+        if(!item(id, len)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 template<class Translator, class Id>
@@ -79,6 +103,7 @@ void ProtocolHandler<Translator, Id>::read(std::shared_ptr<Socket> socket) {
     std::string chars;
 
     std::tie(id, chars) = this->readPacket(socket);
+
     std::istringstream is(chars);
     this->translator.decode(id, is, socket);
 }

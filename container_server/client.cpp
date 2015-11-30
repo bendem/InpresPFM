@@ -16,8 +16,29 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+
+    unsigned short urgency_port = props.getAsUnsignedShort("containerserver.urgency.port", 31070);
     unsigned short port = props.getAsUnsignedShort("containerserver.port", 31060);
     std::string host = props.get("containerserver.host", "localhost");
+
+    LOG << "Urgency connecting";
+    std::shared_ptr<Socket> urgency_socket(new Socket);
+    urgency_socket->connect(urgency_port, host);
+    std::thread urgency_thread([&urgency_socket] {
+        while(!urgency_socket->isClosed()) {
+            std::stringstream ios;
+            urgency_socket->read(sizeof(uint16_t), ios);
+            uint16_t len = StreamUtils::read<uint16_t>(ios);
+
+            urgency_socket->accumulate(len, ios);
+            std::string message(len, '\0');
+            for(uint16_t i = 0; i < len; ++i) {
+                message[i] = ios.get();
+            }
+            std::cout << " === SERVER MESSAGE === " << " => " << message << std::endl;
+        }
+    });
+    urgency_thread.detach();
 
     std::shared_ptr<Socket> s(new Socket);
     s->connect(port, host);
@@ -27,6 +48,9 @@ int main(int argc, char** argv) {
     ContainerClient client(s, proto);
 
     client.init().mainLoop();
+
+    LOG << "Closing urgency socket";
+    urgency_socket->close();
 
     LOG << "done";
 

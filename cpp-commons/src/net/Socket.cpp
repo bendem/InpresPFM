@@ -180,7 +180,7 @@ void Socket::close(Socket::CloseReason reason) {
     this->checkOpen();
 
     LOG << "closing socket " << this->handle;
-    std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
+    //std::lock_guard<std::recursive_mutex> lk(this->handleMutex);
     ::close(this->handle);
     for(CloseHandler handler : this->closeHandlers) {
         handler(*this, reason);

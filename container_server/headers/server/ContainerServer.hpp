@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ParcLocation.hpp"
+#include "admin/UrgencyServer.hpp"
 #include "cmmp/Translator.hpp"
 #include "io/BinaryFile.hpp"
 #include "io/CSVFile.hpp"
@@ -25,7 +26,7 @@ class ContainerServer {
     using string = std::string;
 
 public:
-    ContainerServer(unsigned short, const string&, const string&, ThreadPool&);
+    ContainerServer(unsigned short, const string&, const string&, ThreadPool&, UrgencyServer&);
     ~ContainerServer();
 
     /**
@@ -45,11 +46,12 @@ public:
 
     std::vector<string> getConnectedIps();
 
-    ContainerServer& togglePause() { /* TODO */return *this; }
+    ContainerServer& togglePause();
 
     bool close(unsigned);
 
     // Handlers
+    bool prePacketHandler(cmmp::PacketId, uint16_t);
     void loginHandler(const cmmp::LoginPacket&, std::shared_ptr<Socket>);
     void inputTruckHandler(const cmmp::InputTruckPacket&, std::shared_ptr<Socket>);
     void inputDoneHandler(const cmmp::InputDonePacket&, std::shared_ptr<Socket>);
@@ -74,6 +76,7 @@ private:
     Mutex usersMutex;
 
     ThreadPool& pool;
+    UrgencyServer& urgencyServer;
 
     ProtocolHandler<cmmp::Translator, cmmp::PacketId> proto;
     Socket socket;

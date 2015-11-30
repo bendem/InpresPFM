@@ -1,6 +1,12 @@
+#include <csignal>
+
 #include "admin/Admin.hpp"
-#include "server/ContainerServer.hpp"
+#include "admin/UrgencyServer.hpp"
 #include "utils/ProgramProperties.hpp"
+
+void reset(int sig) {
+    std::signal(sig, SIG_DFL);
+}
 
 int main(int argc, char** argv) {
     ProgramProperties props(argc, argv);
@@ -20,6 +26,17 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    // I have no idea what this does
+    struct sigaction sig_action;
+    sig_action.sa_handler = reset;
+    sigemptyset(&sig_action.sa_mask);
+    //sig_action.sa_flags = 0;
+    sig_action.sa_restorer = NULL;
+    if(sigaction(SIGINT, &sig_action, NULL) == -1) {
+        LOG << Logger::Error << "Failed to sigaction";
+        return 1;
+    }
+
     unsigned short port = props.getAsUnsignedShort("containerserver.port", 31060); // 31060 -> 31069
     std::string parc_file = props.get("containerserver.parc_file", "data/parc.dat");
     std::string user_file = props.get("containerserver.user_file", "data/users.csv");
@@ -29,14 +46,19 @@ int main(int argc, char** argv) {
         LOG << Logger::Debug << "Starting thread from pool";
     });
 
+    unsigned short urgency_port = props.getAsUnsignedShort("containerserver.urgency.port", 31070);
+    UrgencyServer urgency_server(urgency_port);
+
     LOG << "Creating server";
-    ContainerServer server(port, parc_file, user_file, pool);
+    ContainerServer server(port, parc_file, user_file, pool, urgency_server);
 
     unsigned short admin_port = props.getAsUnsignedShort("containerserver.admin.port", 31069);
     Admin admin(server, admin_port);
 
     LOG << "Starting up";
     server.init().listen();
+
+    LOG << "Server stopped listening";
 
     admin.close();
 

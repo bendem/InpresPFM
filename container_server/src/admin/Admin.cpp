@@ -11,12 +11,12 @@ Admin::Admin(ContainerServer& server, unsigned short port)
         proto.write(s, ListResponsePacket(this->server.getConnectedIps()));
     });
     PausePacket::registerHandler([this](const PausePacket&, std::shared_ptr<Socket> s) {
-        //server.togglePause();
+        this->server.togglePause();
         proto.write(s, PauseResponsePacket(""));
     });
-    StopPacket::registerHandler([this](const StopPacket&, std::shared_ptr<Socket> s) {
-        proto.write(s, StopResponsePacket(""));
-        //server.close();
+    StopPacket::registerHandler([this](const StopPacket& p, std::shared_ptr<Socket> s) {
+        bool ok = this->server.close(p.getTime());
+        proto.write(s, StopResponsePacket(ok ? "" : "Server already closing"));
     });
 }
 
@@ -29,19 +29,25 @@ void Admin::run() {
         bool loggedIn = false;
         unsigned i = 3;
         while(i-- > 0) {
-            const LoginPacket p = proto.readSpecificPacket<LoginPacket>(client);
-            if(p.getUsername() == "admin" && p.getPassword() == "admin") {
-                proto.write(client, LoginResponsePacket(""));
-                loggedIn = true;
+            try {
+                const LoginPacket p = proto.readSpecificPacket<LoginPacket>(client);
+                if(p.getUsername() == "admin" && p.getPassword() == "admin") {
+                    proto.write(client, LoginResponsePacket(""));
+                    loggedIn = true;
+                    break;
+                } else {
+                    proto.write(client, LoginResponsePacket("Wrong login or password: " + std::to_string(i) + " attempts remaining"));
+                }
+            } catch(IOError e) {
                 break;
-            } else {
-                proto.write(client, LoginResponsePacket("Wrong login or password: " + std::to_string(i) + " attempts remaining"));
             }
         }
 
         if(!loggedIn) {
-            LOG << Logger::Warning << "Connection failed closing link";
-            client->close();
+            if(!client->isClosed()) {
+                LOG << Logger::Warning << "Connection failed closing link";
+                client->close();
+            }
             continue;
         }
 

@@ -73,7 +73,9 @@ add_executable(container_server
     headers/csa/StopResponsePacket.hpp
     src/csa/LoginPacket.cpp
     src/csa/ListResponsePacket.cpp
-    src/csa/Translator.cpp)
+    src/csa/Translator.cpp
+    headers/admin/UrgencyServer.hpp
+    src/admin/UrgencyServer.cpp)
 target_link_libraries(container_server cpp_commons)
 target_link_libraries(container_server cmmp_protocol)
 

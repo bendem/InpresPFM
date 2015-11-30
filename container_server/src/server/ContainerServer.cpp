@@ -1,10 +1,12 @@
 #include "server/ContainerServer.hpp"
 
-ContainerServer::ContainerServer(unsigned short port, const string& container_file, const string& user_file, ThreadPool& pool)
+ContainerServer::ContainerServer(unsigned short port, const string& container_file, const string& user_file,
+                                 ThreadPool& pool, UrgencyServer& urgency_server)
         : containerFile(container_file),
           parcLocations(containerFile.load()),
           users(user_file, ';'),
           pool(pool),
+          urgencyServer(urgency_server),
           proto(),
           socket(),
           selector(),
@@ -14,6 +16,7 @@ ContainerServer::ContainerServer(unsigned short port, const string& container_fi
 
     LOG << "Binding server socket to " << port;
     socket.bind(port);
+    LOG << "Server socket is " << socket.getHandle();
 }
 
 ContainerServer::~ContainerServer() {
@@ -21,6 +24,8 @@ ContainerServer::~ContainerServer() {
 }
 
 ContainerServer& ContainerServer::init() {
+    proto.registerPrePacket(std::bind(&ContainerServer::prePacketHandler, this, _1, _2));
+
     cmmp::LoginPacket::registerHandler(std::bind(&ContainerServer::loginHandler, this, _1, _2));
     cmmp::InputTruckPacket::registerHandler(std::bind(&ContainerServer::inputTruckHandler, this, _1, _2));
     cmmp::InputDonePacket::registerHandler(std::bind(&ContainerServer::inputDoneHandler, this, _1, _2));
@@ -70,10 +75,20 @@ ContainerServer& ContainerServer::listen() {
 }
 
 void ContainerServer::close() {
-    if(this->closed.exchange(true)) {
+    if(closed.exchange(true)) {
         return;
     }
-    this->socket.close();
+
+    {
+        Lock lk(loggedInUsersMutex);
+        for(auto user : loggedInUsers) {
+            user.first->close();
+        }
+    }
+    selectorThread.close();
+
+    //std::raise(SIGINT);
+    socket.close();
 }
 
 std::vector<string> ContainerServer::getConnectedIps() {
@@ -88,16 +103,29 @@ std::vector<string> ContainerServer::getConnectedIps() {
     return ips;
 }
 
+ContainerServer& ContainerServer::togglePause() {
+    paused = !paused;
+    urgencyServer.send(paused ? "Server paused, all further messages will be dropped" : "Server unpaused");
+    return *this;
+}
+
 bool ContainerServer::close(unsigned int time) {
     if(closing.exchange(true)) {
         return false;
     }
-    // TODO Send messages to everybody
-    std::thread([time, this] {
+
+    LOG << "Stopping server in " << time << " seconds";
+    urgencyServer.send("Server stopping in " + std::to_string(time) + " seconds, save your work!");
+    static std::thread t([time, this] {
         std::this_thread::sleep_for(std::chrono::seconds(time));
+        LOG << "Stopping server...";
         this->close();
     });
     return true;
+}
+
+bool ContainerServer::prePacketHandler(cmmp::PacketId, uint16_t) {
+    return !(closed || paused);
 }
 
 void ContainerServer::loginHandler(const cmmp::LoginPacket& p, std::shared_ptr<Socket> s) {
