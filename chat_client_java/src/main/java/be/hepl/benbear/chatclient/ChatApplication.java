@@ -107,6 +107,7 @@ public class ChatApplication extends BaseApplication {
             }
             Log.d("Joining multicast group on %s", networkInterface);
             socket.joinGroup(address, networkInterface);
+            socket.setNetworkInterface(networkInterface);
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
