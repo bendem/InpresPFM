@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include <condition_variable>
 
 #include "cmmp/Translator.hpp"
 #include "input/InputHelper.hpp"
@@ -21,15 +22,21 @@ public:
 
     ContainerClient& init();
     ContainerClient& mainLoop();
+    void pause(bool);
 
 private:
     std::shared_ptr<Socket> socket;
     ProtocolHandler<Translator, PacketId>& proto;
     bool closed;
     bool loggedIn;
+    std::atomic_bool paused;
+    std::mutex pausedMutex;
+    std::condition_variable pausedCond;
 
     void loginMenu();
     void menu();
+    template<class P>
+    void send(std::shared_ptr<Socket>, const P&);
 
 };
 

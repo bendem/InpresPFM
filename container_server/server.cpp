@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    // I have no idea what this does
+    // I have no idea what this does but something to do with SA_RESTART restarting system calls after handling the signal
     struct sigaction sig_action;
     sig_action.sa_handler = reset;
     sigemptyset(&sig_action.sa_mask);
@@ -53,7 +53,9 @@ int main(int argc, char** argv) {
     ContainerServer server(port, parc_file, user_file, pool, urgency_server);
 
     unsigned short admin_port = props.getAsUnsignedShort("containerserver.admin.port", 31069);
-    Admin admin(server, admin_port);
+    std::string username = props.get("containerserver.admin.username", "admin");
+    std::string password = props.get("containerserver.admin.password", "admin");
+    Admin admin(username, password, server, admin_port);
 
     LOG << "Starting up";
     server.init().listen();

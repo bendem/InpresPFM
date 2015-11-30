@@ -11,13 +11,15 @@ using namespace csa;
 class Admin {
 
 public:
-    Admin(ContainerServer&, unsigned short);
+    Admin(const std::string&, const std::string&, ContainerServer&, unsigned short);
     ~Admin();
 
     void run();
     void close();
 
 private:
+    std::string username;
+    std::string password;
     ContainerServer& server;
     ProtocolHandler<Translator, csa::PacketId> proto;
     Socket socket;

@@ -39,8 +39,15 @@ ContainerServer& ContainerServer::init() {
 
 ContainerServer& ContainerServer::listen() {
     while(!closed) {
+        std::shared_ptr<Socket> connection;
         try {
-            std::shared_ptr<Socket> connection = socket.accept();
+            connection = socket.accept();
+        } catch(IOError e) {
+            LOG << Logger::Error << "Main accept error, aborting: " << e.what();
+            return *this;
+        }
+
+        try {
             if(closing || paused) {
                 LOG << Logger::Warning << "Ignoring connection from " << connection->getHost() << ", server unavailable";
                 connection->close();
@@ -88,7 +95,9 @@ void ContainerServer::close() {
     selectorThread.close();
 
     //std::raise(SIGINT);
-    socket.close();
+    if(!socket.isClosed()) {
+        socket.close();
+    }
 }
 
 std::vector<string> ContainerServer::getConnectedIps() {

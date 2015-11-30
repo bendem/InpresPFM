@@ -21,10 +21,17 @@ int main(int argc, char** argv) {
     unsigned short port = props.getAsUnsignedShort("containerserver.port", 31060);
     std::string host = props.get("containerserver.host", "localhost");
 
+    std::shared_ptr<Socket> client_socket(new Socket);
+    client_socket->connect(port, host);
+
+    ProtocolHandler<Translator, PacketId> proto;
+
+    ContainerClient client(client_socket, proto);
+
     LOG << "Urgency connecting";
     std::shared_ptr<Socket> urgency_socket(new Socket);
     urgency_socket->connect(urgency_port, host);
-    std::thread urgency_thread([&urgency_socket] {
+    std::thread urgency_thread([&urgency_socket, &client] {
         while(!urgency_socket->isClosed()) {
             std::stringstream ios;
             urgency_socket->read(sizeof(uint16_t), ios);
@@ -35,22 +42,18 @@ int main(int argc, char** argv) {
             for(uint16_t i = 0; i < len; ++i) {
                 message[i] = ios.get();
             }
+
+            client.pause(message.find("unpaused") == std::string::npos);
+
             std::cout << "\033[s\033[1;1H"
-                << std::string(100, ' ')
-                << "\033[1;1H"
-                << " === SERVER MESSAGE === " << message
-                << "\033[u";
+            << std::string(100, ' ')
+            << "\033[1;1H"
+            << " === SERVER MESSAGE === " << message
+            << "\033[u";
             std::cout.flush();
         }
     });
     urgency_thread.detach();
-
-    std::shared_ptr<Socket> s(new Socket);
-    s->connect(port, host);
-
-    ProtocolHandler<Translator, PacketId> proto;
-
-    ContainerClient client(s, proto);
 
     client.init().mainLoop();
 

@@ -4,7 +4,8 @@ ContainerClient::ContainerClient(std::shared_ptr<Socket> ptr, ProtocolHandler<Tr
     : socket(ptr),
       proto(proto),
       closed(false),
-      loggedIn(false) {}
+      loggedIn(false),
+      paused(false) {}
 
 ContainerClient& ContainerClient::init() {
     return *this;
@@ -43,7 +44,7 @@ void ContainerClient::loginMenu() {
     }, " > You password can't be empty, enter a password: ");
 
     try {
-        this->proto.write(this->socket, LoginPacket(username, password, newUser));
+        this->send(this->socket, LoginPacket(username, password, newUser));
         LoginResponsePacket response = this->proto.readSpecificPacket<LoginResponsePacket>(this->socket);
         if(response.isOk()) {
             this->loggedIn = true;
@@ -111,7 +112,7 @@ void ContainerClient::menu() {
                 containers.push_back({ container_id, destination, 0, 0 });
             }
 
-            this->proto.write(this->socket, InputTruckPacket("license", containers));
+            this->send(this->socket, InputTruckPacket("license", containers));
             InputTruckResponsePacket p = this->proto.readSpecificPacket<InputTruckResponsePacket>(this->socket);
             packetResult(p);
             if(p.isOk()) {
@@ -125,7 +126,7 @@ void ContainerClient::menu() {
         // InputTruckDone
         case 2: {
             std::cout << " Enter the weight of all these containers: ";
-            this->proto.write(this->socket, InputDonePacket(true, InputHelper::readFloat([](float f) {
+            this->send(this->socket, InputDonePacket(true, InputHelper::readFloat([](float f) {
                 return f > 0;
             }, " > Invalid weight, enter a valid one: ")));
             InputDoneResponsePacket p = this->proto.readSpecificPacket<InputDoneResponsePacket>(this->socket);
@@ -147,7 +148,7 @@ void ContainerClient::menu() {
             std::cout << " Insert the capacity of your mean of transport: ";
             unsigned int count = InputHelper::readUnsignedInt();
 
-            this->proto.write(this->socket, OutputReadyPacket(license, destination, count));
+            this->send(this->socket, OutputReadyPacket(license, destination, count));
             OutputReadyResponsePacket p = this->proto.readSpecificPacket<OutputReadyResponsePacket>(this->socket);
             packetResult(p);
             if(p.isOk()) {
@@ -166,19 +167,19 @@ void ContainerClient::menu() {
                 return !id.empty();
             }, " > The container id can't be empty, enter a new one: ");
 
-            this->proto.write(this->socket, OutputOnePacket(id));
+            this->send(this->socket, OutputOnePacket(id));
             OutputOneResponsePacket p = this->proto.readSpecificPacket<OutputOneResponsePacket>(this->socket);
             packetResult(p);
             break;
         }
         case 5: {
-            this->proto.write(this->socket, OutputDonePacket("license", 2));
+            this->send(this->socket, OutputDonePacket("license", 2));
             OutputDoneResponsePacket p = this->proto.readSpecificPacket<OutputDoneResponsePacket>(this->socket);
             packetResult(p);
             break;
         }
         case 6: {
-            this->proto.write(this->socket, LogoutPacket("", ""));
+            this->send(this->socket, LogoutPacket("", ""));
             try {
                 LogoutResponsePacket p = this->proto.readSpecificPacket<LogoutResponsePacket>(this->socket);
                 packetResult(p);
@@ -190,7 +191,7 @@ void ContainerClient::menu() {
             break;
         }
         case 7: {
-            this->proto.write(this->socket, LogoutPacket("", ""));
+            this->send(this->socket, LogoutPacket("", ""));
             try {
                 LogoutResponsePacket p = this->proto.readSpecificPacket<LogoutResponsePacket>(this->socket);
                 packetResult(p);
@@ -205,4 +206,23 @@ void ContainerClient::menu() {
             assert(false);
             break;
     }
+}
+
+template<class P>
+void ContainerClient::send(std::shared_ptr<Socket> s, const P& p) {
+    std::unique_lock<std::mutex> lock(this->pausedMutex);
+    if(paused) {
+        LOG << Logger::Debug << "Server is paused, waiting before sending";
+        while(paused) {
+            this->pausedCond.wait(lock);
+        }
+    }
+    proto.write(s, p);
+}
+
+void ContainerClient::pause(bool b) {
+    LOG << Logger::Debug << (b ? "paused" : "unpaused");
+    std::unique_lock<std::mutex> lock(this->pausedMutex);
+    paused = b;
+    pausedCond.notify_all();
 }

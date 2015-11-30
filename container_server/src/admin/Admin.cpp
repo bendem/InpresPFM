@@ -1,7 +1,10 @@
 #include "admin/Admin.hpp"
 
-Admin::Admin(ContainerServer& server, unsigned short port)
-    : server(server),
+Admin::Admin(const std::string& username, const std::string& password,
+             ContainerServer& server, unsigned short port)
+    : username(username),
+      password(password),
+      server(server),
       closed(false) {
     LOG << "Binding admin socket to " << port;
     socket.bind(port);
@@ -36,7 +39,7 @@ void Admin::run() {
         while(i-- > 0) {
             try {
                 const LoginPacket p = proto.readSpecificPacket<LoginPacket>(client);
-                if(p.getUsername() == "admin" && p.getPassword() == "admin") {
+                if(p.getUsername() == username && p.getPassword() == password) {
                     proto.write(client, LoginResponsePacket(""));
                     loggedIn = true;
                     break;
@@ -75,5 +78,4 @@ void Admin::close() {
         currentAdmin->close();
     }
     socket.close();
-    thread.join();
 }

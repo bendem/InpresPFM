@@ -17,6 +17,7 @@ void UrgencyServer::accept() {
             accepted = socket.accept();
         } catch(IOError e) {
             LOG << Logger::Error << "Something bad happened: " << e.what();
+            return;
         }
 
         accepted->registerCloseHandler([this](Socket& closed, Socket::CloseReason) {
@@ -54,6 +55,7 @@ void UrgencyServer::close() {
     if(closed.exchange(true)) {
         return;
     }
+
     std::lock_guard<std::mutex> lk(socketsMutex);
     for(auto item : sockets) {
         item->close();
