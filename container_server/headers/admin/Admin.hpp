@@ -12,6 +12,7 @@ class Admin {
 
 public:
     Admin(ContainerServer&, unsigned short);
+    ~Admin();
 
     void run();
     void close();

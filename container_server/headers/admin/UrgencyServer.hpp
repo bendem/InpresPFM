@@ -8,8 +8,11 @@ class UrgencyServer {
 
 public:
     UrgencyServer(unsigned short);
+    ~UrgencyServer();
+
     void accept();
     UrgencyServer& send(const std::string&);
+    void close();
 
 private:
     Socket socket;

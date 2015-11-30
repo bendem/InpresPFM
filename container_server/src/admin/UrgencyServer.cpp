@@ -6,6 +6,10 @@ UrgencyServer::UrgencyServer(unsigned short port)
     this->thread = std::thread(&UrgencyServer::accept, this);
 }
 
+UrgencyServer::~UrgencyServer() {
+    close();
+}
+
 void UrgencyServer::accept() {
     while(!closed) {
         std::shared_ptr<Socket> accepted;
@@ -44,4 +48,15 @@ UrgencyServer& UrgencyServer::send(const std::string& string) {
         s->write(os.str());
     }
     return *this;
+}
+
+void UrgencyServer::close() {
+    if(closed.exchange(true)) {
+        return;
+    }
+    std::lock_guard<std::mutex> lk(socketsMutex);
+    for(auto item : sockets) {
+        item->close();
+    }
+    socket.close();
 }

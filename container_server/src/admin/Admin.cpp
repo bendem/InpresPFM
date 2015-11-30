@@ -6,6 +6,7 @@ Admin::Admin(ContainerServer& server, unsigned short port)
     LOG << "Binding admin socket to " << port;
     socket.bind(port);
     thread = std::thread(&Admin::run, this);
+    thread.detach();
 
     ListPacket::registerHandler([this](const ListPacket&, std::shared_ptr<Socket> s) {
         proto.write(s, ListResponsePacket(this->server.getConnectedIps()));
@@ -18,6 +19,10 @@ Admin::Admin(ContainerServer& server, unsigned short port)
         bool ok = this->server.close(p.getTime());
         proto.write(s, StopResponsePacket(ok ? "" : "Server already closing"));
     });
+}
+
+Admin::~Admin() {
+    close();
 }
 
 void Admin::run() {

@@ -35,7 +35,12 @@ int main(int argc, char** argv) {
             for(uint16_t i = 0; i < len; ++i) {
                 message[i] = ios.get();
             }
-            std::cout << " === SERVER MESSAGE === " << " => " << message << std::endl;
+            std::cout << "\033[s\033[1;1H"
+                << std::string(100, ' ')
+                << "\033[1;1H"
+                << " === SERVER MESSAGE === " << message
+                << "\033[u";
+            std::cout.flush();
         }
     });
     urgency_thread.detach();

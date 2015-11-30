@@ -42,13 +42,18 @@ void ContainerClient::loginMenu() {
         return !password.empty();
     }, " > You password can't be empty, enter a password: ");
 
-    this->proto.write(this->socket, LoginPacket(username, password, newUser));
-    LoginResponsePacket response = this->proto.readSpecificPacket<LoginResponsePacket>(this->socket);
-    if(response.isOk()) {
-        this->loggedIn = true;
-        std::cout << " > Login successful" << std::endl;
-    } else {
-        std::cout << " > Login failed: " << response.getReason() << std::endl;
+    try {
+        this->proto.write(this->socket, LoginPacket(username, password, newUser));
+        LoginResponsePacket response = this->proto.readSpecificPacket<LoginResponsePacket>(this->socket);
+        if(response.isOk()) {
+            this->loggedIn = true;
+            std::cout << " > Login successful" << std::endl;
+        } else {
+            std::cout << " > Login failed: " << response.getReason() << std::endl;
+        }
+    } catch(IOError e) {
+        LOG << Logger::Error << "Server failure: " << e.what();
+        this->closed = true;
     }
 }
 
