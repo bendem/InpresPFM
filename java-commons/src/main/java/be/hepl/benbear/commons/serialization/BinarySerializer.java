@@ -139,13 +139,13 @@ public class BinarySerializer {
         if (i == 0) return 0.0f;
 
         // pull the significand
-        result = (i & ((1L << significandbits) - 1)); // mask
+        result = i & (1L << significandbits) - 1; // mask
         result /= 1L << significandbits; // convert back to float
         result += 1.0f; // add the one back on
 
         // deal with the exponent
         bias = (1 << (expbits - 1)) - 1;
-        shift = (i >> significandbits & ((1L << expbits) - 1)) - bias;
+        shift = (i >> significandbits & (1L << expbits) - 1) - bias;
         while(shift > 0) {
             result *= 2.0; shift--;
         }
