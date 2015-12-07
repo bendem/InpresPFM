@@ -187,6 +187,7 @@ public class MailController implements Initializable {
 
     public void addMessages(List<Mail> messages) {
         messageTable.getItems().addAll(messages);
+        messageTable.sort();
     }
 
 }
