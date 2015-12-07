@@ -3,6 +3,7 @@ package be.hepl.benbear.mail;
 import be.hepl.benbear.commons.config.Config;
 import be.hepl.benbear.commons.jfx.BaseApplication;
 import be.hepl.benbear.commons.logging.Log;
+import be.hepl.benbear.commons.streams.Predicates;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -65,7 +66,7 @@ public class MailApplication extends BaseApplication {
                 type,
                 Arrays.stream(addresses)
                     .map(UncheckedLambda.function(InternetAddress::new, Throwable::printStackTrace))
-                    .filter(a -> a != null)
+                    .filter(Predicates.notNull())
                     .toArray(InternetAddress[]::new)
             )));
 
@@ -89,9 +90,12 @@ public class MailApplication extends BaseApplication {
         String pop3Host = config.getStringThrowing("mail.pop3.host");
         props.put("mail.pop3.host", pop3Host);
         props.put("mail.pop3.port", config.getIntThrowing("mail.pop3.port"));
-        props.put("mail.pop3.ssl.enable", "true"); // TODO Config for this? See after testing at school
+        String protocol = config.getString("mail.pop3.protocol").orElse("pop3");
+        if(protocol.equalsIgnoreCase("pop3s")) {
+            props.put("mail.pop3.ssl.enable", "true"); // TODO Config for this? See after testing at school
+        }
         Session session = Session.getDefaultInstance(props);
-        Store store = session.getStore("pop3s");
+        Store store = session.getStore(protocol);
         store.connect(pop3Host,
             config.getString("mail.pop3.username").orElse(null),
             config.getString("mail.pop3.password").orElse(null));

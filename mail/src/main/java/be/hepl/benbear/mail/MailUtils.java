@@ -1,6 +1,8 @@
 package be.hepl.benbear.mail;
 
+import be.hepl.benbear.commons.checking.Sanity;
 import be.hepl.benbear.commons.logging.Log;
+import be.hepl.benbear.commons.streams.Predicates;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,6 +10,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.mail.Address;
@@ -22,6 +25,8 @@ public final class MailUtils {
     private MailUtils() {}
 
     public static Mail from(Message m) throws MessagingException, IOException {
+        Sanity.notNull(m, "Can't handle null message");
+
         Map<String, byte[]> attached = new HashMap<>();
         String text;
 
@@ -42,8 +47,14 @@ public final class MailUtils {
         }
 
         return new Mail(
-            Arrays.stream(m.getFrom()).map(Address::toString).collect(Collectors.toList()),
-            Arrays.stream(m.getAllRecipients()).map(Address::toString).collect(Collectors.toList()),
+            Arrays.stream(Optional.ofNullable(m.getFrom()).orElseGet(() -> new Address[0]))
+                .filter(Predicates.notNull())
+                .map(Address::toString)
+                .collect(Collectors.toList()),
+            Arrays.stream(Optional.ofNullable(m.getAllRecipients()).orElseGet(() -> new Address[0]))
+                .filter(Predicates.notNull())
+                .map(Address::toString)
+                .collect(Collectors.toList()),
             m.getSubject(),
             type, text, attached,
             m.getSentDate() == null ? null : m.getSentDate().toInstant(),

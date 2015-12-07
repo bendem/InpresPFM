@@ -72,7 +72,7 @@ public class MailController implements Initializable {
                 unselected();
             }
         });
-        fromTableColumn.setCellValueFactory(fea -> new ReadOnlyStringWrapper(fea.getValue().getFrom().get(0)));
+        fromTableColumn.setCellValueFactory(fea -> new ReadOnlyStringWrapper(String.join(", ", fea.getValue().getFrom())));
         subjectTableColumn.setCellValueFactory(fea -> new ReadOnlyStringWrapper(fea.getValue().getSubject()));
         dateTableColumn.setCellValueFactory(fea -> new ReadOnlyStringWrapper(fea.getValue().getSent()
             .map(i -> i.atZone(ZoneId.systemDefault()))
