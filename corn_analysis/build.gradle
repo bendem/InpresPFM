@@ -7,36 +7,39 @@ version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
-//configurations {
-//    shadow
-//    compile.extendsFrom shadow
-//}
-//
-//repositories {
-//    mavenLocal()
-//}
+configurations {
+    shadow
+    compile.extendsFrom shadow
+}
 
-//dependencies {
-//    shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
-//}
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    shadow 'org.apache.commons:commons-math3:3.5'
+    shadow 'org.jfree:jfreechart:1.0.19'
+    shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
+}
 
 jar {
-//    configurations.shadow.each { slice ->
-//        from(project.zipTree(slice)) {
-//            exclude 'META-INF/DEPENDENCIES',
-//                    'META-INF/ECLIPSEF.RSA',
-//                    'META-INF/ECLIPSEF.SF',
-//                    'META-INF/LICENSE',
-//                    'META-INF/LICENSE.txt',
-//                    'META-INF/NOTICE',
-//                    'META-INF/NOTICE.txt',
-//                    'about_files/**',
-//                    'about.html',
-//                    'LICENSE'
-//        }
-//    }
+    configurations.shadow.each { slice ->
+        from(project.zipTree(slice)) {
+            exclude 'META-INF/DEPENDENCIES',
+                    'META-INF/ECLIPSEF.RSA',
+                    'META-INF/ECLIPSEF.SF',
+                    'META-INF/LICENSE',
+                    'META-INF/LICENSE.txt',
+                    'META-INF/NOTICE',
+                    'META-INF/NOTICE.txt',
+                    'about_files/**',
+                    'about.html',
+                    'LICENSE'
+        }
+    }
 
     manifest {
-        attributes 'Main-Class': 'be.hepl.benbear.cornanalysis.Main'
+        attributes 'Main-Class': 'be.hepl.benbear.cornanalysis.CornAnalysisApplication'
     }
 }

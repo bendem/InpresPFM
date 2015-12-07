@@ -2,8 +2,45 @@ package be.hepl.benbear.cornanalysis.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class CornStat {
+
+    public static class Corn {
+        public final Integer id;
+        public final Integer height;
+        public final Integer weight;
+        public final Integer grainCount;
+        public final Double grainWeight;
+        public final Color color;
+        public final Boolean germinated;
+        public final Rooting rooting;
+        public final Boolean lodging;
+        public final Boolean attack;
+        public final Orientation plot;
+        public final Double heightJ7;
+        public final Boolean lodgingHandling;
+        public final Integer attackTime;
+        public final Boolean straightFurrow;
+
+        public Corn(Integer id, Integer height, Integer weight, Integer grainCount, Double grainWeight, Color color, Boolean germinated, Rooting rooting, Boolean lodging, Boolean attack, Orientation plot, Double heightJ7, Boolean lodgingHandling, Integer attackTime, Boolean straightFurrow) {
+            this.id = id;
+            this.height = height;
+            this.weight = weight;
+            this.grainCount = grainCount;
+            this.grainWeight = grainWeight;
+            this.color = color;
+            this.germinated = germinated;
+            this.rooting = rooting;
+            this.lodging = lodging;
+            this.attack = attack;
+            this.plot = plot;
+            this.heightJ7 = heightJ7;
+            this.lodgingHandling = lodgingHandling;
+            this.attackTime = attackTime;
+            this.straightFurrow = straightFurrow;
+        }
+    }
 
     private final List<Integer> id;
     private final List<Integer> height;
@@ -60,6 +97,26 @@ public class CornStat {
         this.straightFurrow.add(straightFurrow);
 
         return this;
+    }
+
+    public Stream<Corn> stream() {
+        return id.stream().map(i -> new Corn(
+            i,
+            height.get(i - 1),
+            weight.get(i - 1),
+            grainCount.get(i - 1),
+            grainWeight.get(i - 1),
+            color.get(i - 1),
+            germinated.get(i - 1),
+            rooting.get(i - 1),
+            lodging.get(i - 1),
+            attack.get(i - 1),
+            plot.get(i - 1),
+            heightJ7.get(i - 1),
+            lodgingHandling.get(i - 1),
+            attackTime.get(i - 1),
+            straightFurrow.get(i - 1)
+        ));
     }
 
     public List<Integer> getId() {
