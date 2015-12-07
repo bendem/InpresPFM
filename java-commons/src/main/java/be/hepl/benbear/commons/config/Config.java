@@ -56,8 +56,16 @@ public class Config {
         }
     }
 
+    public int getIntThrowing(String name) {
+        return getInt(name).orElseThrow(() -> new RuntimeException(name + " not found in the config"));
+    }
+
     public Optional<String> getString(String name) {
         return Optional.ofNullable(data.get(name));
+    }
+
+    public String getStringThrowing(String name) {
+        return getString(name).orElseThrow(() -> new RuntimeException(name + " not found in the config"));
     }
 
     public Config load(String path) throws IOException {

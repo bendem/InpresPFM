@@ -1,7 +1,11 @@
 package be.hepl.benbear.commons.jfx;
 
+import javafx.application.Platform;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public final class Inputs {
 
@@ -49,6 +53,18 @@ public final class Inputs {
 
     private static int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    public static void blink(ScheduledExecutorService pool, TextInputControl... inputs) {
+        for(TextInputControl input : inputs) {
+            input.getStyleClass().add("error");
+        }
+
+        pool.schedule(() -> Platform.runLater(() -> {
+            for(TextInputControl input : inputs) {
+                input.getStyleClass().removeAll("error");
+            }
+        }), 500, TimeUnit.MILLISECONDS);
     }
 
 }

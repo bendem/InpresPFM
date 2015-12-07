@@ -3,6 +3,7 @@ package be.hepl.benbear.commons.streams;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class UncheckedLambda {
@@ -39,6 +40,71 @@ public class UncheckedLambda {
 
     public static <T> Consumer<T> consumer(ThrowingConsumer<T> t, Consumer<Throwable> handler) {
         return new WrappedConsumer<>(t, handler);
+    }
+
+    @FunctionalInterface
+    public interface ThrowingPredicate<T> {
+        boolean test(T t) throws Throwable;
+    }
+
+    private static class WrappedPredicate<T> implements Predicate<T> {
+        private final ThrowingPredicate<T> predicate;
+        private final Consumer<Throwable> handler;
+
+        public WrappedPredicate(ThrowingPredicate<T> predicate, Consumer<Throwable> handler) {
+            this.predicate = predicate;
+            this.handler = handler;
+        }
+
+        @Override
+        public boolean test(T t) {
+            try {
+                return predicate.test(t);
+            } catch(Throwable e) {
+                handler.accept(e);
+                return false;
+            }
+        }
+    }
+
+    public static <T> Predicate<T> predicate(ThrowingPredicate<T> t) {
+        return predicate(t, RETHROW);
+    }
+
+    public static <T> Predicate<T> predicate(ThrowingPredicate<T> t, Consumer<Throwable> handler) {
+        return new WrappedPredicate<>(t, handler);
+    }
+
+    @FunctionalInterface
+    public interface ThrowingRunnable {
+        void run() throws Throwable;
+    }
+
+    private static class WrappedRunnable implements Runnable {
+        private final ThrowingRunnable runnable;
+        private final Consumer<Throwable> handler;
+
+        public WrappedRunnable(ThrowingRunnable runnable, Consumer<Throwable> handler) {
+            this.runnable = runnable;
+            this.handler = handler;
+        }
+
+        @Override
+        public void run() {
+            try {
+                runnable.run();
+            } catch(Throwable e) {
+                handler.accept(e);
+            }
+        }
+    }
+
+    public static Runnable runnable(ThrowingRunnable t) {
+        return runnable(t, RETHROW);
+    }
+
+    public static Runnable runnable(ThrowingRunnable t, Consumer<Throwable> handler) {
+        return new WrappedRunnable(t, handler);
     }
 
     @FunctionalInterface

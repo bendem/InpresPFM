@@ -1,0 +1,14 @@
+.root {
+    -fx-font-size: 14pt;
+}
+
+.error {
+    -fx-text-fill: darkred;
+    -fx-focus-color: red;
+    -fx-background-color: rgba(255, 0, 0, 0.2);
+}
+
+#webview {
+    -fx-font-family: sans-serif;
+    -fx-font-size: 1.1em;
+}
