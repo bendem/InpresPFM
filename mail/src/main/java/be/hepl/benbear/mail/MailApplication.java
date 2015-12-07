@@ -107,6 +107,7 @@ public class MailApplication extends BaseApplication {
         if((!newMessages.isEmpty())) {
             folder.setFlags(messages, DELETED_FLAG, true);
 
+            // TODO Store mails in a local storage so they are not lost forever...
             Platform.runLater(() -> mailController.addMessages(newMessages));
         }
 
