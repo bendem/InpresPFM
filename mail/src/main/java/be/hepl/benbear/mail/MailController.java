@@ -31,8 +31,6 @@ public class MailController implements Initializable {
         .append(DateTimeFormatter.ISO_LOCAL_DATE)
         .appendLiteral(' ')
         .append(DateTimeFormatter.ISO_LOCAL_TIME)
-        .appendLiteral(' ')
-        .appendOffsetId()
         .toFormatter();
 
     private final MailApplication app;

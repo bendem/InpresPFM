@@ -42,6 +42,7 @@ public class ComposeController implements Initializable {
     }
 
     private void onSend(ActionEvent e) {
+        sendButton.setDisable(true);
         String to = toField.getText().trim();
         String cc = ccField.getText().trim();
         String bcc = bccField.getText().trim();
@@ -81,6 +82,7 @@ public class ComposeController implements Initializable {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "Something bad happened");
                     alert.initOwner(app.getStage(this));
                     alert.show();
+                    sendButton.setDisable(false);
                 } else {
                     app.getStage(this).close();
                 }
