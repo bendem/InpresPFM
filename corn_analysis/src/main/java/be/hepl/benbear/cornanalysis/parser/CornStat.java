@@ -2,6 +2,7 @@ package be.hepl.benbear.cornanalysis.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class CornStat {
@@ -100,22 +101,22 @@ public class CornStat {
     }
 
     public Stream<Corn> stream() {
-        return id.stream().map(i -> new Corn(
-            i,
-            height.get(i - 1),
-            weight.get(i - 1),
-            grainCount.get(i - 1),
-            grainWeight.get(i - 1),
-            color.get(i - 1),
-            germinated.get(i - 1),
-            rooting.get(i - 1),
-            lodging.get(i - 1),
-            attack.get(i - 1),
-            plot.get(i - 1),
-            heightJ7.get(i - 1),
-            lodgingHandling.get(i - 1),
-            attackTime.get(i - 1),
-            straightFurrow.get(i - 1)
+        return IntStream.range(0, id.size()).mapToObj(i -> new Corn(
+            id.get(i),
+            height.get(i),
+            weight.get(i),
+            grainCount.get(i),
+            grainWeight.get(i),
+            color.get(i),
+            germinated.get(i),
+            rooting.get(i),
+            lodging.get(i),
+            attack.get(i),
+            plot.get(i),
+            heightJ7.get(i),
+            lodgingHandling.get(i),
+            attackTime.get(i),
+            straightFurrow.get(i)
         ));
     }
 
