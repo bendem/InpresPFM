@@ -6,6 +6,7 @@ import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.streams.Predicates;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -107,7 +108,14 @@ public class MailApplication extends BaseApplication {
     }
 
     public void refresh() {
-        threadPool.execute(UncheckedLambda.runnable(this::refresh0, Throwable::printStackTrace));
+        threadPool.execute(UncheckedLambda.runnable(this::refresh0, t -> {
+            t.printStackTrace();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to refresh the inbox");
+                alert.initOwner(getMainStage());
+                alert.show();
+            });
+        }));
     }
 
     private void refresh0() throws MessagingException {
@@ -144,6 +152,7 @@ public class MailApplication extends BaseApplication {
 
         folder.close(true);
         store.close();
+        Log.d("Fetched");
     }
 
     @Override
