@@ -119,7 +119,7 @@ public class MailApplication extends BaseApplication {
         props.put("mail.pop3.port", config.getIntThrowing("mail.pop3.port"));
         String protocol = config.getString("mail.pop3.protocol").orElse("pop3");
         if(protocol.equalsIgnoreCase("pop3s")) {
-            props.put("mail.pop3.ssl.enable", "true"); // TODO Config for this? See after testing at school
+            props.put("mail.pop3.ssl.enable", "true");
         }
         Session session = Session.getDefaultInstance(props);
         Store store = session.getStore(protocol);

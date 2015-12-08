@@ -121,8 +121,6 @@ public class ComposeController implements Initializable {
                     app.getStage(this).close();
                 }
             }));
-
-        // TODO visual feedback
     }
 
 }

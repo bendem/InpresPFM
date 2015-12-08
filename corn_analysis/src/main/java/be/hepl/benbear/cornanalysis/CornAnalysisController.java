@@ -17,9 +17,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
 import java.util.List;
-import java.util.stream.Collector;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
@@ -88,7 +87,8 @@ public class CornAnalysisController implements Initializable{
         {
             List<double[]> dataList = app.getData().stream()
                 .filter(corn -> corn.height != null)
-                .collect(Collectors.groupingBy(corn -> corn.plot.getName() + corn.rooting.getName(),
+                .collect(Collectors.groupingBy(
+                    corn -> corn.plot.getName() + corn.rooting.getName(),
                     Collectors.mapping(corn -> corn.height, Collectors.toList())
                 ))
                 .values().stream()
