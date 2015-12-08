@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
@@ -44,49 +46,56 @@ public class CornAnalysisController implements Initializable{
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // QUESTION 1
-        answer1Label.setText(TestUtils.tTest(265,
+        answer1Label.setText(TestUtils.tTest(
+            265,
             app.getData().stream()
-                .filter(corn -> corn.plot == Orientation.East && corn.height != null)
-                .mapToDouble(corn -> corn.height).toArray(), 0.025) ? "Non" : "Oui"
-        );
+                .filter(corn -> corn.height != null)
+                .filter(corn -> corn.plot == Orientation.East)
+                .mapToDouble(corn -> corn.height)
+                .toArray(),
+            0.025
+        ) ? "Non" : "Oui");
 
         // QUESTION 2
         answer2Label.setText(TestUtils.tTest(
             app.getData().stream()
-                .filter(corn -> corn.plot == Orientation.North && corn.height != null)
+                .filter(corn -> corn.height != null)
+                .filter(corn -> corn.plot == Orientation.North)
                 .mapToDouble(corn -> corn.height).toArray(),
             app.getData().stream()
-                .filter(corn -> corn.plot == Orientation.South && corn.height != null)
+                .filter(corn -> corn.height != null)
+                .filter(corn -> corn.plot == Orientation.South)
                 .mapToDouble(corn -> corn.height).toArray(),
-            0.025) ? "Non" : "Oui"
-        );
+            0.025
+        ) ? "Non" : "Oui");
 
 
         // QUESTION 3
-        Map<String, List<Double>> values = new HashMap<>();
-        app.getData().stream()
-            .filter(corn -> corn.height != null)
-            .forEach(crop -> values
-                .computeIfAbsent(crop.plot.getName(), k -> new ArrayList<>())
-                .add((double) crop.height));
-
-        List<double[]> dataLists = new ArrayList<>();
-        values.forEach((s, doubles) -> dataLists.add(doubles.stream().mapToDouble(d -> d).toArray()));
-        answer3Label.setText(TestUtils.oneWayAnovaTest(dataLists, 0.025) ? "Non" : "Oui");
-
+        {
+            List<double[]> dataList = app.getData().stream()
+                .filter(corn -> corn.height != null)
+                .collect(Collectors.groupingBy(
+                    corn -> corn.plot,
+                    Collectors.mapping(corn -> corn.height, Collectors.toList())
+                ))
+                .values().stream()
+                .map(l -> l.stream().mapToDouble(d -> d).toArray())
+                .collect(Collectors.toList());
+            answer3Label.setText(TestUtils.oneWayAnovaTest(dataList, 0.025) ? "Non" : "Oui");
+        }
 
         // QUESTION 4
-        Map<String, List<Double>> values2 = new HashMap<>();
-        app.getData().stream()
-            .filter(corn -> corn.height != null)
-            .forEach(crop -> values2
-                .computeIfAbsent(crop.plot.getName()+crop.rooting.getName(), k -> new ArrayList<>())
-                .add((double) crop.height));
-
-        List<double[]> dataLists2 = new ArrayList<>();
-        values2.forEach((s, doubles) -> dataLists2.add(doubles.stream().mapToDouble(d -> d).toArray()));
-        answer4Label.setText(TestUtils.oneWayAnovaTest(dataLists2, 0.025) ? "Non" : "Oui");
-
+        {
+            List<double[]> dataList = app.getData().stream()
+                .filter(corn -> corn.height != null)
+                .collect(Collectors.groupingBy(corn -> corn.plot.getName() + corn.rooting.getName(),
+                    Collectors.mapping(corn -> corn.height, Collectors.toList())
+                ))
+                .values().stream()
+                .map(l -> l.stream().mapToDouble(d -> d).toArray())
+                .collect(Collectors.toList());
+            answer4Label.setText(TestUtils.oneWayAnovaTest(dataList, 0.025) ? "Non" : "Oui");
+        }
 
         // QUESTION 5
         {
