@@ -5,7 +5,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.mail.ComposeController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.mail.ComposeController">
     <children>
         <GridPane hgap="5.0" vgap="5.0" VBox.vgrow="NEVER">
             <columnConstraints>
@@ -30,7 +30,13 @@
             </children>
         </GridPane>
         <TextArea fx:id="contentField" VBox.vgrow="ALWAYS" />
-        <Button fx:id="sendButton" defaultButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Send" VBox.vgrow="NEVER" />
+      <ListView fx:id="attachedList" minHeight="-Infinity" prefHeight="100.0" VBox.vgrow="NEVER" />
+      <HBox spacing="5.0" VBox.vgrow="NEVER">
+         <children>
+            <Button fx:id="attachButton" mnemonicParsing="false" text="Attach file" />
+              <Button fx:id="sendButton" defaultButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Send" HBox.hgrow="ALWAYS" VBox.vgrow="NEVER" />
+         </children>
+      </HBox>
     </children>
     <padding>
         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

@@ -8,21 +8,21 @@ import be.hepl.benbear.commons.streams.UncheckedLambda;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.io.File;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 public class MailApplication extends BaseApplication {
 
@@ -38,7 +38,7 @@ public class MailApplication extends BaseApplication {
         config = new Config();
     }
 
-    public CompletableFuture<Void> send(Map<Message.RecipientType, String[]> to, String subject, String content) {
+    public CompletableFuture<Void> send(Map<Message.RecipientType, String[]> to, String subject, String content, Set<File> attachedFiles) {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
         threadPool.execute(UncheckedLambda.runnable(() -> {
@@ -59,8 +59,13 @@ public class MailApplication extends BaseApplication {
             Message message = new MimeMessage(session);
             message.setFrom(from);
             message.setSubject(subject);
-            message.setText(content);
             message.setSentDate(new Date());
+
+            if(!attachedFiles.isEmpty()) {
+                fillMessage(message, content, attachedFiles);
+            } else {
+                fillMessage(message, content);
+            }
 
             to.forEach(UncheckedLambda.biconsumer((type, addresses) -> message.addRecipients(
                 type,
@@ -77,6 +82,28 @@ public class MailApplication extends BaseApplication {
         }, future::completeExceptionally));
 
         return future;
+    }
+
+    private Message fillMessage(Message message, String content) throws MessagingException {
+        message.setText(content);
+        return message;
+    }
+
+    private Message fillMessage(Message message, String content, Set<File> files) throws MessagingException {
+        Multipart multipart = new MimeMultipart();
+        MimeBodyPart part = new MimeBodyPart();
+        part.setText(content);
+        multipart.addBodyPart(part);
+
+        for(File attachedFile : files) {
+            part = new MimeBodyPart();
+            part.setDataHandler(new DataHandler(new FileDataSource(attachedFile)));
+            part.setFileName(attachedFile.getName());
+            multipart.addBodyPart(part);
+        }
+
+        message.setContent(multipart);
+        return message;
     }
 
     public void refresh() {
