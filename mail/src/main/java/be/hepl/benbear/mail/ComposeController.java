@@ -12,9 +12,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.web.HTMLEditor;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -33,7 +33,7 @@ public class ComposeController implements Initializable {
     @FXML private TextField ccField;
     @FXML private TextField bccField;
     @FXML private TextField subjectField;
-    @FXML private TextArea contentField;
+    @FXML private HTMLEditor contentField;
     @FXML private ListView<String> attachedList;
     @FXML private Button attachButton;
     @FXML private Button sendButton;
@@ -90,7 +90,7 @@ public class ComposeController implements Initializable {
             return;
         }
 
-        String content = contentField.getText();
+        String content = contentField.getHtmlText().replace("contenteditable=\"true\"", "");
         if(content.trim().isEmpty()) {
             Inputs.blink(app.getThreadPool(), contentField);
             return;

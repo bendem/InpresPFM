@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.web.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.mail.ComposeController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="750.0" spacing="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.hepl.benbear.mail.ComposeController">
     <children>
         <GridPane hgap="5.0" vgap="5.0" VBox.vgrow="NEVER">
             <columnConstraints>
@@ -29,8 +30,8 @@
                 <TextField fx:id="subjectField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             </children>
         </GridPane>
-        <TextArea fx:id="contentField" VBox.vgrow="ALWAYS" />
-      <ListView fx:id="attachedList" minHeight="-Infinity" prefHeight="100.0" VBox.vgrow="NEVER" />
+      <HTMLEditor fx:id="contentField" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
+      <ListView fx:id="attachedList" minHeight="-Infinity" prefHeight="60.0" VBox.vgrow="NEVER" />
       <HBox spacing="5.0" VBox.vgrow="NEVER">
          <children>
             <Button fx:id="attachButton" mnemonicParsing="false" text="Attach file" />

@@ -124,7 +124,11 @@ public class MailController implements Initializable {
     private void selected(Mail mail) {
         String content = mail.getContent();
         if(mail.getType() == Mail.Type.TEXT) {
-            content = content.replace("\n", "<br>");
+            content = content
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\n", "<br>");
         }
         answerButton.setDisable(false);
         deleteButton.setDisable(false);

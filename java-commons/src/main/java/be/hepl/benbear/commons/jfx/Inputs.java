@@ -1,6 +1,7 @@
 package be.hepl.benbear.commons.jfx;
 
 import javafx.application.Platform;
+import javafx.css.Styleable;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
 
@@ -55,13 +56,13 @@ public final class Inputs {
         return Math.max(min, Math.min(max, value));
     }
 
-    public static void blink(ScheduledExecutorService pool, TextInputControl... inputs) {
-        for(TextInputControl input : inputs) {
+    public static void blink(ScheduledExecutorService pool, Styleable... inputs) {
+        for(Styleable input : inputs) {
             input.getStyleClass().add("error");
         }
 
         pool.schedule(() -> Platform.runLater(() -> {
-            for(TextInputControl input : inputs) {
+            for(Styleable input : inputs) {
                 input.getStyleClass().removeAll("error");
             }
         }), 500, TimeUnit.MILLISECONDS);

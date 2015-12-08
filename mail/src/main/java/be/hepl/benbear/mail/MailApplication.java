@@ -56,7 +56,7 @@ public class MailApplication extends BaseApplication {
             }
 
             Session session = Session.getInstance(props);
-            Message message = new MimeMessage(session);
+            MimeMessage message = new MimeMessage(session);
             message.setFrom(from);
             message.setSubject(subject);
             message.setSentDate(new Date());
@@ -84,15 +84,15 @@ public class MailApplication extends BaseApplication {
         return future;
     }
 
-    private Message fillMessage(Message message, String content) throws MessagingException {
-        message.setText(content);
+    private Message fillMessage(MimeMessage message, String content) throws MessagingException {
+        message.setText(content, "utf-8", "html");
         return message;
     }
 
-    private Message fillMessage(Message message, String content, Set<File> files) throws MessagingException {
+    private Message fillMessage(MimeMessage message, String content, Set<File> files) throws MessagingException {
         Multipart multipart = new MimeMultipart();
         MimeBodyPart part = new MimeBodyPart();
-        part.setText(content);
+        part.setText(content, "utf-8", "html");
         multipart.addBodyPart(part);
 
         for(File attachedFile : files) {
