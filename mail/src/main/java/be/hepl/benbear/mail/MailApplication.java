@@ -62,10 +62,10 @@ public class MailApplication extends BaseApplication {
             message.setSubject(subject);
             message.setSentDate(new Date());
 
-            if(!attachedFiles.isEmpty()) {
-                fillMessage(message, content, attachedFiles);
-            } else {
+            if(attachedFiles.isEmpty()) {
                 fillMessage(message, content);
+            } else {
+                fillMessage(message, content, attachedFiles);
             }
 
             to.forEach(UncheckedLambda.biconsumer((type, addresses) -> message.addRecipients(
