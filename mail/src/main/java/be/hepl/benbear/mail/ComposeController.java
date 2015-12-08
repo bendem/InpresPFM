@@ -81,18 +81,24 @@ public class ComposeController implements Initializable {
         String bcc = bccField.getText().trim();
         if(to.isEmpty() && cc.isEmpty() && bcc.isEmpty()) {
             Inputs.blink(app.getThreadPool(), toField, ccField, bccField);
+            attachButton.setDisable(false);
+            sendButton.setDisable(false);
             return;
         }
 
         String subject = subjectField.getText().trim();
         if(subject.isEmpty()) {
             Inputs.blink(app.getThreadPool(), subjectField);
+            attachButton.setDisable(false);
+            sendButton.setDisable(false);
             return;
         }
 
         String content = contentField.getHtmlText().replace("contenteditable=\"true\"", "");
         if(content.trim().isEmpty()) {
             Inputs.blink(app.getThreadPool(), contentField);
+            attachButton.setDisable(false);
+            sendButton.setDisable(false);
             return;
         }
 

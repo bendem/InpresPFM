@@ -35,7 +35,7 @@
       <HBox spacing="5.0" VBox.vgrow="NEVER">
          <children>
             <Button fx:id="attachButton" mnemonicParsing="false" text="Attach file" />
-              <Button fx:id="sendButton" defaultButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Send" HBox.hgrow="ALWAYS" VBox.vgrow="NEVER" />
+              <Button fx:id="sendButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Send" HBox.hgrow="ALWAYS" VBox.vgrow="NEVER" />
          </children>
       </HBox>
     </children>

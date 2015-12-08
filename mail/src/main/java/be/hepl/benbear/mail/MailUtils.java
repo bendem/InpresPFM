@@ -32,7 +32,10 @@ public final class MailUtils {
 
         Log.d("Content-Type: %s", m.getContentType());
 
-        Mail.Type type = m.getContentType().contains("multipart/alternative") ? Mail.Type.HTML : Mail.Type.TEXT;
+        Mail.Type type = m.getContentType().contains("multipart/alternative")
+            || m.getContentType().contains("text/html")
+            || m.getContentType().contains("multipart/mixed")
+            ? Mail.Type.HTML : Mail.Type.TEXT;
 
         if(m.getContent() instanceof Multipart) {
             Multipart multipart = (Multipart) m.getContent();
