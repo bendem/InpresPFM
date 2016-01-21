@@ -1,5 +1,7 @@
 package be.hepl.benbear.commons.config;
 
+import be.hepl.benbear.commons.logging.Log;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,7 +86,7 @@ public class Config {
             .filter(l -> !l.startsWith("//"))
             .filter(l -> {
                 if(!l.contains("=")) {
-                    System.err.println("Ignored invalid line: '" + l + "'");
+                    Log.w("Ignored invalid line: '%s'", l);
                     return false;
                 }
                 return true;
@@ -96,7 +98,10 @@ public class Config {
             .collect(Collectors.toMap(
                 p -> p[0].trim(),
                 p -> p[1].trim(),
-                (a, b) -> b
+                (a, b) -> {
+                    Log.w("Duplicated key '%s'", b);
+                    return b;
+                }
             ));
         data.putAll(collected);
 
