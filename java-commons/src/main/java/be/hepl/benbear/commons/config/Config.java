@@ -98,10 +98,7 @@ public class Config {
             .collect(Collectors.toMap(
                 p -> p[0].trim(),
                 p -> p[1].trim(),
-                (a, b) -> {
-                    Log.w("Duplicated key '%s'", b);
-                    return b;
-                }
+                (a, b) -> b
             ));
         data.putAll(collected);
 
