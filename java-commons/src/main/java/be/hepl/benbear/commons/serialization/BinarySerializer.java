@@ -31,15 +31,25 @@ public class BinarySerializer {
 
     private BinarySerializer() {
         deserializers = new HashMap<>();
-        deserializers.put(boolean.class, bb -> bb.get() != 0);
-        deserializers.put(byte.class, ByteBuffer::get);
-        deserializers.put(short.class, ByteBuffer::getShort);
-        deserializers.put(int.class, ByteBuffer::getInt);
-        deserializers.put(long.class, ByteBuffer::getLong);
+        serializers = new HashMap<>();
+
+        registerSerializer(boolean.class, (o, dos) -> dos.write(o ? 1 : 0), bb -> bb.get() != 0);
+        registerSerializer(byte.class, (o, dos) -> dos.write(o), ByteBuffer::get);
+        registerSerializer(short.class, (o, dos) -> dos.writeShort(o), ByteBuffer::getShort);
+        registerSerializer(int.class, (o, dos) -> dos.writeInt(o), ByteBuffer::getInt);
+        registerSerializer(long.class, (o, dos) -> dos.writeLong(o), ByteBuffer::getLong);
         // TODO Check that works against the cpp implementation
-        deserializers.put(float.class, BinarySerializer::deserializeFloat);
+        registerSerializer(float.class, BinarySerializer::serializeFloat, BinarySerializer::deserializeFloat);
         // Double not implemented
-        deserializers.put(String.class, bb -> {
+        registerSerializer(String.class, (String o, DataOutputStream dos) -> {
+            if(o == null) {
+                dos.writeInt(0);
+                return;
+            }
+            byte[] bytes = o.getBytes();
+            dos.writeInt(bytes.length);
+            dos.write(bytes);
+        }, bb -> {
             int len = bb.getInt();
             if(len <= 0) {
                 // That's what you get for using unsigned...
@@ -49,31 +59,7 @@ public class BinarySerializer {
             bb.get(bytes);
             return new String(bytes);
         });
-        deserializers.put(UUID.class, bb -> {
-            if(bb.get() == 0) {
-                return null;
-            }
-            return new UUID(bb.getLong(), bb.getLong());
-        });
-
-        serializers = new HashMap<>();
-        serializers.put(boolean.class, (Boolean o, DataOutputStream dos) -> dos.writeBoolean(o));
-        serializers.put(byte.class, (Byte o, DataOutputStream dos) -> dos.writeByte(o));
-        serializers.put(short.class, (Short o, DataOutputStream dos) -> dos.writeShort(o));
-        serializers.put(int.class, (Integer o, DataOutputStream dos) -> dos.writeInt(o));
-        serializers.put(long.class, (Long o, DataOutputStream dos) -> dos.writeLong(o));
-        serializers.put(float.class, (Serializer<Float>) BinarySerializer::serializeFloat);
-        // Double not implemented
-        serializers.put(String.class, (String o, DataOutputStream dos) -> {
-            if(o == null) {
-                dos.writeInt(0);
-                return;
-            }
-            byte[] bytes = o.getBytes();
-            dos.writeInt(bytes.length);
-            dos.write(bytes);
-        });
-        serializers.put(UUID.class, (UUID o, DataOutputStream dos) -> {
+        registerSerializer(UUID.class, (UUID o, DataOutputStream dos) -> {
             if(o == null) {
                 dos.writeByte(0);
                 return;
@@ -81,6 +67,11 @@ public class BinarySerializer {
             dos.writeByte(1);
             dos.writeLong(o.getMostSignificantBits());
             dos.writeLong(o.getLeastSignificantBits());
+        }, bb -> {
+            if(bb.get() == 0) {
+                return null;
+            }
+            return new UUID(bb.getLong(), bb.getLong());
         });
 
         // Register (de)serializers for array types
@@ -174,11 +165,12 @@ public class BinarySerializer {
         return result;
     }
 
-    public synchronized <T> void registerSerializer(Class<T> clazz, Serializer<T> serializer, Deserializer<T> deserializer) {
+    public synchronized <T> BinarySerializer registerSerializer(Class<T> clazz, Serializer<T> serializer, Deserializer<T> deserializer) {
         Sanity.noneNull(clazz, serializer, deserializer);
 
         deserializers.put(clazz, deserializer);
         serializers.put(clazz, serializer);
+        return this;
     }
 
     public synchronized <T> Serializer<T> getSerializer(Class<T> clazz) {
