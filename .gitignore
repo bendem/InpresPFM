@@ -1,4 +1,5 @@
 .gradle/
+.nb-gradle/
 target/
 build/
 .idea/
@@ -7,3 +8,11 @@ build/
 *.log
 *.iml
 *.o
+/userWebLib/.nb-gradle/
+/Web_Applic_Hobby/nbproject/private/
+/Web_Applic_Hobby/dist/
+/hobby_Web_Applic/nbproject/private/
+/hobby_Web_Applic/dist/
+/hobbyWebApp/.nb-gradle/
+/userWebLibs/nbproject/private/
+/userWebLibs/dist/

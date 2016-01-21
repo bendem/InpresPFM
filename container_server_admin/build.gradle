@@ -37,6 +37,6 @@ jar {
     }
 
     manifest {
-        attributes 'Main-Class': 'be.hepl.benbear.containerserveradmin.Main'
+        attributes 'Main-Class': 'be.hepl.benbear.containerserveradmin.ContainerServerAdmin'
     }
 }

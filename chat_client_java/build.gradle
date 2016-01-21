@@ -38,6 +38,6 @@ jar {
     }
 
     manifest {
-        attributes 'Main-Class': 'be.hepl.benbear.chatclient.Main'
+        attributes 'Main-Class': 'be.hepl.benbear.chatclient.ChatApplication'
     }
 }
