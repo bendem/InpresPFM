@@ -49,7 +49,7 @@ public class DemoGUI {
 
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
-        } catch (ClassNotFoundException e) {
+        } catch(ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
 
@@ -65,7 +65,7 @@ public class DemoGUI {
             currentTable = database.table((Class<?>) comboBoxTables.getSelectedItem());
             try {
                 updateSelection(currentTable);
-            } catch (ExecutionException | InterruptedException e1) {
+            } catch(ExecutionException | InterruptedException e1) {
                 e1.printStackTrace();
             }
             buttonInsert.setEnabled(true);
@@ -80,7 +80,7 @@ public class DemoGUI {
             dia.setVisible(true);
             try {
                 updateSelection(currentTable);
-            } catch (ExecutionException | InterruptedException e1) {
+            } catch(ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
@@ -89,14 +89,14 @@ public class DemoGUI {
             Object[] ids = new Object[currentTable.getIdCount()];
             int index = tableData.getSelectedRow();
 
-            for (int j = 0; j < ids.length; j++) {
+            for(int j = 0; j < ids.length; j++) {
                 ids[j] = tableData.getValueAt(index, j);
             }
             currentTable.deleteById(ids);
 
             try {
                 updateSelection(currentTable);
-            } catch (ExecutionException | InterruptedException e1) {
+            } catch(ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
@@ -108,7 +108,7 @@ public class DemoGUI {
             dia.setVisible(true);
             try {
                 updateSelection(currentTable);
-            } catch (ExecutionException | InterruptedException e1) {
+            } catch(ExecutionException | InterruptedException e1) {
                 throw new RuntimeException(e1);
             }
         });
@@ -116,7 +116,7 @@ public class DemoGUI {
 
     private Object[] collectRow(int index) {
         Object[] values = new Object[tableData.getColumnCount()];
-        for (int i = 0; i < tableData.getColumnCount(); i++) {
+        for(int i = 0; i < tableData.getColumnCount(); i++) {
             values[i] = tableData.getValueAt(index, i);
         }
         return values;
@@ -131,7 +131,7 @@ public class DemoGUI {
             public void windowClosed(WindowEvent e) {
                 try {
                     demoGUI.database.close();
-                } catch (Exception e1) {
+                } catch(Exception e1) {
                     e1.printStackTrace();
                 }
             }
