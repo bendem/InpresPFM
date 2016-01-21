@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 // TODO Implement Collection<?> serializer and deserializer
 public class BinarySerializer {
@@ -48,24 +49,38 @@ public class BinarySerializer {
             bb.get(bytes);
             return new String(bytes);
         });
+        deserializers.put(UUID.class, bb -> {
+            if(bb.get() == 0) {
+                return null;
+            }
+            return new UUID(bb.getLong(), bb.getLong());
+        });
 
         serializers = new HashMap<>();
-        serializers.put(boolean.class, (o, dos) -> dos.writeBoolean((boolean) o));
-        serializers.put(byte.class, (o, dos) -> dos.writeByte((byte) o));
-        serializers.put(short.class, (o, dos) -> dos.writeShort((short) o));
-        serializers.put(int.class, (o, dos) -> dos.writeInt((int) o));
-        serializers.put(long.class, (o, dos) -> dos.writeLong((long) o));
-        serializers.put(float.class, (o, dos) -> serializeFloat((float) o, dos));
+        serializers.put(boolean.class, (Boolean o, DataOutputStream dos) -> dos.writeBoolean(o));
+        serializers.put(byte.class, (Byte o, DataOutputStream dos) -> dos.writeByte(o));
+        serializers.put(short.class, (Short o, DataOutputStream dos) -> dos.writeShort(o));
+        serializers.put(int.class, (Integer o, DataOutputStream dos) -> dos.writeInt(o));
+        serializers.put(long.class, (Long o, DataOutputStream dos) -> dos.writeLong(o));
+        serializers.put(float.class, (Serializer<Float>) BinarySerializer::serializeFloat);
         // Double not implemented
-        serializers.put(String.class, (o, dos) -> {
-            String string = (String) o;
-            if(string == null) {
+        serializers.put(String.class, (String o, DataOutputStream dos) -> {
+            if(o == null) {
                 dos.writeInt(0);
                 return;
             }
-            byte[] bytes = string.getBytes();
+            byte[] bytes = o.getBytes();
             dos.writeInt(bytes.length);
             dos.write(bytes);
+        });
+        serializers.put(UUID.class, (UUID o, DataOutputStream dos) -> {
+            if(o == null) {
+                dos.writeByte(0);
+                return;
+            }
+            dos.writeByte(1);
+            dos.writeLong(o.getMostSignificantBits());
+            dos.writeLong(o.getLeastSignificantBits());
         });
 
         // Register (de)serializers for array types

@@ -11,7 +11,6 @@ import java.net.MulticastSocket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -38,23 +37,6 @@ public class UDPReceiver implements Runnable {
             UDPPacket.Type.class,
             (o, dos) -> dos.writeInt(o.ordinal()),
             bb -> UDPPacket.Type.values()[bb.getInt()]);
-        serializer.registerSerializer(
-            UUID.class,
-            (o, dos) -> {
-                if(o == null) {
-                    dos.writeByte(-1);
-                } else {
-                    dos.writeByte(0);
-                    serializer.getSerializer(String.class).serialize(o.toString(), dos);
-                }
-            },
-            bb -> {
-                if(bb.get() == -1) {
-                    return null;
-                } else {
-                    return UUID.fromString(serializer.getDeserializer(String.class).deserialize(bb));
-                }
-            });
     }
 
     @Override
