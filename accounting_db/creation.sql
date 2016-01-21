@@ -1,3 +1,8 @@
+-- select 'drop ' || object_type || ' ' || object_name || ';'
+-- from all_objects
+-- where owner = 'ACCOUNTING'
+--   and object_type in ('SEQUENCE', 'TABLE', 'TRIGGER');
+
 create table staff (
     staff_id number constraint pk_staff primary key not null,
     last_name varchar2(255) not null,
