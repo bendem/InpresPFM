@@ -1,10 +1,12 @@
 package be.hepl.benbear.accounting_db;
 
+import be.hepl.benbear.commons.db.DBTable;
 import be.hepl.benbear.commons.db.PrimaryKey;
 
 /**
  * @todo Checkout which PKs are needed
  */
+@DBTable("bill_items")
 public class BillItem {
 
     @PrimaryKey private final int itemId;

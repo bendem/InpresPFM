@@ -1,9 +1,11 @@
 package be.hepl.benbear.accounting_db;
 
+import be.hepl.benbear.commons.db.DBTable;
 import be.hepl.benbear.commons.db.PrimaryKey;
 
 import java.sql.Date;
 
+@DBTable("salaries")
 public class Salary {
 
     @PrimaryKey
