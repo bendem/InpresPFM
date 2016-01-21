@@ -1,5 +1,6 @@
 package be.hepl.benbear.dataanalysisapplication;
 
+import be.hepl.benbear.commons.security.Digestion;
 import be.hepl.benbear.pidep.LoginPacket;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -9,19 +10,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.URL;
-import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Random;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
 
     private final DataAnalysisApplication app;
-    private final Random random;
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
@@ -29,7 +24,6 @@ public class LoginController implements Initializable {
 
     public LoginController(DataAnalysisApplication app) {
         this.app = app;
-        this.random = new SecureRandom();
     }
 
     @Override
@@ -64,24 +58,12 @@ public class LoginController implements Initializable {
         loginButton.setDisable(true);
 
         long time = Instant.now().toEpochMilli();
-        byte[] salt = new byte[32];
-        random.nextBytes(salt);
+        byte[] salt = Digestion.salt(32);
         String password = passwordField.getText();
         String username = usernameField.getText().trim();
 
-        LoginPacket packet = new LoginPacket(username, time, salt, digest(password, time, salt));
+        LoginPacket packet = new LoginPacket(username, time, salt, Digestion.digest(password, time, salt));
         app.send(packet);
-    }
-
-    private byte[] digest(String password, long time, byte[] salt) {
-        ByteArrayOutputStream boas = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(boas);
-        try {
-            dos.writeLong(time);
-            dos.write(salt);
-            dos.write(password.getBytes());
-        } catch(IOException e) {}
-        return LoginPacket.digest(boas.toByteArray());
     }
 
     public void error(String error, Control... controls) {

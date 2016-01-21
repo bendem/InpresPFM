@@ -2,24 +2,7 @@ package be.hepl.benbear.chamap;
 
 import be.hepl.benbear.commons.protocol.Packet;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 public class LoginPacket implements Packet {
-
-    private static final MessageDigest MESSAGE_DIGEST;
-    static {
-        try {
-            MESSAGE_DIGEST = MessageDigest.getInstance("sha-256");
-        } catch(NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    public synchronized static byte[] digest(byte[] bytes) {
-        MESSAGE_DIGEST.reset();
-        MESSAGE_DIGEST.update(bytes);
-        return MESSAGE_DIGEST.digest();
-    }
 
     private final String username;
     private final long time;
@@ -53,4 +36,5 @@ public class LoginPacket implements Packet {
     public byte[] getSalt() {
         return salt;
     }
+
 }

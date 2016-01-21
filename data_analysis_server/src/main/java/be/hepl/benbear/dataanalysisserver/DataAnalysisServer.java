@@ -7,6 +7,7 @@ import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.net.Server;
+import be.hepl.benbear.commons.security.Digestion;
 import be.hepl.benbear.commons.streams.UncheckedLambda;
 import be.hepl.benbear.decisiondb.AnovaStats;
 import be.hepl.benbear.decisiondb.ConformityStats;
@@ -181,8 +182,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
             return;
         }
 
-        byte[] digest = digest(user.get().getPassword(), p.getTime(), p.getSalt());
-        if(Arrays.equals(p.getDigest(), digest)) {
+        if(Digestion.check(p.getDigest(), user.get().getPassword(), p.getTime(), p.getSalt())) {
             UUID uuid = UUID.randomUUID();
             sessions.add(uuid);
             os.writeObject(new LoginReponsePacket(uuid));
