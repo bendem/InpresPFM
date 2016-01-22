@@ -21,7 +21,6 @@ import javafx.scene.control.TextField;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -39,6 +38,8 @@ public class AccountingController implements Initializable {
     @FXML private TextField companyId;
     @FXML private DatePicker to;
     @FXML private Button list;
+    @FXML private Button sendBills;
+    private int billId = -1;
 
     public AccountingController(AccountingApplication app) {
         this.app = app;
@@ -57,17 +58,21 @@ public class AccountingController implements Initializable {
             GetNextBillResponsePacket p = app.readSpecific(GetNextBillResponsePacket.class);
             if(p.getBill() == null) {
                 Log.i("No bill available");
+                billId = -1;
                 return;
             }
 
             String bill = new String(Cipheriscope.decrypt(cryptKey, p.getBill()));
-            billField.setText(bill);
+            billId = Integer.parseInt(bill.split(":")[0]);
+            billField.setText(formatBill(bill));
             nextBill.setDisable(true);
             validateField.setDisable(false);
         });
 
         validateField.setOnAction(e -> {
-            int billId = Integer.parseInt(billField.getText().split(":")[0]);
+            if(billId < 0) {
+                return;
+            }
 
             byte[] hash = Digestion.digest(ByteBuffer.allocate(4).putInt(billId));
             byte[] signature = Cipheriscope.encrypt(app.getSignKey(), hash);
@@ -78,6 +83,7 @@ public class AccountingController implements Initializable {
                 app.alert(Alert.AlertType.ERROR, "Signature was invalid", this).showAndWait();
             }
 
+            billId = -1;
             billField.setText("");
             nextBill.setDisable(false);
             validateField.setDisable(true);
@@ -111,12 +117,22 @@ public class AccountingController implements Initializable {
                 bills = new String[0];
             }
             Log.d("Got %d bills", bills.length);
-            billList.getItems().setAll(bills);
+            billList.getItems().setAll(Arrays.stream(bills).map(this::formatBill).toArray(String[]::new));
         });
 
         from.setValue(LocalDate.now());
         to.setValue(LocalDate.now().plusDays(1));
         Inputs.integer(companyId, 1, Integer.MAX_VALUE);
+
+        sendBills.setOnAction(e -> {
+            // TODO
+        });
+    }
+
+    private String formatBill(String bill) {
+        String[] parts = bill.split(":");
+        return String.format("id: %s, company id: %s, date: %s, price (no vat): %s, price (vat): %s",
+            parts[0], parts[1], parts[2], parts[3], parts[4]);
     }
 
 }

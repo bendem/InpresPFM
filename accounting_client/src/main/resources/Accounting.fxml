@@ -15,6 +15,11 @@
             <Button fx:id="validateField" disable="true" mnemonicParsing="false" text="Validate" />
          </children>
       </HBox>
+      <Separator prefWidth="200.0">
+         <padding>
+            <Insets bottom="5.0" top="5.0" />
+         </padding>
+      </Separator>
       <ListView fx:id="billList" prefHeight="200.0" prefWidth="200.0" />
       <HBox spacing="5.0">
          <children>
@@ -24,8 +29,14 @@
          </children>
       </HBox>
       <Button fx:id="list" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="List" />
+      <Separator prefWidth="200.0">
+         <padding>
+            <Insets bottom="5.0" top="5.0" />
+         </padding>
+      </Separator>
+      <Button fx:id="sendBills" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Send bills" />
    </children>
    <padding>
-      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+      <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
    </padding>
 </VBox>
