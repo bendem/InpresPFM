@@ -182,6 +182,11 @@ public class CSVTable<T> extends AbstractTable<T> {
     }
 
     @Override
+    public CompletableFuture<Integer> update(String field, Object value, DBPredicate predicate) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
     public CompletableFuture<Integer> delete(DBPredicate predicate) {
         CompletableFuture<Integer> future = new CompletableFuture<>();
 

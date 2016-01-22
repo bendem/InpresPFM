@@ -61,6 +61,16 @@ public interface Table<T> {
     CompletableFuture<Integer> update(T obj);
 
     /**
+     * Updates a single column in the database based on a predicate.
+     *
+     * @param field the column to update
+     * @param value the new value
+     * @param predicate the predicate
+     * @return a future that'll container the number of affected lines
+     */
+    CompletableFuture<Integer> update(String field, Object value, DBPredicate predicate);
+
+    /**
      * Deletes a single row by its id. The number of ids provided need to match
      * the value returned by getIdCount.
      *

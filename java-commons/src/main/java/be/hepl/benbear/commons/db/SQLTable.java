@@ -114,6 +114,14 @@ public class SQLTable<T> extends AbstractTable<T> {
         return db.writeOp(() -> bind(db.connection.prepareStatement(query), values));
     }
 
+    public CompletableFuture<Integer> update(String field, Object value, DBPredicate predicate) {
+        String query = "update " + name + " set " + field + " = ?" + predicate.toSql();
+        List<Object> values = predicate.values();
+        values.add(0, value);
+
+        return db.writeOp(() -> bind(db.connection.prepareStatement(query), values));
+    }
+
     @Override
     public CompletableFuture<Integer> delete(DBPredicate predicate) {
         String query = "delete from " + name + predicate.toSql();

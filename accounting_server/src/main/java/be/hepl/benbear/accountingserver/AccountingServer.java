@@ -265,38 +265,16 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
             return;
         }
 
-        Optional<Bill> billOpt;
         try {
-            billOpt = accounting.table(Bill.class).byId(billId).get();
+            accounting.table(Bill.class).update("validated", '1', DBPredicate.of("bill_id", billId)).get();
         } catch(InterruptedException e) {
             Log.e("Interrupted", e);
             Thread.currentThread().interrupt();
             return;
         } catch(ExecutionException e) {
-            Log.e("Something bad happened", e);
             proto.write(os, new ValidateBillResponsePacket(false));
             return;
         }
-
-        if(!billOpt.isPresent()) {
-            proto.write(os, new ValidateBillResponsePacket(false));
-            return;
-        }
-
-        Bill bill = billOpt.get();
-        accounting.table(Bill.class).update(new Bill(
-            bill.getBillId(),
-            bill.getCompanyId(),
-            bill.getBillDate(),
-            bill.getTotalPriceExcludingVat(),
-            bill.getTotalPriceIncludingVat(),
-            '1',
-            bill.getAccountantValidater(),
-            '0',
-            bill.getBillSupport(),
-            '0'
-        ));
-
         proto.write(os, answer);
     }
 
