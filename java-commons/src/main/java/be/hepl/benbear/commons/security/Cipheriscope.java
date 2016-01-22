@@ -28,9 +28,8 @@ public final class Cipheriscope {
             generator.init(256);
             return generator;
         });
-        CIPHER_AES = UncheckedLambda.supplier(() -> Cipher.getInstance("AES_256/GCM/NoPadding"));
+        CIPHER_AES = UncheckedLambda.supplier(() -> Cipher.getInstance("AES"));
         CIPHER_RSA = UncheckedLambda.supplier(() -> Cipher.getInstance("RSA"));
-
     }
 
     public static SecretKey generateKey() {

@@ -42,6 +42,11 @@ public class AccountingController implements Initializable {
 
             app.write(new GetNextBillPacket(app.getSession()));
             GetNextBillResponsePacket p = app.readSpecific(GetNextBillResponsePacket.class);
+            if(p.getBill() == null) {
+                Log.i("No bill available");
+                return;
+            }
+
             String bill = new String(Cipheriscope.decrypt(cryptKey, p.getBill()));
             billField.setText(bill);
             nextBill.setDisable(true);

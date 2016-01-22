@@ -243,6 +243,7 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
             oldestBill.getTotalPriceExcludingVat(),
             oldestBill.getTotalPriceIncludingVat());
 
+
         proto.write(os, new GetNextBillResponsePacket(Cipheriscope.encrypt(
             sessionKeys.second, toSend.getBytes())));
     }
