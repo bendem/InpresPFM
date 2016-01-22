@@ -2,8 +2,11 @@ package be.hepl.benbear.accountingclient;
 
 import be.hepl.benbear.bisamap.GetNextBillPacket;
 import be.hepl.benbear.bisamap.GetNextBillResponsePacket;
+import be.hepl.benbear.bisamap.ListBillsPacket;
+import be.hepl.benbear.bisamap.ListBillsResponsePacket;
 import be.hepl.benbear.bisamap.ValidateBillPacket;
 import be.hepl.benbear.bisamap.ValidateBillResponsePacket;
+import be.hepl.benbear.commons.jfx.Inputs;
 import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.security.Cipheriscope;
 import be.hepl.benbear.commons.security.Digestion;
@@ -11,11 +14,16 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javax.crypto.SecretKey;
@@ -26,6 +34,11 @@ public class AccountingController implements Initializable {
     @FXML private Button nextBill;
     @FXML private TextField billField;
     @FXML private Button validateField;
+    @FXML private ListView<String> billList;
+    @FXML private DatePicker from;
+    @FXML private TextField companyId;
+    @FXML private DatePicker to;
+    @FXML private Button list;
 
     public AccountingController(AccountingApplication app) {
         this.app = app;
@@ -69,6 +82,41 @@ public class AccountingController implements Initializable {
             nextBill.setDisable(false);
             validateField.setDisable(true);
         });
+
+        list.setOnAction(e -> {
+            long from = Optional.ofNullable(this.from.getValue()).orElseGet(LocalDate::now).toEpochDay();
+            long to = Optional.ofNullable(this.to.getValue()).orElse(LocalDate.now().plusDays(1)).toEpochDay();
+            if(from > to) {
+                long tmp = from;
+                from = to;
+                to = tmp;
+            }
+            int company = Integer.parseInt(companyId.getText());
+
+            ByteBuffer bytes = ByteBuffer.allocate(20)
+                .putInt(company)
+                .putLong(from)
+                .putLong(to);
+            byte[] hash = Digestion.digest(bytes);
+            byte[] signature = Cipheriscope.encrypt(app.getSignKey(), hash);
+
+            app.write(new ListBillsPacket(app.getSession(), company, from, to, signature));
+            ListBillsResponsePacket answer = app.readSpecific(ListBillsResponsePacket.class);
+            if(answer.getBills() == null) {
+                app.alert(Alert.AlertType.INFORMATION, "No bills to display", this).showAndWait();
+                return;
+            }
+            String[] bills = new String(Cipheriscope.decrypt(app.getCryptKey(), answer.getBills())).split(";");
+            if(bills.length == 1 && bills[0].isEmpty()) {
+                bills = new String[0];
+            }
+            Log.d("Got %d bills", bills.length);
+            billList.getItems().setAll(bills);
+        });
+
+        from.setValue(LocalDate.now());
+        to.setValue(LocalDate.now().plusDays(1));
+        Inputs.integer(companyId, 1, Integer.MAX_VALUE);
     }
 
 }

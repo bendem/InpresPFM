@@ -32,6 +32,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -41,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -234,18 +236,17 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
             return;
         }
 
-        Bill oldestBill = oldestBillOpt.get();
-
-        String toSend = String.format("%d:%d:%s:%f:%f",
-            oldestBill.getBillId(),
-            oldestBill.getCompanyId(),
-            oldestBill.getBillDate(),
-            oldestBill.getTotalPriceExcludingVat(),
-            oldestBill.getTotalPriceIncludingVat());
-
-
         proto.write(os, new GetNextBillResponsePacket(Cipheriscope.encrypt(
-            sessionKeys.second, toSend.getBytes())));
+            sessionKeys.second, formatBill(oldestBillOpt.get()).getBytes())));
+    }
+
+    private String formatBill(Bill bill) {
+        return String.format("%d:%d:%s:%f:%f",
+            bill.getBillId(),
+            bill.getCompanyId(),
+            bill.getBillDate(),
+            bill.getTotalPriceExcludingVat(),
+            bill.getTotalPriceIncludingVat());
     }
 
     private void handleValidateBill(ValidateBillPacket p, OutputStream os) throws IOException {
@@ -299,8 +300,38 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
         proto.write(os, answer);
     }
 
-    private void handleListBills(ListBillsPacket p, OutputStream os) {
+    private void handleListBills(ListBillsPacket p, OutputStream os) throws IOException {
+        Tuple<SecretKey, SecretKey> sessionKeys = getSession(p.getSession());
+        if(sessionKeys == null) {
+            proto.write(os, new ListBillsResponsePacket(null));
+            return;
+        }
 
+        ByteBuffer bytes = ByteBuffer.allocate(20)
+            .putInt(p.getCompanyId())
+            .putLong(p.getFrom())
+            .putLong(p.getTo());
+        byte[] hash = Digestion.digest(bytes);
+
+        if(!Cipheriscope.check(sessionKeys.first, hash, p.getSignature())) {
+            proto.write(os, new ListBillsResponsePacket(null));
+            return;
+        }
+
+        String bills;
+        try {
+            bills = accounting.table(Bill.class).find(DBPredicate.of("company_id", p.getCompanyId())).get()
+                .filter(b -> b.getBillDate().toLocalDate().isAfter(LocalDate.ofEpochDay(p.getFrom())))
+                .filter(b -> b.getBillDate().toLocalDate().isBefore(LocalDate.ofEpochDay(p.getTo())))
+                .map(this::formatBill)
+                .collect(Collectors.joining(";"));
+        } catch(InterruptedException | ExecutionException e) {
+            Log.e("Something bad happened when fetching bills", e);
+            proto.write(os, new ListBillsResponsePacket(null));
+            return;
+        }
+
+        proto.write(os, new ListBillsResponsePacket(Cipheriscope.encrypt(sessionKeys.second, bills.getBytes())));
     }
 
     private void handleSendBills(SendBillsPacket p, OutputStream os) {
