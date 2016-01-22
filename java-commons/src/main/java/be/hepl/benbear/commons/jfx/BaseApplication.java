@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -51,6 +52,17 @@ public abstract class BaseApplication extends Application {
 
     public <T> T open(String fxml, String title, boolean modal) throws IOException {
         return open(fxml, title, modal, false);
+    }
+
+    public Alert alert(Alert.AlertType type, String content, Object controller) {
+        return alert(type, content, getStage(controller));
+    }
+
+    public Alert alert(Alert.AlertType type, String content, Stage parent) {
+        Alert alert = new Alert(type, content);
+        alert.initModality(Modality.WINDOW_MODAL);
+        alert.initOwner(parent);
+        return alert;
     }
 
     protected <T> T open(String fxml, String title, boolean modal, boolean main) throws IOException {

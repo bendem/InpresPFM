@@ -15,6 +15,8 @@ import java.util.Optional;
     private static final Map<Class<?>, JDBCType> JAVA_TO_DB_TYPES;
     static {
         Map<Class<?>, JDBCType> types = new HashMap<>();
+        types.put(Character.class, JDBCType.CHAR);
+        types.put(char.class, JDBCType.CHAR);
         types.put(Integer.class, JDBCType.INTEGER);
         types.put(int.class, JDBCType.INTEGER);
         types.put(Long.class, JDBCType.BIGINT);
@@ -39,6 +41,13 @@ import java.util.Optional;
 
         Object result;
         switch(type) {
+            case CHAR:
+                if(clazz == char.class) {
+                    result = r.getString(name).charAt(0);
+                } else {
+                    result = r.getString(name);
+                }
+                break;
             case INTEGER:
                 result = r.getInt(name);
                 break;
@@ -87,6 +96,9 @@ import java.util.Optional;
         }
 
         switch(type) {
+            case CHAR:
+                stmt.setString(i, obj.toString());
+                break;
             case INTEGER:
                 stmt.setInt(i, (Integer) obj);
                 break;

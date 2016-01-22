@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,6 +32,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
@@ -191,6 +193,11 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
             UUID session = UUID.randomUUID();
             SecretKey signKey = new SecretKeySpec(Cipheriscope.decrypt(serverKey, p.getSignKeyCiphered()), "AES");
             SecretKey cryptKey = new SecretKeySpec(Cipheriscope.decrypt(serverKey, p.getCryptKeyCiphered()), "AES");
+
+            Log.d("key: %s, encoded: %s, length: %d, algo: %s, format: %s, destroyed: %s",
+                cryptKey, Arrays.toString(cryptKey.getEncoded()), cryptKey.getEncoded().length,
+                cryptKey.getAlgorithm(), cryptKey.getFormat(), cryptKey.isDestroyed());
+
             sessions.put(session, new Tuple3<>(now, signKey, cryptKey));
 
             Log.d("%s logged in successfully", p.getUsername());
@@ -247,6 +254,48 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
             return;
         }
 
+        int billId = p.getBillId();
+        byte[] hash = Digestion.digest(ByteBuffer.allocate(4).putInt(billId));
+        boolean valid = Cipheriscope.check(sessionKeys.first, hash, p.getSignature());
+        ValidateBillResponsePacket answer = new ValidateBillResponsePacket(valid);
+        if(!valid) {
+            proto.write(os, answer);
+            return;
+        }
+
+        Optional<Bill> billOpt;
+        try {
+            billOpt = accounting.table(Bill.class).byId(billId).get();
+        } catch(InterruptedException e) {
+            Log.e("Interrupted", e);
+            Thread.currentThread().interrupt();
+            return;
+        } catch(ExecutionException e) {
+            Log.e("Something bad happened", e);
+            proto.write(os, new ValidateBillResponsePacket(false));
+            return;
+        }
+
+        if(!billOpt.isPresent()) {
+            proto.write(os, new ValidateBillResponsePacket(false));
+            return;
+        }
+
+        Bill bill = billOpt.get();
+        accounting.table(Bill.class).update(new Bill(
+            bill.getBillId(),
+            bill.getCompanyId(),
+            bill.getBillDate(),
+            bill.getTotalPriceExcludingVat(),
+            bill.getTotalPriceIncludingVat(),
+            '1',
+            bill.getAccountantValidater(),
+            '0',
+            bill.getBillSupport(),
+            '0'
+        ));
+
+        proto.write(os, answer);
     }
 
     private void handleListBills(ListBillsPacket p, OutputStream os) {

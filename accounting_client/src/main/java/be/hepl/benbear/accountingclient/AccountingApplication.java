@@ -28,6 +28,9 @@ public class AccountingApplication extends BaseApplication {
     private Socket socket;
     private OutputStream os;
     private InputStream is;
+    private UUID session;
+    private SecretKey signKey;
+    private SecretKey cryptKey;
 
     public AccountingApplication() {
         proto = new ProtocolHandler()
@@ -86,7 +89,21 @@ public class AccountingApplication extends BaseApplication {
 
     public void connect(UUID session, SecretKey signKey, SecretKey cryptKey) {
         Log.d("Logged in \\o/");
+        this.session = session;
+        this.signKey = signKey;
+        this.cryptKey = cryptKey;
+    }
 
+    public UUID getSession() {
+        return session;
+    }
+
+    public SecretKey getSignKey() {
+        return signKey;
+    }
+
+    public SecretKey getCryptKey() {
+        return cryptKey;
     }
 
     public Config getConfig() {
