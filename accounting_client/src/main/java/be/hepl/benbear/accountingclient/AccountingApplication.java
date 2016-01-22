@@ -3,6 +3,7 @@ package be.hepl.benbear.accountingclient;
 import be.hepl.benbear.bisamap.*;
 import be.hepl.benbear.commons.config.Config;
 import be.hepl.benbear.commons.jfx.BaseApplication;
+import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.protocol.Packet;
 import be.hepl.benbear.commons.protocol.ProtocolHandler;
 import javafx.stage.Stage;
@@ -84,6 +85,7 @@ public class AccountingApplication extends BaseApplication {
     }
 
     public void connect(UUID session, SecretKey signKey, SecretKey cryptKey) {
+        Log.d("Logged in \\o/");
 
     }
 

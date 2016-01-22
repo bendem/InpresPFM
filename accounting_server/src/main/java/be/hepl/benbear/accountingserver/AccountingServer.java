@@ -21,11 +21,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
@@ -43,6 +46,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class AccountingServer extends Server<InputStream, OutputStream> {
 
     public static final Duration SESSION_TIMEOUT = Duration.ofHours(1);
+    public static final Duration TIME_TOLERANCE = Duration.ofMinutes(1);
 
     private final Config conf;
     //                          v last seen, sign key, crypt key v
@@ -145,13 +149,21 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
     private void handleLogin(LoginPacket p, OutputStream os) throws IOException {
         Log.i("Handling login attempt");
 
+        Instant now = Instant.now();
+        if(Instant.ofEpochMilli(p.getTime()).plus(TIME_TOLERANCE).isBefore(now)) {
+            proto.write(os, LoginResponsePacket.ERROR);
+            return;
+        }
+
         Optional<Staff> staff;
         try {
             staff = accounting.table(Staff.class).findOne(DBPredicate.of("login", p.getUsername())).get();
         } catch(InterruptedException e) {
+            Log.e("Got interrupted");
             Thread.currentThread().interrupt();
             return;
         } catch(ExecutionException e) {
+            Log.e("Something bad happened while fetching", e);
             proto.write(os, LoginResponsePacket.ERROR);
             return;
         }
@@ -163,10 +175,15 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
 
         PrivateKey serverKey;
         try {
-            serverKey = (PrivateKey) KeyStore.getInstance("JKS").getKey(
+            KeyStore jks = KeyStore.getInstance("JKS");
+            jks.load(Files.newInputStream(Paths.get(
+                conf.getStringThrowing("accounting_server.private_key.path"))),
+                conf.getStringThrowing("accounting_server.private_key.password").toCharArray());
+            serverKey = (PrivateKey) jks.getKey(
                 conf.getStringThrowing("accounting_server.private_key.alias"),
                 conf.getStringThrowing("accounting_server.private_key.password").toCharArray());
-        } catch(KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+        } catch(KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException e) {
+            Log.e("%d :(", e);
             throw new RuntimeException(e);
         }
 
@@ -174,7 +191,9 @@ public class AccountingServer extends Server<InputStream, OutputStream> {
             UUID session = UUID.randomUUID();
             SecretKey signKey = new SecretKeySpec(Cipheriscope.decrypt(serverKey, p.getSignKeyCiphered()), "AES");
             SecretKey cryptKey = new SecretKeySpec(Cipheriscope.decrypt(serverKey, p.getCryptKeyCiphered()), "AES");
-            sessions.put(session, new Tuple3<>(Instant.now(), signKey, cryptKey));
+            sessions.put(session, new Tuple3<>(now, signKey, cryptKey));
+
+            Log.d("%s logged in successfully", p.getUsername());
             proto.write(os, new LoginResponsePacket(session));
         } else {
             proto.write(os, LoginResponsePacket.ERROR);
