@@ -119,3 +119,9 @@ for each row begin
     select prices_seq.nextval into :new.price_id from dual;
 end;
 /
+
+insert into staff (
+    last_name, first_name, login, password, internal_email, allocation, duty, pay_scale, account_number
+) values (
+    'Bobington', 'Bob', 'bob', 'bob', 'bob@bob', 'somewhere', 'accountant', 1, 'huehuehue'
+);

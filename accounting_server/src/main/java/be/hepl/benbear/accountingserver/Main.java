@@ -11,12 +11,11 @@ import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.trafficdb.*;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 
 public class Main {
 
-    public static void main(String... args) throws IOException {
+    public static void main(String... args) throws Exception {
         Config conf = new Config(args.length == 0 ? null : Paths.get(args[0]));
 
         Database.Driver.ORACLE.load();

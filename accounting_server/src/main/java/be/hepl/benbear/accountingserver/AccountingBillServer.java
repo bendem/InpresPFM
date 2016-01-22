@@ -112,6 +112,7 @@ public class AccountingBillServer extends Server<DataInputStream, DataOutputStre
         }
 
         Log.i("Making bills");
+
         // TODO
     }
 
