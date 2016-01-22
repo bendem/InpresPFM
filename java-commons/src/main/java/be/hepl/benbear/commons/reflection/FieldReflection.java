@@ -5,6 +5,7 @@ import be.hepl.benbear.commons.streams.UncheckedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +65,13 @@ public final class FieldReflection<T> {
 
     @SafeVarargs
     public final Map<String, Object> getValueMap(T obj, Predicate<? super Field>... predicates) {
-        return filter(predicates).collect(Collectors.toMap(
-            Field::getName,
-            extractFunction(obj),
-            (a, b) -> a,
-            LinkedHashMap::new
-        ));
+        Iterator<Field> it = filter(predicates).iterator();
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+        while(it.hasNext()) {
+            Field field = it.next();
+            map.put(field.getName(), extractFunction(obj).apply(field));
+        }
+        return map;
     }
 
     @SafeVarargs
