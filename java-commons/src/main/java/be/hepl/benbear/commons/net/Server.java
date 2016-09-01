@@ -174,6 +174,8 @@ public abstract class Server<In, Out> {
                             return;
                         }
                         onClose(channel, e);
+                    } catch (Exception e) {
+                        Log.e("Error while handling data", e);
                     }
                 });
             }
