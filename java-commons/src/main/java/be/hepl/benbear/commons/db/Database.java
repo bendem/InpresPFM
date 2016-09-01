@@ -7,6 +7,7 @@ public interface Database extends AutoCloseable {
     enum Driver {
 
         ORACLE("oracle.jdbc.driver.OracleDriver"),
+        POSTGRESQL("org.postgresql.Driver"),
         ;
 
         public final String fqdn;

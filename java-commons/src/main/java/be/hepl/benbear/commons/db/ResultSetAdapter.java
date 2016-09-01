@@ -2,6 +2,7 @@ package be.hepl.benbear.commons.db;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -30,8 +31,9 @@ import java.util.stream.StreamSupport;
                 handler.accept(e);
             } finally {
                 try {
+                    Statement statement = r.getStatement();
                     r.close();
-                    r.getStatement().close();
+                    statement.close();
                 } catch(SQLException e) {
                     handler.accept(e);
                 }
