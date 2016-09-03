@@ -161,7 +161,13 @@ public abstract class Server<In, Out> {
                 threadPool.submit(() -> {
                     try {
                         channel.configureBlocking(true);
-                        read(streams.first, streams.second);
+                        try {
+                            read(streams.first, streams.second);
+                        } catch (IOException e) {
+                            throw e;
+                        } catch (Exception e) {
+                            Log.e("Error while handling data", e);
+                        }
 
                         // Re-add to select once the packet is handled
                         connectionsToSelect.add(channel);
@@ -174,8 +180,6 @@ public abstract class Server<In, Out> {
                             return;
                         }
                         onClose(channel, e);
-                    } catch (Exception e) {
-                        Log.e("Error while handling data", e);
                     }
                 });
             }

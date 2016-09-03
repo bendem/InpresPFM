@@ -15,11 +15,15 @@ import javafx.scene.image.ImageView;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public class DataAnalysisController implements Initializable {
+
+    private static final NumberFormat NUMBER_FORMAT = new DecimalFormat("#.##############");
 
     private final DataAnalysisApplication app;
     private LoginController loginController;
@@ -77,6 +81,7 @@ public class DataAnalysisController implements Initializable {
         Inputs.integer(containerPerDestinationPerQuarterGraphYearField, 0, Integer.MAX_VALUE);
         Inputs.integer(statInferConformityTestSampleSizeField, 2, Integer.MAX_VALUE);
         Inputs.integer(statInferHomogeneityTestSampleSizeField, 2, Integer.MAX_VALUE);
+        Inputs.integer(statInferAnovaTestSampleSizeField, 1, Integer.MAX_VALUE);
 
         containerDescriptiveStatisticNameColumn.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().first));
         containerDescriptiveStatisticValueColumn.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().second));
@@ -159,19 +164,20 @@ public class DataAnalysisController implements Initializable {
             case GetStatInferConformityTestResponse:
                 GetStatInferConformityTestResponsePacket p4 = (GetStatInferConformityTestResponsePacket) packet;
                 statInferConformityTestResultLabel.setText("The hypothesis that the average time spent in the parc is 10 days is to be "
-                    + (p4.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + p4.getpValue());
+                    + (p4.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + NUMBER_FORMAT.format(p4.getpValue()));
                 break;
             case GetStatInferHomogeneityTestResponse:
                 GetStatInferHomogeneityTestResponsePacket p5 = (GetStatInferHomogeneityTestResponsePacket) packet;
                 statInferHomogeneityTestResultLabel.setText("The hypothesis that the average time spent in the parc is the same for these two destinations is to be "
-                    + (p5.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + p5.getpValue());
+                    + (p5.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + NUMBER_FORMAT.format(p5.getpValue()));
                 break;
             case GetStatInferAnovaTestResponse:
                 GetStatInferAnovaTestResponsePacket p6 = (GetStatInferAnovaTestResponsePacket) packet;
                 statInferAnovaTestResultLabel.setText("The hypothesis that the average time spent in the parc is the same for all the destinations is to be "
-                    + (p6.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + p6.getpValue());
+                    + (p6.isSignificant() ? "rejected" : "accepted") + ". p-Value = " + NUMBER_FORMAT.format(p6.getpValue()));
                 break;
         }
+        // Si la valeur p est plus petite que α on rejette l'hypothèse nulle.
     }
 
     public void connected() {

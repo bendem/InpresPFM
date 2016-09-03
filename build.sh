@@ -16,6 +16,7 @@ build trafficdb
 build iobrep
 build pfmcop
 build tramap
+build boomap
 
 build boat_server
 build chat_client_java

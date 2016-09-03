@@ -10,11 +10,9 @@ import be.hepl.benbear.trafficdb.Reservation;
 
 import java.io.IOException;
 import java.sql.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -55,15 +53,15 @@ public class ReservationServlet extends HttpServlet {
         Table<Reservation> reservationTable = database.table(Reservation.class);
         String resId;
         // TODO This would be faster db side
-        List<Reservation> reservations = reservationTable.find().get().collect(Collectors.toList());
+        //List<Reservation> reservations = reservationTable.find().get().collect(Collectors.toList());
         Optional<Parc> qparc = parcTable.find(DBPredicate.of("container_id", null)).get()
-            .filter(p -> reservations.stream().noneMatch(r -> p.getX() == r.getX() && p.getY() == r.getY()))
+            //.filter(p -> reservations.stream().noneMatch(r -> p.getX() == r.getX() && p.getY() == r.getY()))
             .findFirst();
 
         if(qparc.isPresent()) {
             Parc parc = qparc.get();
             resId = "R"+ Date.valueOf(req.getParameter("dateArrival"))+parc.getX()+parc.getY();
-            reservationTable.insert(new Reservation(parc.getX(), parc.getY(), Date.valueOf(req.getParameter("dateArrival")), req.getParameter("destination"), resId)).get();
+            reservationTable.insert(new Reservation(resId, req.getParameter("destination"), Date.valueOf(req.getParameter("dateArrival")))).get();
             sendConfirmation(req, resp, resId, parc.getX(), parc.getY());
         } else {
             session.setAttribute("noSpace", true);

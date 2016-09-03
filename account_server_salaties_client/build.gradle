@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group 'be.hepl.benbear'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+configurations {
+    shadow
+    compile.extendsFrom shadow
+}
+
+repositories {
+    mavenLocal()
+}
+
+dependencies {
+    shadow 'be.hepl.benbear:samop:1.0-SNAPSHOT'
+    shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
+    shadow 'org.postgresql:postgresql:9.4.1208'
+}
+
+jar {
+    configurations.shadow.each { slice ->
+        from(project.zipTree(slice)) {
+            exclude 'META-INF/DEPENDENCIES',
+                'META-INF/ECLIPSEF.RSA',
+                'META-INF/ECLIPSEF.SF',
+                'META-INF/LICENSE',
+                'META-INF/LICENSE.txt',
+                'META-INF/NOTICE',
+                'META-INF/NOTICE.txt',
+                'about_files/**',
+                'about.html',
+                'LICENSE'
+        }
+    }
+
+    manifest {
+        attributes 'Main-Class': 'be.hepl.benbear.accountingserverclientsalaries.Main'
+    }
+}

@@ -44,7 +44,7 @@ public class CornAnalysisController implements Initializable{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // QUESTION 1
+        // QUESTION 1 test de conformité
         answer1Label.setText(TestUtils.tTest(
             265,
             app.getData().stream()
@@ -55,7 +55,7 @@ public class CornAnalysisController implements Initializable{
             0.025
         ) ? "Non" : "Oui");
 
-        // QUESTION 2
+        // QUESTION 2 test d'homogénéité
         answer2Label.setText(TestUtils.tTest(
             app.getData().stream()
                 .filter(corn -> corn.height != null)
@@ -69,7 +69,7 @@ public class CornAnalysisController implements Initializable{
         ) ? "Non" : "Oui");
 
 
-        // QUESTION 3
+        // QUESTION 3 annova
         {
             List<double[]> dataList = app.getData().stream()
                 .filter(corn -> corn.height != null)

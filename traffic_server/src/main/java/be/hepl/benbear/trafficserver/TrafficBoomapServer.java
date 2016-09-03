@@ -210,8 +210,11 @@ public class TrafficBoomapServer extends Server<DataInputStream, DataOutputStrea
         }
 
         movements.forEach(elem -> database.table(Movement.class)
-            .update(new Movement(elem.getMovementId(), elem.getContainerId(), elem.getCompanyId(), elem.getTransporterIdIn(),
-            elem.getTransporterIdOut(), elem.getDateArrival(), new Date(Instant.now().getEpochSecond()), elem.getWeight(), elem.getDestinationId())));
+            .update(new Movement(elem.getMovementId(), elem.getContainerId(),
+                                 elem.getCompanyId(), elem.getTransporterIdIn(),
+                                 elem.getTransporterIdOut(), elem.getDateArrival(),
+                                 new Date(Instant.now().getEpochSecond()),
+                                 elem.getWeight(), elem.getDestinationId())));
 
         protocolHandler.write(os, new SignalDepResponsePacket(true, "X"));
     }

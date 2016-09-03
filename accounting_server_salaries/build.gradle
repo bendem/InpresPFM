@@ -18,9 +18,7 @@ repositories {
 
 dependencies {
     shadow 'be.hepl.benbear:accounting_db:1.0-SNAPSHOT'
-    shadow 'be.hepl.benbear:trafficdb:1.0-SNAPSHOT'
-    shadow 'be.hepl.benbear:chamap:1.0-SNAPSHOT'
-    shadow 'be.hepl.benbear:bisamap:1.0-SNAPSHOT'
+    shadow 'be.hepl.benbear:samop:1.0-SNAPSHOT'
     shadow 'be.hepl.benbear:java-commons:1.0-SNAPSHOT'
     shadow 'org.postgresql:postgresql:9.4.1208'
 }
@@ -42,6 +40,6 @@ jar {
     }
 
     manifest {
-        attributes 'Main-Class': 'be.hepl.benbear.accountingserver.Main'
+        attributes 'Main-Class': 'be.hepl.benbear.accountingserversalaries.Main'
     }
 }

@@ -3,7 +3,6 @@ package be.hepl.benbear.dataanalysisserver;
 import be.hepl.benbear.accounting_db.Staff;
 import be.hepl.benbear.commons.config.Config;
 import be.hepl.benbear.commons.db.DBPredicate;
-import be.hepl.benbear.commons.db.Database;
 import be.hepl.benbear.commons.db.SQLDatabase;
 import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.net.Server;
@@ -24,7 +23,6 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -60,8 +58,6 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
                 return oos;
             })
         );
-
-        Database.Driver.ORACLE.load();
 
         accountingDb = new SQLDatabase();
         accountingDb.registerClass(Staff.class);
@@ -191,20 +187,8 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
         }
     }
 
-    private byte[] digest(String password, long time, byte[] salt) {
-        ByteArrayOutputStream boas = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(boas);
-        try {
-            dos.writeLong(time);
-            dos.write(salt);
-            dos.write(password.getBytes());
-        } catch(IOException e) {}
-        return LoginPacket.digest(boas.toByteArray());
-    }
-
     private void containerDescriptiveStatistic(ObjectOutputStream os, GetContainerDescriptiveStatisticPacket packet) throws IOException {
         Stream<MovementsLight> movements;
-        double[] weights;
         try {
             if (packet.getType() == GetContainerDescriptiveStatisticPacket.Type.IN) {
                 movements = trafficDb.table(MovementsLight.class)
@@ -219,7 +203,7 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
             return;
         }
 
-        weights = movements.limit(packet.getSampleSize()).mapToDouble(MovementsLight::getWeight).toArray();
+        double[] weights = movements.limit(packet.getSampleSize()).mapToDouble(MovementsLight::getWeight).toArray();
 
         DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(weights);
 
@@ -341,8 +325,14 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
             return;
         }
 
-        values1 = data1.limit(packet.getNumberOfElem()).mapToDouble(value -> (value.getDateDeparture().getDay() - value.getDateArrival().getDay())).toArray();
-        values2 = data2.limit(packet.getNumberOfElem()).mapToDouble(value -> (value.getDateDeparture().getDay() - value.getDateArrival().getDay())).toArray();
+        values1 = data1
+            .limit(packet.getNumberOfElem())
+            .mapToDouble(value -> (value.getDateDeparture().getDay() - value.getDateArrival().getDay()))
+            .toArray();
+        values2 = data2
+            .limit(packet.getNumberOfElem())
+            .mapToDouble(value -> (value.getDateDeparture().getDay() - value.getDateArrival().getDay()))
+            .toArray();
 
         double pvalue = TestUtils.tTest(values1, values2);
         boolean significant = TestUtils.tTest(values1, values2, 0.025);
@@ -377,7 +367,13 @@ public class DataAnalysisServer extends Server<ObjectInputStream, ObjectOutputSt
             .add((double) mov.getDateDeparture().getDay() - mov.getDateArrival().getDay()));
 
         List<double[]> dataLists = new ArrayList<>();
-        values.forEach((s, doubles) -> dataLists.add(doubles.stream().limit(packet.getNumberOfElem()).mapToDouble(d -> d).toArray()));
+        values.forEach(
+            (s, doubles) -> dataLists.add(
+                doubles.stream()
+                    .limit(packet.getNumberOfElem())
+                    .mapToDouble(d -> d).toArray()));
+
+        Log.d("%s", dataLists.stream().map(Arrays::toString).collect(Collectors.toList()));
 
         double pvalue = TestUtils.oneWayAnovaPValue(dataLists);
         boolean significant = TestUtils.oneWayAnovaTest(dataLists, 0.025);

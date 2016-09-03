@@ -77,8 +77,11 @@ public class MailApplication extends BaseApplication {
             )));
 
             Transport transport = session.getTransport(config.getStringThrowing("mail.smtp.protocol"));
+            Log.i("Connecting to smtp host");
             transport.connect(smtpHost, smtpUser.orElse(null), smtpPassword.orElse(null));
+            Log.d("Connected, sending mail");
             transport.sendMessage(message, message.getAllRecipients());
+            Log.d("Mail sent");
             future.complete(null);
         }, future::completeExceptionally));
 

@@ -5,6 +5,7 @@ import be.hepl.benbear.commons.logging.Log;
 import be.hepl.benbear.commons.serialization.BinarySerializer;
 import be.hepl.benbear.commons.serialization.ObjectSerializer;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -89,7 +90,11 @@ public class ProtocolHandler {
         byte[] b = new byte[len];
         int read = 0;
         while(read < len) {
-            read += is.read(b, read, len - read);
+            int r = is.read(b, read, len - read);
+            if (r < 0) {
+                throw new EOFException();
+            }
+            read += r;
         }
         return b;
     }
